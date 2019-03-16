@@ -17,7 +17,10 @@ public:
 	boost::spirit::qi::rule<Iterator, std::string()> name;
 	boost::spirit::qi::rule<Iterator, std::string(), boost::spirit::qi::locals<char>> shortLiteralString;
 	boost::spirit::qi::rule<Iterator, std::string(), boost::spirit::qi::locals<std::string>> longLiteralString;
+	boost::spirit::qi::rule<Iterator, std::string()> literalString;
 
 private:
 	boost::spirit::qi::rule<Iterator, char(char)> escapedChar;
+	boost::spirit::qi::rule<Iterator, std::string()> openLongBracket;
+	boost::spirit::qi::rule<Iterator, void(std::string)> closeLongBacket;
 };

@@ -97,3 +97,37 @@ TEST_CASE_FIXTURE(ParserFixture, "short literal strings")
 	CHECK_FALSE(test_parser("'test", parser.shortLiteralString));
 	CHECK_FALSE(test_parser("\"test'", parser.shortLiteralString));
 }
+
+TEST_CASE_FIXTURE(ParserFixture, "long literal strings")
+{
+	std::string v;
+	CHECK(test_parser("[[]]", parser.longLiteralString, v));
+	CHECK(v == "");
+
+	CHECK(test_parser("[[test]]", parser.longLiteralString, v));
+	CHECK(v == "test");
+
+	CHECK(test_parser("[[test] 123]]", parser.longLiteralString, v));
+	CHECK(v == "test] 123");
+
+	CHECK(test_parser("[=[test]] 123]=]", parser.longLiteralString, v));
+	CHECK(v == "test]] 123");
+
+	CHECK(test_parser("[==[test]=] 123]==]", parser.longLiteralString, v));
+	CHECK(v == "test]=] 123");
+
+	CHECK_FALSE(test_parser("[[test]", parser.longLiteralString));
+	CHECK_FALSE(test_parser("[==[test]=]", parser.longLiteralString));
+}
+
+TEST_CASE_FIXTURE(ParserFixture, "literal strings")
+{
+	std::string v;
+	CHECK(test_parser("'test'", parser.literalString, v));
+	CHECK(v == "test");
+
+	CHECK(test_parser("[[test]]", parser.literalString, v));
+	CHECK(v == "test");
+
+	CHECK_FALSE(test_parser("test", parser.longLiteralString));
+}
