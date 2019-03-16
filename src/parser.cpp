@@ -50,6 +50,7 @@ Parser::Parser()
 	numeral %= (lit("0x") >> hex)
 			   | (lit("0X") >> hex)
 			   | double_;
+	numeralAsString = raw[numeral];
 
 	// Comments
 	shortComment %= "--" >> *(char_ - eol) >> -eol;
@@ -60,8 +61,8 @@ Parser::Parser()
 	comment %= longComment | shortComment;
 
 	// Table fields separators
-	fieldsep.add(",", ",");
-	fieldsep.add(";", ";");
+	fieldSeparator.add(",", ",");
+	fieldSeparator.add(";", ";");
 
 	// Binary operations
 	const StringList binops = {"+", "-", "*", "/", "//", "^", "%",
@@ -69,10 +70,83 @@ Parser::Parser()
 							   "<", "<=", ">", ">=", "==", "~=",
 							   "and", "or"};
 	for (const auto& k : binops)
-		binop.add(k, k);
+		binaryOperation.add(k, k);
 
 	// Unary operations
 	const StringList unops = {"-", "not", "#", "~"};
 	for (const auto& k : unops)
-		unop.add(k, k);
+		unaryOperation.add(k, k);
+
+	// Complete syntax of Lua
+	field = ('[' >> expression >> lit(']') >> lit('=') >> expression)
+			| (name >> '=' >> expression)
+			| expression;
+
+	fieldsList %= field >> *(fieldSeparator >> field) >> -fieldSeparator;
+
+	tableConstructor %= '{' >> -fieldsList >> '}';
+
+	parametersList %= (namesList >> -(lit(',') >> lit("...")))
+					  | lit("...");
+
+	functionBody %= '(' >> -parametersList >> ')' >> block >> lit('end');
+
+	functionDefinition %= lit("function") >> functionBody;
+
+	arguments %= ('(' >> expressionsList >> ')')
+				 | tableConstructor
+				 | literalString;
+
+	functionCall %= (prefixExpression >> arguments)
+					| (prefixExpression >> ':' >> name >> arguments);
+
+	prefixExpression %= variable
+						| functionCall
+						| ('(' >> expression >> ')');
+
+	expression %= lit("nil")
+				  | lit("false")
+				  | lit("true")
+				  | numeralAsString
+				  | literalString
+				  | lit("...")
+				  | functionDefinition
+				  | prefixExpression
+				  | tableConstructor
+				  | (expression >> binaryOperation >> expression)
+				  | (unaryOperation >> expression);
+
+	expressionsList %= expression >> *(',' >> expression);
+
+	namesList %= name >> *(',' >> name);
+
+	variable %= name
+				| (prefixExpression >> '[' >> expression >> ']')
+				| (prefixExpression >> '.' >> name);
+
+	variablesList %= variable >> *(',' >> variable);
+
+	functionName %= name >> *(',' >> name) >> -(':' >> name);
+
+	label %= "::" >> name >> "::";
+
+	returnStatement %= "return" >> -expressionsList >> -lit(';');
+
+	statement %= ';'
+				 | (variablesList >> '=' >> expressionsList)
+				 | functionCall
+				 | label
+				 | "break"
+				 | ("goto" >> name)
+				 | ("do" >> block >> "end")
+				 | ("while" >> expression >> "do" >> block >> "end")
+				 | ("repeat" >> block >> "until" >> expression)
+				 | ("if" >> expression >> "then" >> block >> *("elseif" >> expression >> "then" >> block) >> -("else" >> block) >> "end")
+				 | ("for" >> name >> '=' >> expression >> ',' >> expression >> -(',' >> expression) >> "do" >> block >> "end")
+				 | ("for" >> namesList >> "in" >> expressionsList >> "do" >> block >> "end")
+				 | ("function" >> functionName >> functionBody)
+				 | ("local" >> lit("function") >> name >> functionBody)
+				 | ("local" >> namesList >> -('=' >> expressionsList));
+
+	block %= *statement >> -returnStatement;
 }
