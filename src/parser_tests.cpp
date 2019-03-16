@@ -120,3 +120,15 @@ TEST_CASE_FIXTURE(ParserFixture, "numerals")
 	TEST_VALUE("0xa0", parser.numeral, 0xa0);
 	TEST_VALUE("0Xa0", parser.numeral, 0xa0);
 }
+
+TEST_CASE_FIXTURE(ParserFixture, "comments")
+{
+	TEST_VALUE("--test", parser.comment, "test");
+	TEST_VALUE("--test\n", parser.comment, "test");
+	TEST_VALUE("--[test", parser.comment, "[test");
+	TEST_VALUE("-- [[test]]", parser.comment, " [[test]]");
+	TEST_VALUE("--[[test\n123]]", parser.comment, "test\n123");
+	TEST_VALUE("--[=[test]]\n123]=]", parser.comment, "test]]\n123");
+
+	CHECK_FALSE(test_parser("test", parser.comment));
+}

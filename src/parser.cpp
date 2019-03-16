@@ -51,6 +51,14 @@ Parser::Parser()
 			   | (lit("0X") >> hex)
 			   | double_;
 
+	// Comments
+	shortComment %= "--" >> *(char_ - eol) >> -eol;
+	longComment %= "--"
+				   >> omit[openLongBracket[_a = _1]]
+				   >> *(char_ - closeLongBacket(_a))
+				   >> closeLongBacket(_a);
+	comment %= longComment | shortComment;
+
 	// Table fields separators
 	fieldsep.add(",", ",");
 	fieldsep.add(";", ";");

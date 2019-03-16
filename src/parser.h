@@ -18,6 +18,8 @@ public:
 	boost::spirit::qi::rule<Iterator, std::string(), boost::spirit::qi::locals<char>> shortLiteralString;
 	boost::spirit::qi::rule<Iterator, std::string(), boost::spirit::qi::locals<std::string>> longLiteralString;
 	boost::spirit::qi::rule<Iterator, std::string()> literalString;
+	boost::spirit::qi::rule<Iterator, std::string()> comment, shortComment;
+	boost::spirit::qi::rule<Iterator, std::string(), boost::spirit::qi::locals<std::string>> longComment;
 	boost::spirit::qi::rule<Iterator, double()> numeral;
 
 private:
