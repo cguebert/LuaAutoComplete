@@ -46,6 +46,11 @@ Parser::Parser()
 	// Literal strings
 	literalString = shortLiteralString | longLiteralString;
 
+	// Numerals
+	numeral %= (lit("0x") >> hex)
+			   | (lit("0X") >> hex)
+			   | double_;
+
 	// Table fields separators
 	fieldsep.add(",", ",");
 	fieldsep.add(";", ";");
