@@ -1,0 +1,7 @@
+/.*
+/build*/
+/documentation/
+/install*/
+*.pyc
+
+CMakeSettings.json
