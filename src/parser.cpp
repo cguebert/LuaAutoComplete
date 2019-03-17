@@ -98,7 +98,7 @@ Parser::Parser()
 
 	functionDefinition %= lit("function") >> functionBody;
 
-	arguments %= ('(' >> expressionsList >> ')')
+	arguments %= ('(' >> -expressionsList >> ')')
 				 | tableConstructor
 				 | literalString;
 
@@ -106,8 +106,8 @@ Parser::Parser()
 					| (prefixExpression >> ':' >> name >> arguments);
 
 	prefixExpression %= variable
-						| functionCall
 						| ('(' >> expression >> ')');
+					//	| functionCall;
 
 	expression %= lit("nil")
 				  | lit("false")
@@ -131,7 +131,7 @@ Parser::Parser()
 
 	variablesList %= variable >> *(',' >> variable);
 
-	functionName %= name >> *(',' >> name) >> -(':' >> name);
+	functionName %= name >> *('.' >> name) >> -(':' >> name);
 
 	label %= "::" >> name >> "::";
 
