@@ -77,6 +77,11 @@ Parser::Parser()
 	for (const auto& k : unops)
 		unaryOperation.add(k, k);
 
+	// A skipper that ignore whitespace and comments
+	skipper = boost::spirit::ascii::space
+			  | omit[shortComment]
+			  | omit[longComment];
+
 	// Complete syntax of Lua
 	field = ('[' >> expression >> lit(']') >> lit('=') >> expression)
 			| (name >> '=' >> expression)
@@ -149,4 +154,11 @@ Parser::Parser()
 				 | ("local" >> namesList >> -('=' >> expressionsList));
 
 	block %= *statement >> -returnStatement;
+}
+
+Parser::ChunkGrammar::ChunkGrammar(Parser& parser)
+	: ChunkGrammar::base_type(m_start)
+	, m_parser(parser)
+{
+	m_start = m_parser.statement;
 }

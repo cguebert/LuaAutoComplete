@@ -12,22 +12,17 @@ protected:
 	template <class P, class... Args>
 	bool test_parser(std::string_view input, const P& p, Args&... args)
 	{
-		using boost::spirit::qi::parse;
-
 		auto f = input.begin();
 		const auto l = input.end();
-		return parse(f, l, p, args...) && f == l;
+		return boost::spirit::qi::parse(f, l, p, args...) && f == l;
 	}
 
 	template <class P, class... Args>
 	bool test_phrase_parser(std::string_view input, const P& p, Args&... args)
 	{
-		using boost::spirit::qi::phrase_parse;
-		using boost::spirit::qi::ascii::space;
-
 		auto f = input.begin();
 		const auto l = input.end();
-		return phrase_parse(f, l, p, space, args...) && f == l;
+		return boost::spirit::qi::phrase_parse(f, l, p, parser.skipper, args...) && f == l;
 	}
 
 	template <class P, class V>
@@ -58,17 +53,18 @@ TEST_CASE_FIXTURE(ParserFixture, "keywords")
 	TEST_VALUE("and", parser.keyword, "and");
 	TEST_VALUE("nil", parser.keyword, "nil");
 
-	CHECK_FALSE(test_parser("toto", parser.keyword));
+	CHECK_FALSE(test_parser("test", parser.keyword));
 }
 
 TEST_CASE_FIXTURE(ParserFixture, "names")
 {
-	TEST_VALUE("toto", parser.name, "toto");
+	TEST_VALUE("test", parser.name, "test");
 	TEST_VALUE("_test", parser.name, "_test");
 	TEST_VALUE("_123", parser.name, "_123");
-	TEST_VALUE("_t1o2t3o4", parser.name, "_t1o2t3o4");
+	TEST_VALUE("_a1b2c3d4", parser.name, "_a1b2c3d4");
 
-	CHECK_FALSE(test_parser("123toto", parser.name));
+	CHECK_FALSE(test_parser("123test", parser.name));
+	CHECK_FALSE(test_parser("test 123", parser.name));
 	CHECK_FALSE(test_parser("break", parser.name));
 	CHECK_FALSE(test_parser("while", parser.name));
 }
@@ -143,4 +139,23 @@ TEST_CASE_FIXTURE(ParserFixture, "comments")
 	TEST_VALUE("--[=[test]]\n123]=]", parser.comment, "test]]\n123");
 
 	CHECK_FALSE(test_parser("test", parser.comment));
+}
+
+TEST_CASE_FIXTURE(ParserFixture, "statements")
+{
+	CHECK(test_phrase_parser("x = 2", parser.statement));
+
+	CHECK_FALSE(test_phrase_parser("test", parser.statement));
+}
+
+TEST_CASE_FIXTURE(ParserFixture, "chunk")
+{
+	Parser::ChunkGrammar g(parser);
+	CHECK(test_phrase_parser("x = 2", g));
+	CHECK(test_phrase_parser("x = 2 --comment", g));
+//	CHECK(test_phrase_parser("x = {}", g));
+
+	CHECK_FALSE(test_phrase_parser("x = 2 3", g));
+
+//	CHECK_FALSE(test_phrase_parser("test", parser.statement, ascii::space));
 }
