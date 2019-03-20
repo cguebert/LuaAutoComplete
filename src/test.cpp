@@ -107,15 +107,18 @@ namespace parser
 	using ascii::char_;
 	using ascii::string;
 	using x3::_attr;
+	using x3::_pass;
 	using x3::alnum;
 	using x3::alpha;
 	using x3::double_;
 	using x3::eol;
 	using x3::eps;
+	using x3::get;
 	using x3::hex;
 	using x3::lit;
 	using x3::omit;
 	using x3::raw;
+	using x3::with;
 
 	// Names
 	const auto name_def = (alpha | char_('_'))
@@ -124,8 +127,16 @@ namespace parser
 	const auto namesList_def = name >> *(',' >> name);
 
 	// Short literal strings
-	const auto literalString_def = (lit('"') >> *("\\\"" | (char_ - '"')) >> '"')
-								   | (lit('\'') >> *("\\'" | (char_ - '\'')) >> '\'');
+	//const auto literalString_def = (lit('"') >> *("\\\"" | (char_ - '"')) >> '"')
+	//							   | (lit('\'') >> *("\\'" | (char_ - '\'')) >> '\'');
+	struct _string_quote {};
+	auto set_quote = [](auto& ctx) { get<_string_quote>(ctx) = _attr(ctx); };
+	auto is_quote = [](auto& ctx) { _pass(ctx) = (x3::get<_string_quote>(ctx) == _attr(ctx)); };
+	const auto literalString_def = with<_string_quote>(' ')
+		[omit[char_("'\"")[set_quote]]
+		 >> *(('\\' >> char_[is_quote])
+			  | (char_ - char_[is_quote]))
+		 >> char_[is_quote]];
 
 	// Numerals0
 	const auto numeral_def = (lit("0x") >> hex)
@@ -239,28 +250,6 @@ namespace parser
 	BOOST_SPIRIT_DEFINE(variable);
 	BOOST_SPIRIT_DEFINE(variablePostfix);
 	BOOST_SPIRIT_DEFINE(variablesList);
-	/*
-	escapedChar = '\\' >> char_(_r1);
-	shortLiteralString %= eps[_val = ""]
-		>> omit[char_("'\"")[_a = _1]]
-		>> *(escapedChar(_a) | (char_ - char_(_a)))
-		>> lit(_a);
-*/
-	struct _string_quote
-	{
-	};
-
-	auto set_quote = [](auto& ctx) { x3::get<_string_quote>(ctx) = x3::_attr(ctx); };
-	auto is_quote = [](auto& ctx) { x3::_pass(ctx) = (x3::get<_string_quote>(ctx) == x3::_attr(ctx)); };
-
-	const x3::rule<class testString, std::string> testString = "testString";
-
-	const auto testString_def = omit[char_("'\"")[set_quote]]
-							>> *(('\\' >> char_[is_quote])
-								 | (char_ - char_[is_quote]))
-							>> char_[is_quote];
-
-	BOOST_SPIRIT_DEFINE(testString);
 
 } // namespace parser
 
@@ -296,10 +285,10 @@ TEST_CASE("test")
 {
 	//CHECK(test_phrase_parser("func(a, b)[c]:test('hello').d", parser::expression));
 
-	const auto r = x3::with<parser::_string_quote>(' ')[parser::testString];
-
-	CHECK(test_phrase_parser("'hello'", r));
-	CHECK(test_phrase_parser("\"hello\"", r));
+	CHECK(test_phrase_parser("'hello'", parser::literalString));
+	CHECK(test_phrase_parser("\"hello\"", parser::literalString));
+	CHECK(test_phrase_parser("\"'hello'\"", parser::literalString));
+	CHECK(test_phrase_parser("\"'hello \\\" \"", parser::literalString));
 	CHECK(test_phrase_parser("func(a, b)[c]:test('hello').d", parser::variable));
 	//	CHECK_FALSE(test_phrase_parser("func(a, b)[c]:test('hello')", parser::variable));
 }
