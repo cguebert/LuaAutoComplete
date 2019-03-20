@@ -118,12 +118,12 @@ Parser::Parser()
 				  | functionCallEnd;
 
 	variable %= (('(' >> expression >> ')')
-		| name)
-		>> *variablePostfix;
+				 | name)
+				>> *variablePostfix;
 
 	variablePostfix %= ('[' >> expression >> ']')
-		| ('.' >> name)
-		| (functionCallEnd >> variablePostfix);
+					   | ('.' >> name)
+					   | (functionCallEnd >> variablePostfix);
 
 	functionCall %= variable >> functionCallEnd;
 

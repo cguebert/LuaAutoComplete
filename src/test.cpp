@@ -1,8 +1,7 @@
 #define BOOST_SPIRIT_DEBUG
 #include <boost/config/warning_disable.hpp>
-#include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/support_line_pos_iterator.hpp>
-#include <boost/phoenix.hpp>
+#include <boost/spirit/home/x3.hpp>
+#include <boost/spirit/home/support/iterators/line_pos_iterator.hpp>
 #include <doctest/doctest.h>
 
 #include <iomanip>
@@ -10,213 +9,262 @@
 #include <string>
 #include <string_view>
 
-namespace qi = boost::spirit::qi;
-namespace ascii = boost::spirit::ascii;
-namespace phoenix = boost::phoenix;
-namespace fusion = boost::fusion;
+namespace x3 = boost::spirit::x3;
+namespace ascii = x3::ascii;
 
-using PosIterator = boost::spirit::line_pos_iterator<std::string_view::const_iterator>;
-
-struct Annotation
+namespace parser
 {
-	using result_type = void;
-	template <class It>
-	void operator()(std::string_view name, It f, It l) const
+	// clang-format off
+	struct binaryOperator_ : x3::symbols<std::string>
 	{
-		std::cerr << "+ " << name << " '" << std::string(f, l) << "'\n";
-	}
-};
-
-struct ErrorHandler
-{
-	using result_type = qi::error_handler_result;
-	template <class T1, class T2, class T3, class T4>
-	qi::error_handler_result operator()(T1 b, T2 e, T3 where, T4 const& what) const
-	{
-		std::cerr << "Error: expecting " << what << " in line " << get_line(where) << ": \n"
-				  << std::string(b, e) << "\n"
-				  << std::setw(std::distance(b, where)) << '^' << "---- here\n";
-		return qi::fail;
-	}
-};
-
-template <class Iterator = PosIterator, class Skipper = ascii::space_type>
-class TestParser
-	: public qi::grammar<Iterator, std::string(), Skipper>
-{
-public:
-	using iterator_type = Iterator;
-	using skipper_type = Skipper;
-
-	boost::spirit::qi::symbols<char, std::string> binaryOperator, unaryOperator, fieldSeparator;
-	boost::spirit::qi::rule<Iterator, double()> numeral;
-	boost::spirit::qi::rule<Iterator, char(char)> escapedChar;
-	boost::spirit::qi::rule<Iterator, std::string(), Skipper> name, comment, numeralAsString,
-		expression, expressionsList, prefixExpression, postPrefix,
-		functionCall, functionCallEnd, arguments, functionBody, functionDefinition, parametersList,
-		tableConstructor, fieldsList, field,
-		returnStatement, statement, block,
-		variable, variablePostfix, variablesList, namesList,
-		simpleExpression, binaryOperation, unaryOperation, fieldSeparation;
-	boost::spirit::qi::rule<Iterator, std::string(), boost::spirit::qi::locals<char>> literalString;
-
-	phoenix::function<Annotation> annotate;
-	phoenix::function<ErrorHandler> handler;
-
-	TestParser(bool showDebug = false)
-		: TestParser::base_type(expression, "expression")
-	{
-		using ascii::char_;
-		using ascii::string;
-		using namespace qi;
-
-		// Names
-		name %= eps[_val = ""]
-				>> (alpha | char_('_'))
-				>> *(alnum | char_('_'));
-
-		namesList %= name >> *(',' >> name);
-
-		// Short literal strings
-		escapedChar = '\\' >> char_(_r1);
-		literalString %= eps[_val = ""]
-						 >> omit[char_("'\"")[_a = _1]]
-						 >> *(escapedChar(_a) | (char_ - char_(_a)))
-						 >> lit(_a);
-
-		// Numerals
-		numeral %= (lit("0x") >> hex)
-				   | (lit("0X") >> hex)
-				   | double_;
-		numeralAsString = raw[numeral];
-
-		// Comments
-		comment %= "--" >> *(char_ - eol) >> -eol;
-
-		// Table fields separators
-		fieldSeparator.add(",", ",");
-		fieldSeparator.add(";", ";");
-		fieldSeparation %= fieldSeparator;
-
-		using StringList = std::vector<std::string>;
-		// Binary operations
-		const StringList binops = {"+", "-", "*", "/", "//", "^", "%",
-								   "&", "~", "|", ">>", "<<", "..",
-								   "<", "<=", ">", ">=", "==", "~=",
-								   "and", "or"};
-		for (const auto& k : binops)
-			binaryOperator.add(k, k);
-		binaryOperation %= binaryOperator;
-
-		// Unary operations
-		const StringList unops = {"-", "not", "#", "~"};
-		for (const auto& k : unops)
-			unaryOperator.add(k, k);
-		unaryOperation %= unaryOperator;
-
-		// Complete syntax of Lua
-		field = ('[' >> expression >> lit(']') >> lit('=') >> expression)
-				| (name >> '=' >> expression)
-				| expression;
-
-		fieldsList %= field >> *(fieldSeparation >> field) >> -fieldSeparation;
-
-		tableConstructor %= '{' >> -fieldsList >> '}';
-
-		arguments %= ('(' >> -expressionsList >> ')')
-					 | tableConstructor
-					 | literalString;
-
-		functionCallEnd %= -(':' >> name) >> arguments;
-
-		functionBody %= '(' >> -parametersList >> ')' >> block >> lit("end");
-
-		functionDefinition %= lit("function") >> functionBody;
-
-		parametersList %= (namesList >> -(lit(',') >> lit("...")))
-						  | lit("...");
-
-		prefixExpression %= (('(' >> expression >> ')')
-							 | name)
-							>> *postPrefix;
-
-		postPrefix %= ('[' >> expression >> ']')
-					  | ('.' >> name)
-					  | functionCallEnd;
-
-		variable %= (('(' >> expression >> ')')
-					 | name)
-					>> *variablePostfix;
-
-		variablePostfix %= ('[' >> expression >> ']')
-						| ('.' >> name)
-						| (functionCallEnd >> variablePostfix);
-
-		functionCall %= variable >> functionCallEnd;
-
-		simpleExpression %= lit("nil")
-							| lit("false")
-							| lit("true")
-							| numeralAsString
-							| literalString
-							| lit("...")
-							| functionDefinition
-							| (unaryOperation >> expression)
-							| tableConstructor
-							| prefixExpression;
-		expression %= simpleExpression >> -(binaryOperation >> expression);
-
-		expressionsList %= expression >> *(',' >> expression);
-
-		variablesList %= variable >> *(',' >> variable);
-
-		returnStatement %= "return" >> -expressionsList >> -lit(';');
-
-		statement %= ';'
-					 | (variablesList >> '=' >> expressionsList)
-					 | functionCall;
-
-		block %= *statement >> -returnStatement;
-
-#define ANNOTATE(name) \
-	BOOST_SPIRIT_DEBUG_NODE(name);
-		//	on_success(name, annotate(#name, _1, _3));
-		//	on_error<fail>(name, handler(_1, _2, _3, _4));
-
-		if (showDebug)
+		binaryOperator_()
 		{
-			ANNOTATE(arguments);
-			ANNOTATE(binaryOperation);
-			ANNOTATE(block);
-			ANNOTATE(comment);
-			ANNOTATE(expression);
-			ANNOTATE(expressionsList);
-			ANNOTATE(field);
-			ANNOTATE(fieldSeparation);
-			ANNOTATE(fieldsList);
-			ANNOTATE(functionBody);
-			ANNOTATE(functionCall);
-			ANNOTATE(functionCallEnd);
-			ANNOTATE(functionDefinition);
-			ANNOTATE(name);
-			ANNOTATE(namesList);
-			ANNOTATE(numeralAsString);
-			ANNOTATE(parametersList);
-			ANNOTATE(postPrefix);
-			ANNOTATE(prefixExpression);
-			ANNOTATE(returnStatement);
-			ANNOTATE(simpleExpression);
-			ANNOTATE(statement);
-			ANNOTATE(tableConstructor);
-			ANNOTATE(unaryOperation);
-			ANNOTATE(variable);
-			ANNOTATE(variablePostfix);
-			ANNOTATE(variablesList);
+			add
+				("+", "+")
+				("-", "-")
+				("*", "*")
+				("/", "/")
+				("//", "//")
+				("^", "^")
+				("%", "%")
+				("&", "&")
+				("~", "~")
+				("|", "|")
+				(">>", ">>")
+				("<<", "<<")
+				("..", "..")
+				("<", "<")
+				("<=", "<=")
+				(">", ">")
+				(">=", ">=")
+				("==", "==")
+				("~=", "~=")
+				("and", "and")
+				("or", "or")
+				;
 		}
 
-#undef ANNOTATE
-	}
-};
+	} binaryOperator;
+
+	struct unaryOperator_ : x3::symbols<std::string>
+	{
+		unaryOperator_()
+		{
+			add
+				("-", "-")
+				("not", "not")
+				("#", "#")
+				("~", "~")
+				;
+		}
+
+	} unaryOperator;
+
+	struct fieldSeparator_ : x3::symbols<std::string>
+	{
+		fieldSeparator_()
+		{
+			add
+				(",", ",")
+				(";", ";")
+				;
+		}
+
+	} fieldSeparator;
+	// clang-format on
+
+	const x3::rule<class numeral, double> numeral = "numeral";
+
+	const x3::rule<class arguments, std::string> arguments = "arguments";
+	const x3::rule<class binaryOperation, std::string> binaryOperation = "binaryOperation";
+	const x3::rule<class block, std::string> block = "block";
+	const x3::rule<class comment, std::string> comment = "comment";
+	const x3::rule<class expression, std::string> expression = "expression";
+	const x3::rule<class expressionsList, std::string> expressionsList = "expressionsList";
+	const x3::rule<class field, std::string> field = "field";
+	const x3::rule<class fieldSeparation, std::string> fieldSeparation = "fieldSeparation";
+	const x3::rule<class fieldsList, std::string> fieldsList = "fieldsList";
+	const x3::rule<class functionBody, std::string> functionBody = "functionBody";
+	const x3::rule<class functionCall, std::string> functionCall = "functionCall";
+	const x3::rule<class functionCallEnd, std::string> functionCallEnd = "functionCallEnd";
+	const x3::rule<class functionDefinition, std::string> functionDefinition = "functionDefinition";
+	const x3::rule<class literalString, std::string> literalString = "literalString";
+	const x3::rule<class name, std::string> name = "name";
+	const x3::rule<class namesList, std::string> namesList = "namesList";
+	const x3::rule<class numeralAsString, std::string> numeralAsString = "numeralAsString";
+	const x3::rule<class parametersList, std::string> parametersList = "parametersList";
+	const x3::rule<class postPrefix, std::string> postPrefix = "postPrefix";
+	const x3::rule<class prefixExpression, std::string> prefixExpression = "prefixExpression";
+	const x3::rule<class returnStatement, std::string> returnStatement = "returnStatement";
+	const x3::rule<class simpleExpression, std::string> simpleExpression = "simpleExpression";
+	const x3::rule<class statement, std::string> statement = "statement";
+	const x3::rule<class tableConstructor, std::string> tableConstructor = "tableConstructor";
+	const x3::rule<class unaryOperation, std::string> unaryOperation = "unaryOperation";
+	const x3::rule<class variable, std::string> variable = "variable";
+	const x3::rule<class variablePostfix, std::string> variablePostfix = "variablePostfix";
+	const x3::rule<class variablesList, std::string> variablesList = "variablesList";
+
+	using ascii::char_;
+	using ascii::string;
+	using x3::_attr;
+	using x3::alnum;
+	using x3::alpha;
+	using x3::double_;
+	using x3::eol;
+	using x3::eps;
+	using x3::hex;
+	using x3::lit;
+	using x3::omit;
+	using x3::raw;
+
+	// Names
+	const auto name_def = (alpha | char_('_'))
+						  >> *(alnum | char_('_'));
+
+	const auto namesList_def = name >> *(',' >> name);
+
+	// Short literal strings
+	const auto literalString_def = (lit('"') >> *("\\\"" | (char_ - '"')) >> '"')
+								   | (lit('\'') >> *("\\'" | (char_ - '\'')) >> '\'');
+
+	// Numerals0
+	const auto numeral_def = (lit("0x") >> hex)
+							 | (lit("0X") >> hex)
+							 | double_;
+	const auto numeralAsString_def = raw[numeral];
+
+	// Comments
+	const auto comment_def = "--" >> *(char_ - eol) >> -eol;
+
+	// Table fields separators
+	const auto fieldSeparation_def = fieldSeparator;
+
+	using StringList = std::vector<std::string>;
+	// Binary operations
+	const auto binaryOperation_def = binaryOperator;
+
+	// Unary operations
+	const auto unaryOperation_def = unaryOperator;
+
+	// Complete syntax of Lua
+	const auto field_def = ('[' >> expression >> lit(']') >> lit('=') >> expression)
+						   | (name >> '=' >> expression)
+						   | expression;
+
+	const auto fieldsList_def = field >> *(fieldSeparation >> field) >> -fieldSeparation;
+
+	const auto tableConstructor_def = '{' >> -fieldsList >> '}';
+
+	const auto arguments_def = ('(' >> -expressionsList >> ')')
+							   | tableConstructor
+							   | literalString;
+
+	const auto functionCallEnd_def = -(':' >> name) >> arguments;
+
+	const auto functionBody_def = '(' >> -parametersList >> ')' >> block >> lit("end");
+
+	const auto functionDefinition_def = lit("function") >> functionBody;
+
+	const auto parametersList_def = (namesList >> -(lit(',') >> lit("...")))
+									| lit("...");
+
+	const auto prefixExpression_def = (('(' >> expression >> ')')
+									   | name)
+									  >> *postPrefix;
+
+	const auto postPrefix_def = ('[' >> expression >> ']')
+								| ('.' >> name)
+								| functionCallEnd;
+
+	const auto variable_def = (('(' >> expression >> ')')
+							   | name)
+							  >> *variablePostfix;
+
+	const auto variablePostfix_def = ('[' >> expression >> ']')
+									 | ('.' >> name)
+									 | (functionCallEnd >> variablePostfix);
+
+	const auto functionCall_def = variable >> functionCallEnd;
+
+	const auto simpleExpression_def = lit("nil")
+									  | lit("false")
+									  | lit("true")
+									  | numeralAsString
+									  | literalString
+									  | lit("...")
+									  | functionDefinition
+									  | (unaryOperation >> expression)
+									  | tableConstructor
+									  | prefixExpression;
+	const auto expression_def = simpleExpression >> -(binaryOperation >> expression);
+
+	const auto expressionsList_def = expression >> *(',' >> expression);
+
+	const auto variablesList_def = variable >> *(',' >> variable);
+
+	const auto returnStatement_def = "return" >> -expressionsList >> -lit(';');
+
+	const auto statement_def = ';'
+							   | (variablesList >> '=' >> expressionsList)
+							   | functionCall;
+
+	const auto block_def = *statement >> -returnStatement;
+
+	BOOST_SPIRIT_DEFINE(arguments);
+	BOOST_SPIRIT_DEFINE(binaryOperation);
+	BOOST_SPIRIT_DEFINE(block);
+	BOOST_SPIRIT_DEFINE(comment);
+	BOOST_SPIRIT_DEFINE(expression);
+	BOOST_SPIRIT_DEFINE(expressionsList);
+	BOOST_SPIRIT_DEFINE(field);
+	BOOST_SPIRIT_DEFINE(fieldSeparation);
+	BOOST_SPIRIT_DEFINE(fieldsList);
+	BOOST_SPIRIT_DEFINE(functionBody);
+	BOOST_SPIRIT_DEFINE(functionCall);
+	BOOST_SPIRIT_DEFINE(functionCallEnd);
+	BOOST_SPIRIT_DEFINE(functionDefinition);
+	BOOST_SPIRIT_DEFINE(literalString);
+	BOOST_SPIRIT_DEFINE(name);
+	BOOST_SPIRIT_DEFINE(namesList);
+	BOOST_SPIRIT_DEFINE(numeral);
+	BOOST_SPIRIT_DEFINE(numeralAsString);
+	BOOST_SPIRIT_DEFINE(parametersList);
+	BOOST_SPIRIT_DEFINE(postPrefix);
+	BOOST_SPIRIT_DEFINE(prefixExpression);
+	BOOST_SPIRIT_DEFINE(returnStatement);
+	BOOST_SPIRIT_DEFINE(simpleExpression);
+	BOOST_SPIRIT_DEFINE(statement);
+	BOOST_SPIRIT_DEFINE(tableConstructor);
+	BOOST_SPIRIT_DEFINE(unaryOperation);
+	BOOST_SPIRIT_DEFINE(variable);
+	BOOST_SPIRIT_DEFINE(variablePostfix);
+	BOOST_SPIRIT_DEFINE(variablesList);
+	/*
+	escapedChar = '\\' >> char_(_r1);
+	shortLiteralString %= eps[_val = ""]
+		>> omit[char_("'\"")[_a = _1]]
+		>> *(escapedChar(_a) | (char_ - char_(_a)))
+		>> lit(_a);
+*/
+	struct _string_quote
+	{
+	};
+
+	auto set_quote = [](auto& ctx) { x3::get<_string_quote>(ctx) = x3::_attr(ctx); };
+	auto is_quote = [](auto& ctx) { x3::_pass(ctx) = (x3::get<_string_quote>(ctx) == x3::_attr(ctx)); };
+
+	const x3::rule<class testString, std::string> testString = "testString";
+
+	const auto testString_def = omit[char_("'\"")[set_quote]]
+							>> *(('\\' >> char_[is_quote])
+								 | (char_ - char_[is_quote]))
+							>> char_[is_quote];
+
+	BOOST_SPIRIT_DEFINE(testString);
+
+} // namespace parser
+
+using PosIterator = boost::spirit::line_pos_iterator<std::string_view::const_iterator>;
 
 template <class P>
 bool test_phrase_parser(std::string_view input, const P& p)
@@ -224,7 +272,7 @@ bool test_phrase_parser(std::string_view input, const P& p)
 	const PosIterator f(input.begin()), l(input.end());
 	PosIterator i = f;
 
-	if (!qi::phrase_parse(i, l, p, ascii::space))
+	if (!x3::phrase_parse(i, l, p, ascii::space))
 	{
 		std::cerr << "------------------------------------\n"
 				  << "Could not parse input: " << input << '\n'
@@ -244,19 +292,14 @@ bool test_phrase_parser(std::string_view input, const P& p)
 	return true;
 }
 
-bool test_phrase_parser(const std::string_view input, bool showDebug = false)
-{
-	TestParser<PosIterator, ascii::space_type> parser(showDebug);
-
-	return test_phrase_parser(input, parser);
-}
-
 TEST_CASE("test")
 {
-	CHECK(test_phrase_parser("func(a, b)[c]:test('hello').d"));
+	//CHECK(test_phrase_parser("func(a, b)[c]:test('hello').d", parser::expression));
 
-	TestParser<PosIterator, ascii::space_type> parser(false);
-	//CHECK(test_phrase_parser("func(a, b)[c]", parser.fcPrefix));
-	CHECK(test_phrase_parser("func(a, b)[c]:test('hello').d", parser.variable));
-//	CHECK_FALSE(test_phrase_parser("func(a, b)[c]:test('hello')", parser.variable));
+	const auto r = x3::with<parser::_string_quote>(' ')[parser::testString];
+
+	CHECK(test_phrase_parser("'hello'", r));
+	CHECK(test_phrase_parser("\"hello\"", r));
+	CHECK(test_phrase_parser("func(a, b)[c]:test('hello').d", parser::variable));
+	//	CHECK_FALSE(test_phrase_parser("func(a, b)[c]:test('hello')", parser::variable));
 }
