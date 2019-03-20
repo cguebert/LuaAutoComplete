@@ -144,32 +144,32 @@ TEST_CASE_FIXTURE(ParserFixture, "comment")
 TEST_CASE_FIXTURE(ParserFixture, "field")
 {
 	CHECK(test_phrase_parser("[2] = 2", parser.field));
-//	CHECK(test_phrase_parser("[f(x)] = a", parser.field));
+	CHECK(test_phrase_parser("[f(x)] = a", parser.field));
 	CHECK(test_phrase_parser("x = 1", parser.field));
 	CHECK(test_phrase_parser("x", parser.field));
 	CHECK(test_phrase_parser("42", parser.field));
-//	CHECK(test_phrase_parser("f(x)", parser.field));
+	CHECK(test_phrase_parser("f(x)", parser.field));
 }
 
 TEST_CASE_FIXTURE(ParserFixture, "fieldsList")
 {
 	CHECK(test_phrase_parser("[2] = 2, 2, x, x = 1", parser.fieldsList));
 	CHECK(test_phrase_parser("[2] = 2; 2, x; x = 1", parser.fieldsList));
-//	CHECK(test_phrase_parser("x,", parser.fieldsList));
-//	CHECK(test_phrase_parser("[2] = 2, 2; x; x = 1;", parser.fieldsList));
-//	CHECK(test_phrase_parser("[2] = 2, 2; x; x = 1,", parser.fieldsList));
+	CHECK(test_phrase_parser("x,", parser.fieldsList));
+	CHECK(test_phrase_parser("[2] = 2, 2; x; x = 1;", parser.fieldsList));
+	CHECK(test_phrase_parser("[2] = 2, 2; x; x = 1,", parser.fieldsList));
 }
 
 TEST_CASE_FIXTURE(ParserFixture, "tableConstructor")
 {
-//	CHECK(test_phrase_parser("{}", parser.tableConstructor));
+	CHECK(test_phrase_parser("{}", parser.tableConstructor));
 	CHECK(test_phrase_parser("{x}", parser.tableConstructor));
 	CHECK(test_phrase_parser("{ x }", parser.tableConstructor));
 	CHECK(test_phrase_parser("{[2] = 2, 2, x, x = 1}", parser.tableConstructor));
 	CHECK(test_phrase_parser("{ [2] = 2, 2, x, x = 1 }", parser.tableConstructor));
 	CHECK(test_phrase_parser("{ [2] = 2; 2, x; x = 1 }", parser.tableConstructor));
-	//	CHECK(test_phrase_parser("{[2] = 2, 2; x; x = 1;}", parser.tableConstructor));
-	//	CHECK(test_phrase_parser("{[2] = 2, 2; x; x = 1,}", parser.tableConstructor));
+	CHECK(test_phrase_parser("{[2] = 2, 2; x; x = 1;}", parser.tableConstructor));
+	CHECK(test_phrase_parser("{[2] = 2, 2; x; x = 1,}", parser.tableConstructor));
 }
 
 TEST_CASE_FIXTURE(ParserFixture, "parametersList")
@@ -186,19 +186,19 @@ TEST_CASE_FIXTURE(ParserFixture, "parametersList")
 
 TEST_CASE_FIXTURE(ParserFixture, "functionBody")
 {
-//	CHECK(test_phrase_parser("() end", parser.functionBody));
-//	CHECK(test_phrase_parser("(a) x=1 end", parser.functionBody));
+	CHECK(test_phrase_parser("() end", parser.functionBody));
+	CHECK(test_phrase_parser("(a) x=1 end", parser.functionBody));
 }
 
 TEST_CASE_FIXTURE(ParserFixture, "functionDefinition")
 {
-	//	CHECK(test_phrase_parser("function () end", parser.functionBody));
-	//	CHECK(test_phrase_parser("function (a) x=1 end", parser.functionBody));
+	CHECK(test_phrase_parser("function () end", parser.functionDefinition));
+	CHECK(test_phrase_parser("function (a) x=a + 1; return x; end", parser.functionDefinition));
 }
 
 TEST_CASE_FIXTURE(ParserFixture, "arguments")
 {
-//	CHECK(test_phrase_parser("()", parser.arguments));
+	CHECK(test_phrase_parser("()", parser.arguments));
 	CHECK(test_phrase_parser("(x)", parser.arguments));
 	CHECK(test_phrase_parser("(x, 42, 'test')", parser.arguments));
 	CHECK(test_phrase_parser("{x=1}", parser.arguments));
@@ -207,11 +207,11 @@ TEST_CASE_FIXTURE(ParserFixture, "arguments")
 
 TEST_CASE_FIXTURE(ParserFixture, "functionCall")
 {
-//	CHECK(test_phrase_parser("func()", parser.functionCall));
-//	CHECK(test_phrase_parser("func(x)", parser.functionCall));
-//	CHECK(test_phrase_parser("func(x, 42, 'test')", parser.functionCall));
-//	CHECK(test_phrase_parser("func {x, x=1}", parser.functionCall));
-	CHECK(test_phrase_parser("func '42'", parser.functionCall));
+	//CHECK(test_phrase_parser("func()", parser.functionCall));
+	//CHECK(test_phrase_parser("func(x)", parser.functionCall));
+	//CHECK(test_phrase_parser("func(x, 42, 'test')", parser.functionCall));
+	//CHECK(test_phrase_parser("func {x, x=1}", parser.functionCall));
+	//CHECK(test_phrase_parser("func '42'", parser.functionCall));
 
 	CHECK_FALSE(test_phrase_parser("func", parser.functionCall));
 }
@@ -219,10 +219,10 @@ TEST_CASE_FIXTURE(ParserFixture, "functionCall")
 TEST_CASE_FIXTURE(ParserFixture, "prefixExpression")
 {
 	CHECK(test_phrase_parser("x", parser.prefixExpression));
-//	CHECK(test_phrase_parser("(true)", parser.prefixExpression));
-//	CHECK(test_phrase_parser("(42)", parser.prefixExpression));
-//	CHECK(test_phrase_parser("('test')", parser.prefixExpression));
-//	CHECK(test_phrase_parser("(...)", parser.prefixExpression));
+	CHECK(test_phrase_parser("(true)", parser.prefixExpression));
+	CHECK(test_phrase_parser("(42)", parser.prefixExpression));
+	CHECK(test_phrase_parser("('test')", parser.prefixExpression));
+	CHECK(test_phrase_parser("(...)", parser.prefixExpression));
 }
 
 TEST_CASE_FIXTURE(ParserFixture, "expression")
@@ -233,13 +233,35 @@ TEST_CASE_FIXTURE(ParserFixture, "expression")
 	CHECK(test_phrase_parser("42", parser.expression));
 	CHECK(test_phrase_parser("'test'", parser.expression));
 	CHECK(test_phrase_parser("...", parser.expression));
-//	CHECK(test_phrase_parser("function(a, b, c) return a + b / c; end", parser.expression));
+	CHECK(test_phrase_parser("function(a, b, c) return a + b / c; end", parser.expression));
 	CHECK(test_phrase_parser("x", parser.expression));
-//	CHECK(test_phrase_parser("x.b", parser.expression));
-//	CHECK(test_phrase_parser("x[2]", parser.expression));
-//	CHECK(test_phrase_parser("{}", parser.expression));
-//	CHECK(test_phrase_parser("{x}", parser.expression));
-//	CHECK(test_phrase_parser("{x; x=2}", parser.expression));
+	CHECK(test_phrase_parser("a.b.c", parser.expression));
+	CHECK(test_phrase_parser("a[b][c]", parser.expression));
+	CHECK(test_phrase_parser("a.b[c]", parser.expression));
+	CHECK(test_phrase_parser("a[b].c", parser.expression));
+	CHECK(test_phrase_parser("(exp)[b]", parser.expression));
+	CHECK(test_phrase_parser("(exp).b", parser.expression));
+	CHECK(test_phrase_parser("func(a, b).c", parser.expression));
+	CHECK(test_phrase_parser("func(a, b)[c]", parser.expression));
+	CHECK(test_phrase_parser("func(a, b)[c]:test('hello').d:e(f)", parser.expression));
+	CHECK(test_phrase_parser("{}", parser.expression));
+	CHECK(test_phrase_parser("{x}", parser.expression));
+	CHECK(test_phrase_parser("{x; x=2}", parser.expression));
+	CHECK(test_phrase_parser("a[-2]", parser.expression));
+	CHECK(test_phrase_parser("a.x[1]", parser.expression));
+	CHECK(test_phrase_parser("a.b.c", parser.expression));
+	CHECK(test_phrase_parser("a + 2", parser.expression));
+	CHECK(test_phrase_parser("a or 2", parser.expression));
+	CHECK(test_phrase_parser("2 + a / 3", parser.expression));
+	CHECK(test_phrase_parser("(a + 2) / 3", parser.expression));
+	CHECK(test_phrase_parser("(a + (-y)) / (3 - x)", parser.expression));
+	CHECK(test_phrase_parser("-2", parser.expression));
+	CHECK(test_phrase_parser("{f(x)}", parser.expression));
+	CHECK(test_phrase_parser("func()", parser.expression));
+	CHECK(test_phrase_parser("func(x)", parser.expression));
+	CHECK(test_phrase_parser("func(x, 42, 'test')", parser.expression));
+	CHECK(test_phrase_parser("func{x, x=1}", parser.expression));
+	CHECK(test_phrase_parser("func'42'", parser.expression));
 }
 
 TEST_CASE_FIXTURE(ParserFixture, "expressionsList")
@@ -248,7 +270,7 @@ TEST_CASE_FIXTURE(ParserFixture, "expressionsList")
 	CHECK(test_phrase_parser("nil, true, false", parser.expressionsList));
 	CHECK(test_phrase_parser("true, 42, 'test', ...", parser.expressionsList));
 
-//	CHECK_FALSE(test_phrase_parser("nil,", parser.expressionsList));
+	CHECK_FALSE(test_phrase_parser("nil,", parser.expressionsList));
 }
 
 TEST_CASE_FIXTURE(ParserFixture, "namesList")
@@ -299,12 +321,12 @@ TEST_CASE_FIXTURE(ParserFixture, "label")
 
 TEST_CASE_FIXTURE(ParserFixture, "returnStatement")
 {
-//	CHECK(test_phrase_parser("return", parser.returnStatement));
-//	CHECK(test_phrase_parser("return;", parser.returnStatement));
-//	CHECK(test_phrase_parser("return 42", parser.returnStatement));
-//	CHECK(test_phrase_parser("return 42;", parser.returnStatement));
-//	CHECK(test_phrase_parser("return x=1", parser.returnStatement));
-//	CHECK(test_phrase_parser("return x=1;", parser.returnStatement));
+	CHECK(test_phrase_parser("return", parser.returnStatement));
+	CHECK(test_phrase_parser("return;", parser.returnStatement));
+	CHECK(test_phrase_parser("return 42", parser.returnStatement));
+	CHECK(test_phrase_parser("return 42;", parser.returnStatement));
+	CHECK(test_phrase_parser("return x", parser.returnStatement));
+	CHECK(test_phrase_parser("return x;", parser.returnStatement));
 }
 
 TEST_CASE_FIXTURE(ParserFixture, "statement")

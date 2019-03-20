@@ -12,7 +12,6 @@ project("LuaAutoComplete")
 include(cmake/CompileOptions.cmake)
 
 find_package(Boost)
-find_package(fmt REQUIRED)
 
 set(target "LuaAutoComplete")
 
@@ -26,7 +25,7 @@ add_executable(${target} ${Header_Files} ${Source_Files})
 
 target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src) 
 
-target_link_libraries(${target} Boost::boost fmt::fmt)
+target_link_libraries(${target} Boost::boost)
 
 set_target_properties(${target} PROPERTIES ${DEFAULT_PROJECT_OPTIONS})
 target_compile_options(${target} PRIVATE ${DEFAULT_COMPILE_OPTIONS})
@@ -39,12 +38,3 @@ install(TARGETS ${target} RUNTIME DESTINATION debug CONFIGURATIONS Debug)
 install(DIRECTORY share/ DESTINATION release CONFIGURATIONS Release)
 install(DIRECTORY share/ DESTINATION release CONFIGURATIONS RelWithDebInfo)
 install(DIRECTORY share/ DESTINATION debug CONFIGURATIONS Debug)
-
-if(WIN32)
-	if(BUILD_SHARED_LIBS)
-		# Copy the dependencies dlls
-		foreach(export_lib fmt::fmt)
-			InstallDependency(${export_lib})
-		endforeach()
-	endif()
-endif()

@@ -63,6 +63,7 @@ Parser::Parser()
 	// Table fields separators
 	fieldSeparator.add(",", ",");
 	fieldSeparator.add(";", ";");
+	fieldSeparation %= fieldSeparator;
 
 	// Binary operations
 	const StringList binops = {"+", "-", "*", "/", "//", "^", "%",
@@ -70,12 +71,14 @@ Parser::Parser()
 							   "<", "<=", ">", ">=", "==", "~=",
 							   "and", "or"};
 	for (const auto& k : binops)
-		binaryOperation.add(k, k);
+		binaryOperator.add(k, k);
+	binaryOperation %= binaryOperator;
 
 	// Unary operations
 	const StringList unops = {"-", "not", "#", "~"};
 	for (const auto& k : unops)
-		unaryOperation.add(k, k);
+		unaryOperator.add(k, k);
+	unaryOperation %= unaryOperator;
 
 	// A skipper that ignore whitespace and comments
 	skipper = boost::spirit::ascii::space
@@ -87,14 +90,14 @@ Parser::Parser()
 			| (name >> '=' >> expression)
 			| expression;
 
-	fieldsList %= field >> *(fieldSeparator >> field) >> -fieldSeparator;
+	fieldsList %= field >> *(fieldSeparation >> field) >> -fieldSeparation;
 
 	tableConstructor %= '{' >> -fieldsList >> '}';
 
 	parametersList %= (namesList >> -(lit(',') >> lit("...")))
 					  | lit("...");
 
-	functionBody %= '(' >> -parametersList >> ')' >> block >> lit('end');
+	functionBody %= '(' >> -parametersList >> ')' >> block >> lit("end");
 
 	functionDefinition %= lit("function") >> functionBody;
 
@@ -102,24 +105,27 @@ Parser::Parser()
 				 | tableConstructor
 				 | literalString;
 
-	functionCall %= (prefixExpression >> arguments)
-					| (prefixExpression >> ':' >> name >> arguments);
+	functionCall %= -(':' >> name) >> arguments;
 
-	prefixExpression %= variable
-						| ('(' >> expression >> ')');
-					//	| functionCall;
+	prefixExpression %= (('(' >> expression >> ')')
+						 | name)
+						>> *postPrefix;
 
-	expression %= lit("nil")
-				  | lit("false")
-				  | lit("true")
-				  | numeralAsString
-				  | literalString
-				  | lit("...")
-				  | functionDefinition
-				  | prefixExpression
-				  | tableConstructor
-				  | (expression >> binaryOperation >> expression)
-				  | (unaryOperation >> expression);
+	postPrefix %= ('[' >> expression >> ']')
+				  | ('.' >> name)
+				  | functionCall;
+
+	simpleExpression %= lit("nil")
+						| lit("false")
+						| lit("true")
+						| numeralAsString
+						| literalString
+						| lit("...")
+						| functionDefinition
+						| (unaryOperation >> expression)
+						| tableConstructor
+						| prefixExpression;
+	expression %= simpleExpression >> -(binaryOperation >> expression);
 
 	expressionsList %= expression >> *(',' >> expression);
 
