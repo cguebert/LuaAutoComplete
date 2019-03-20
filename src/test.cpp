@@ -53,12 +53,11 @@ public:
 	boost::spirit::qi::rule<Iterator, char(char)> escapedChar;
 	boost::spirit::qi::rule<Iterator, std::string(), Skipper> name, comment, numeralAsString,
 		expression, expressionsList, prefixExpression, postPrefix,
-		functionCallEnd, arguments, functionBody, functionDefinition, parametersList,
+		functionCall, functionCallEnd, arguments, functionBody, functionDefinition, parametersList,
 		tableConstructor, fieldsList, field,
 		returnStatement, statement, block,
-		variable, variablesList, namesList,
-		simpleExpression, binaryOperation, unaryOperation, fieldSeparation,
-		functionCall, fcPrefix, fcPostPrefix;
+		variable, variablePostfix, variablesList, namesList,
+		simpleExpression, binaryOperation, unaryOperation, fieldSeparation;
 	boost::spirit::qi::rule<Iterator, std::string(), boost::spirit::qi::locals<char>> literalString;
 
 	phoenix::function<Annotation> annotate;
@@ -145,14 +144,15 @@ public:
 					  | ('.' >> name)
 					  | functionCallEnd;
 
-		fcPrefix %= (('(' >> expression >> ')')
+		variable %= (('(' >> expression >> ')')
 					 | name)
-					>> *(fcPostPrefix >> !functionCallEnd);
+					>> *variablePostfix;
 
-		fcPostPrefix %= ('[' >> expression >> ']')
+		variablePostfix %= ('[' >> expression >> ']')
 						| ('.' >> name)
-						| functionCallEnd;
-		functionCall %= fcPrefix >> functionCallEnd;
+						| (functionCallEnd >> variablePostfix);
+
+		functionCall %= variable >> functionCallEnd;
 
 		simpleExpression %= lit("nil")
 							| lit("false")
@@ -167,8 +167,6 @@ public:
 		expression %= simpleExpression >> -(binaryOperation >> expression);
 
 		expressionsList %= expression >> *(',' >> expression);
-
-		variable %= name;
 
 		variablesList %= variable >> *(',' >> variable);
 
@@ -198,6 +196,7 @@ public:
 			ANNOTATE(fieldsList);
 			ANNOTATE(functionBody);
 			ANNOTATE(functionCall);
+			ANNOTATE(functionCallEnd);
 			ANNOTATE(functionDefinition);
 			ANNOTATE(name);
 			ANNOTATE(namesList);
@@ -211,6 +210,7 @@ public:
 			ANNOTATE(tableConstructor);
 			ANNOTATE(unaryOperation);
 			ANNOTATE(variable);
+			ANNOTATE(variablePostfix);
 			ANNOTATE(variablesList);
 		}
 
@@ -253,8 +253,10 @@ bool test_phrase_parser(const std::string_view input, bool showDebug = false)
 
 TEST_CASE("test")
 {
-	CHECK(test_phrase_parser("func(a, b)[c]:test('hello').d:e"));
+	CHECK(test_phrase_parser("func(a, b)[c]:test('hello').d"));
 
-	TestParser<PosIterator, ascii::space_type> parser(true);
-	CHECK(test_phrase_parser("func()", parser.functionCall));
+	TestParser<PosIterator, ascii::space_type> parser(false);
+	//CHECK(test_phrase_parser("func(a, b)[c]", parser.fcPrefix));
+	CHECK(test_phrase_parser("func(a, b)[c]:test('hello').d", parser.variable));
+//	CHECK_FALSE(test_phrase_parser("func(a, b)[c]:test('hello')", parser.variable));
 }

@@ -105,6 +105,8 @@ Parser::Parser()
 				 | tableConstructor
 				 | literalString;
 
+	functionCallEnd %= -(':' >> name) >> arguments;
+
 	functionCall %= -(':' >> name) >> arguments;
 
 	prefixExpression %= (('(' >> expression >> ')')
@@ -113,7 +115,17 @@ Parser::Parser()
 
 	postPrefix %= ('[' >> expression >> ']')
 				  | ('.' >> name)
-				  | functionCall;
+				  | functionCallEnd;
+
+	variable %= (('(' >> expression >> ')')
+		| name)
+		>> *variablePostfix;
+
+	variablePostfix %= ('[' >> expression >> ']')
+		| ('.' >> name)
+		| (functionCallEnd >> variablePostfix);
+
+	functionCall %= variable >> functionCallEnd;
 
 	simpleExpression %= lit("nil")
 						| lit("false")
@@ -130,10 +142,6 @@ Parser::Parser()
 	expressionsList %= expression >> *(',' >> expression);
 
 	namesList %= name >> *(',' >> name);
-
-	variable %= name
-				| (prefixExpression >> '[' >> expression >> ']')
-				| (prefixExpression >> '.' >> name);
 
 	variablesList %= variable >> *(',' >> variable);
 

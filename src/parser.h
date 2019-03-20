@@ -18,9 +18,10 @@ public:
 	boost::spirit::qi::rule<Iterator, std::string()> numeralAsString;
 
 	boost::spirit::qi::rule<Iterator, std::string(), boost::spirit::qi::rule<Iterator>> block,
-		statement, returnStatement, label, functionName, variable, variablesList, namesList,
+		statement, returnStatement, label, 
+		functionName, functionCall, functionCallEnd, arguments, functionDefinition, functionBody,
+		variable, variablePostfix, variablesList, namesList,
 		expression, expressionsList, prefixExpression, postPrefix,
-		functionCall, arguments, functionDefinition, functionBody,
 		parametersList, tableConstructor, fieldsList, field;
 
 	boost::spirit::qi::rule<Iterator, std::string(), boost::spirit::qi::locals<char>> shortLiteralString;
