@@ -186,9 +186,9 @@ namespace lac
 			 >> closeLongBacket];
 
 		// Literal strings
-		const auto literalString_def = quotedString('\'')
-									   | quotedString('"')
-									   | longLiteralString;
+		const auto literalString_def = lexeme[quotedString('\'')
+											  | quotedString('"')
+											  | longLiteralString];
 
 		// Numerals
 		const auto numeral_def = (lit("0x") >> hex)
@@ -197,11 +197,11 @@ namespace lac
 		const auto numeralAsString_def = raw[numeral];
 
 		// Comments
-		const auto shortComment_def = "--" >> *(char_ - eol) >> -eol;
+		const auto shortComment_def = "--" >> lexeme[*(char_ - eol)] >> -eol;
 		const auto longComment_def = with<long_bracket_tag>(std::string())
 			["--"
 			 >> omit[openLongBracket]
-			 >> *(char_ - closeLongBacket)
+			 >> lexeme[*(char_ - closeLongBacket)]
 			 >> closeLongBacket];
 		const auto comment_def = longComment | shortComment;
 

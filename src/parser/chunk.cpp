@@ -64,6 +64,7 @@ namespace lac::parser
 
 		CHECK_FALSE(test_parser("123test", name));
 		CHECK_FALSE(test_parser("test 123", name));
+		CHECK_FALSE(test_phrase_parser("test 123", name));
 		CHECK_FALSE(test_parser("break", name));
 		CHECK_FALSE(test_parser("while", name));
 	}
@@ -84,6 +85,13 @@ namespace lac::parser
 		CHECK_FALSE(test_parser("no quotes here", literalString));
 		CHECK_FALSE(test_parser("'test", literalString));
 		CHECK_FALSE(test_parser("\"test'", literalString));
+
+		CHECK(test_phrase_parser("'test 1'", literalString));
+		CHECK(test_phrase_parser("'test 1\t 2'", literalString));
+
+		std::string v;
+		CHECK(test_phrase_parser("'test 1 \t2 3 4'", literalString, v));
+		CHECK(v == std::string("test 1 \t2 3 4"));
 	}
 
 	TEST_CASE("long literal string")
@@ -137,6 +145,18 @@ namespace lac::parser
 		TEST_VALUE("-- [[test]]", comment, " [[test]]");
 		TEST_VALUE("--[[test\n123]]", comment, "test\n123");
 		TEST_VALUE("--[=[test]]\n123]=]", comment, "test]]\n123");
+
+		{
+			std::string v;
+			CHECK(test_phrase_parser("-- test 1 2", comment, v));
+			CHECK(v == std::string("test 1 2"));
+		}
+
+		{
+			std::string v;
+			CHECK(test_phrase_parser("--[[test 1 2]]", comment, v));
+			CHECK(v == std::string("test 1 2"));
+		}
 
 		CHECK_FALSE(test_parser("test", comment));
 	}
