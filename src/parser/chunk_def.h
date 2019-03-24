@@ -36,7 +36,7 @@ namespace lac
 			keyword_()
 			{
 				add
-				("and", "and")
+					("and", "and")
 					("break", "break")
 					("do", "do")
 					("else", "else")
@@ -71,11 +71,11 @@ namespace lac
 					("*", "*")
 					("/", "/")
 					("//", "//")
-					("^", "^")
 					("%", "%")
+					("^", "^")
 					("&", "&")
-					("~", "~")
 					("|", "|")
+					("~", "~")
 					(">>", ">>")
 					("<<", "<<")
 					("..", "..")
@@ -116,8 +116,8 @@ namespace lac
 		const x3::rule<class name, std::string> name = "name";
 		const x3::rule<class namesList, std::string> namesList = "namesList";
 
-		const x3::rule<class openLongBracket, std::string> openLongBracket = "openLongBracket";
-		const x3::rule<class closeLongBacket, std::string> closeLongBacket = "closeLongBacket";
+		const x3::rule<class openLongBracket> openLongBracket = "openLongBracket";
+		const x3::rule<class closeLongBacket> closeLongBacket = "closeLongBacket";
 		const x3::rule<class longLiteralString, std::string> longLiteralString = "longLiteralString";
 		const x3::rule<class literalString, std::string> literalString = "literalString";
 
@@ -183,7 +183,7 @@ namespace lac
 		const auto longLiteralString_def = with<long_bracket_tag>(std::string())
 			[omit[openLongBracket]
 			 >> *(char_ - closeLongBacket)
-			 >> closeLongBacket];
+			 >> omit[closeLongBacket]];
 
 		// Literal strings
 		const auto literalString_def = lexeme[quotedString('\'')
@@ -202,7 +202,7 @@ namespace lac
 			["--"
 			 >> omit[openLongBracket]
 			 >> lexeme[*(char_ - closeLongBacket)]
-			 >> closeLongBacket];
+			 >> omit[closeLongBacket]];
 		const auto comment_def = longComment | shortComment;
 
 		// A skipper that ignore whitespace and comments
