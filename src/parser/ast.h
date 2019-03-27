@@ -1,7 +1,13 @@
 #pragma once
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4521) // multiple copy constructors specified
+#endif
+
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
 #include <boost/fusion/include/io.hpp>
+#include <boost/optional.hpp>
 
 #include <iostream>
 #include <string>
@@ -57,6 +63,8 @@ namespace lac
 			using base_type::operator=;
 		};
 
+		using NamesList = std::vector<std::string>;
+
 		struct BinaryOperation;
 		struct Expression
 		{
@@ -77,5 +85,33 @@ namespace lac
 			Operation operation;
 			Expression expression;
 		};
+
+		struct ParametersList
+		{
+			NamesList parameters;
+			bool varargs = false;
+		};
+
+		struct Statement
+		{
+
+		};
+
+		struct Block
+		{
+			std::string tmp;
+		//	std::list<Statement> statements;
+		//	std::list<Expression> returnStatement;
+		};
+
+		struct FunctionBody
+		{
+			boost::optional<ParametersList> parameters;
+			Block block;
+		};
 	} // namespace ast
 } // namespace lac
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif

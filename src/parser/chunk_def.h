@@ -129,7 +129,7 @@ namespace lac
 		// clang-format on
 
 		const x3::rule<class name, std::string> name = "name";
-		const x3::rule<class namesList, std::string> namesList = "namesList";
+		const x3::rule<class namesList, std::vector<std::string>> namesList = "namesList";
 
 		const x3::rule<class openLongBracket> openLongBracket = "openLongBracket";
 		const x3::rule<class closeLongBacket> closeLongBacket = "closeLongBacket";
@@ -147,12 +147,12 @@ namespace lac
 		const x3::rule<class fieldsList, std::string> fieldsList = "fieldsList";
 		const x3::rule<class tableConstructor, std::string> tableConstructor = "tableConstructor";
 
-		const x3::rule<class parametersList, std::string> parametersList = "parametersList";
+		const x3::rule<class parametersList, ast::ParametersList> parametersList = "parametersList";
 		const x3::rule<class arguments, std::string> arguments = "arguments";
-		const x3::rule<class functionBody, std::string> functionBody = "functionBody";
+		const x3::rule<class functionBody, ast::FunctionBody> functionBody = "functionBody";
 		const x3::rule<class functionCall, std::string> functionCall = "functionCall";
 		const x3::rule<class functionCallEnd, std::string> functionCallEnd = "functionCallEnd";
-		const x3::rule<class functionDefinition, std::string> functionDefinition = "functionDefinition";
+		const x3::rule<class functionDefinition, ast::FunctionBody> functionDefinition = "functionDefinition";
 		const x3::rule<class functionName, std::string> functionName = "functionName";
 
 		const x3::rule<class prefixExpression, std::string> prefixExpression = "prefixExpression";
@@ -240,8 +240,9 @@ namespace lac
 		const auto tableConstructor_def = '{' >> -fieldsList >> '}';
 
 		// Functions
-		const auto parametersList_def = (namesList >> -(lit(',') >> lit("...")))
-										| lit("...");
+		const auto funcVarargs = lit("...") >> x3::attr(true);
+		const auto parametersList_def = (namesList >> -(lit(',') >> funcVarargs))
+										| (x3::attr(ast::NamesList{}) >> funcVarargs);
 
 		const auto arguments_def = ('(' >> -expressionsList >> ')')
 								   | tableConstructor
@@ -282,8 +283,8 @@ namespace lac
 										  | numeral
 										  | literalString
 										  | unaryOperation
+			//	  | functionDefinition
 			/*
-										  | functionDefinition
 										  | tableConstructor
 										  | prefixExpression
 			*/
@@ -315,8 +316,8 @@ namespace lac
 								   | ("local" >> namesList >> -('=' >> expressionsList));
 
 		// Blocks
-		const auto block_def = *statement >> -returnStatement;
-		const auto chunk_def = /*block*/ name;
+		const auto block_def = name; //*statement >> -returnStatement;
+		const auto chunk_def = block;
 
 		BOOST_SPIRIT_DEFINE(name, namesList,
 							openLongBracket, closeLongBacket,

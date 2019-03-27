@@ -70,6 +70,22 @@ namespace lac::parser
 		CHECK_FALSE(test_parser("while", name));
 	}
 
+	TEST_CASE("namesList")
+	{
+		CHECK(test_phrase_parser("a", namesList));
+		CHECK(test_phrase_parser("a, b", namesList));
+		CHECK(test_phrase_parser("a, b, c", namesList));
+
+		CHECK_FALSE(test_phrase_parser("a, b,", namesList));
+
+		std::vector<std::string> list;
+		REQUIRE(test_phrase_parser("a, b, c", namesList, list));
+		REQUIRE(list.size() == 3);
+		CHECK(list[0] == "a");
+		CHECK(list[1] == "b");
+		CHECK(list[2] == "c");
+	}
+
 	TEST_CASE("short literal string")
 	{
 		CHECK(test_parser("''", literalString));
@@ -147,13 +163,13 @@ namespace lac::parser
 		TEST_VALUE("--[[test\n123]]", comment, "test\n123");
 		TEST_VALUE("--[=[test]]\n123]=]", comment, "test]]\n123");
 
-		{
+		SUBCASE("short comment value") {
 			std::string v;
 			CHECK(test_phrase_parser("-- test 1 2", comment, v));
 			CHECK(v == std::string("test 1 2"));
 		}
 
-		{
+		SUBCASE("long comment value") {
 			std::string v;
 			CHECK(test_phrase_parser("--[[test 1 2]]", comment, v));
 			CHECK(v == std::string("test 1 2"));
@@ -192,7 +208,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("{[2] = 2, 2; x; x = 1;}", tableConstructor));
 		CHECK(test_phrase_parser("{[2] = 2, 2; x; x = 1,}", tableConstructor));
 	}
-
+	*/
 	TEST_CASE("parametersList")
 	{
 		CHECK(test_phrase_parser("...", parametersList));
@@ -203,8 +219,33 @@ namespace lac::parser
 
 		CHECK_FALSE(test_phrase_parser("a,", parametersList));
 		CHECK_FALSE(test_phrase_parser("a, b...", parametersList));
-	}
 
+		SUBCASE("multiple parameters") {
+			ast::ParametersList pl;
+			REQUIRE(test_phrase_parser("a, b, c", parametersList, pl));
+			CHECK(pl.varargs == false);
+			REQUIRE(pl.parameters.size() == 3);
+			CHECK(pl.parameters[0] == "a");
+			CHECK(pl.parameters[1] == "b");
+			CHECK(pl.parameters[2] == "c");
+		}
+
+		SUBCASE("one parameter with varargs") {
+			ast::ParametersList pl;
+			REQUIRE(test_phrase_parser("a, ...", parametersList, pl));
+			CHECK(pl.varargs == true);
+			REQUIRE(pl.parameters.size() == 1);
+			CHECK(pl.parameters[0] == "a");
+		}
+
+		SUBCASE("only varargs") {
+			ast::ParametersList pl;
+			REQUIRE(test_phrase_parser("...", parametersList, pl));
+			CHECK(pl.varargs == true);
+			REQUIRE(pl.parameters.size() == 0);
+		}
+	}
+	/*
 	TEST_CASE("functionBody")
 	{
 		CHECK(test_phrase_parser("() end", functionBody));
@@ -294,14 +335,6 @@ namespace lac::parser
 		CHECK_FALSE(test_phrase_parser("nil,", expressionsList));
 	}
 	
-	TEST_CASE("namesList")
-	{
-		CHECK(test_phrase_parser("a", namesList));
-		CHECK(test_phrase_parser("a, b", namesList));
-		CHECK(test_phrase_parser("a, b, c", namesList));
-
-		CHECK_FALSE(test_phrase_parser("a, b,", namesList));
-	}
 	/*
 	TEST_CASE("variable")
 	{
