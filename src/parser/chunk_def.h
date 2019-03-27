@@ -61,44 +61,46 @@ namespace lac
 			}
 		} keyword;
 
-		struct binaryOperator_ : x3::symbols<std::string>
+		struct binaryOperator_ : x3::symbols<ast::Operation>
 		{
 			binaryOperator_()
 			{
+				using Op = ast::Operation;
 				add
-					("+", "+")
-					("-", "-")
-					("*", "*")
-					("/", "/")
-					("//", "//")
-					("%", "%")
-					("^", "^")
-					("&", "&")
-					("|", "|")
-					("~", "~")
-					(">>", ">>")
-					("<<", "<<")
-					("..", "..")
-					("<", "<")
-					("<=", "<=")
-					(">", ">")
-					(">=", ">=")
-					("==", "==")
-					("~=", "~=")
-					("and", "and")
-					("or", "or");
+					("+", Op::add)
+					("-", Op::sub)
+					("*", Op::mul)
+					("/", Op::div)
+					("//", Op::idiv)
+					("%", Op::mod)
+					("^", Op::pow)
+					("&", Op::band)
+					("|", Op::bor)
+					("~", Op::bxor)
+					("<<", Op::shl)
+					(">>", Op::shr)
+					("..", Op::concat)
+					("<", Op::lt)
+					("<=", Op::le)
+					(">", Op::gt)
+					(">=", Op::ge)
+					("==", Op::eq)
+					("~=", Op::ineq)
+					("and", Op::band)
+					("or", Op::bor);
 			}
 		} binaryOperator;
 
-		struct unaryOperator_ : x3::symbols<std::string>
+		struct unaryOperator_ : x3::symbols<ast::Operation>
 		{
+			using Op = ast::Operation;
 			unaryOperator_()
 			{
 				add
-					("-", "-")
-					("not", "not")
-					("#", "#")
-					("~", "~");
+					("-", Op::unm)
+					("#", Op::len)
+					("~", Op::bnot)
+					("not", Op::bnot);
 			}
 		} unaryOperator;
 
@@ -111,6 +113,19 @@ namespace lac
 					(";", ";");
 			}
 		} fieldSeparator;
+
+		struct expressionConstant_ : x3::symbols<ast::ExpressionConstant>
+		{
+			expressionConstant_()
+			{
+				using EC = ast::ExpressionConstant;
+				add
+					("nil", EC::nil)
+					("false", EC::False)
+					("true", EC::True)
+					("...", EC::dots);
+			}
+		} expressionConstant;
 		// clang-format on
 
 		const x3::rule<class name, std::string> name = "name";
@@ -146,9 +161,11 @@ namespace lac
 		const x3::rule<class variablePostfix, std::string> variablePostfix = "variablePostfix";
 		const x3::rule<class variablesList, std::string> variablesList = "variablesList";
 
-		const x3::rule<class simpleExpression, std::string> simpleExpression = "simpleExpression";
-		const x3::rule<class expression, std::string> expression = "expression";
-		const x3::rule<class expressionsList, std::string> expressionsList = "expressionsList";
+		const x3::rule<class unaryOperation, ast::UnaryOperation> unaryOperation = "unaryOperation";
+		const x3::rule<class binaryOperation, ast::BinaryOperation> binaryOperation = "binaryOperation";
+		const x3::rule<class simpleExpression, ast::Operand> simpleExpression = "simpleExpression";
+		const x3::rule<class expression, ast::Expression> expression = "expression";
+		const x3::rule<class expressionsList, ast::ExpressionsList> expressionsList = "expressionsList";
 
 		const x3::rule<class label, std::string> label = "label";
 		const x3::rule<class statement, std::string> statement = "statement";
@@ -260,17 +277,19 @@ namespace lac
 		const auto variablesList_def = variable % ',';
 
 		// Expressions
-		const auto simpleExpression_def = lit("nil")
-										  | lit("false")
-										  | lit("true")
-										  | numeralAsString
+		const auto unaryOperation_def = unaryOperator >> expression;
+		const auto simpleExpression_def = expressionConstant
+										  | numeral
 										  | literalString
-										  | lit("...")
+										  | unaryOperation
+			/*
 										  | functionDefinition
-										  | (unaryOperator >> expression)
 										  | tableConstructor
-										  | prefixExpression;
-		const auto expression_def = simpleExpression >> -(binaryOperator >> expression);
+										  | prefixExpression
+			*/
+			;
+		const auto binaryOperation_def = binaryOperator >> expression;
+		const auto expression_def = simpleExpression >> -binaryOperation;
 
 		const auto expressionsList_def = expression >> *(',' >> expression);
 
@@ -297,7 +316,7 @@ namespace lac
 
 		// Blocks
 		const auto block_def = *statement >> -returnStatement;
-		const auto chunk_def = block;
+		const auto chunk_def = /*block*/ name;
 
 		BOOST_SPIRIT_DEFINE(name, namesList,
 							openLongBracket, closeLongBacket,
@@ -311,6 +330,7 @@ namespace lac
 							functionDefinition, functionName,
 							prefixExpression, postPrefix,
 							variable, variablePostfix, variablesList,
+							unaryOperation, binaryOperation,
 							simpleExpression, expression, expressionsList,
 							label, returnStatement, statement,
 							block, chunk);

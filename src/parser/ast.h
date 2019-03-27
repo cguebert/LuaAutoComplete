@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/spirit/home/x3/support/ast/variant.hpp>
 #include <boost/fusion/include/io.hpp>
 
 #include <iostream>
@@ -33,6 +34,48 @@ namespace lac
 			ge,     // Greater equal (>=)
 			eq,     // Equal (==)
 			ineq    // Inequal (~=)
+		};
+
+		enum class ExpressionConstant
+		{
+			nil,
+			dots,
+			False,
+			True
+		};
+
+		struct UnaryOperation;
+
+		struct Operand
+			: boost::spirit::x3::variant<
+				  ExpressionConstant,
+				  std::string,
+				  double,
+				  boost::spirit::x3::forward_ast<UnaryOperation>>
+		{
+			using base_type::base_type;
+			using base_type::operator=;
+		};
+
+		struct BinaryOperation;
+		struct Expression
+		{
+			Operand first;
+			std::list<BinaryOperation> rest;
+		};
+
+		using ExpressionsList = std::list<Expression>;
+
+		struct UnaryOperation
+		{
+			Operation operation;
+			Expression expression;
+		};
+
+		struct BinaryOperation
+		{
+			Operation operation;
+			Expression expression;
 		};
 	} // namespace ast
 } // namespace lac
