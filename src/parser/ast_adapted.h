@@ -14,5 +14,6 @@ BOOST_FUSION_ADAPT_STRUCT(lac::ast::TableIndexExpression, expression);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::TableIndexName, name);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::ParametersList, parameters, varargs);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::FunctionCallEnd, member, arguments);
+BOOST_FUSION_ADAPT_STRUCT(lac::ast::PrefixExpression, start, rest);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::Block, tmp);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::FunctionBody, parameters, block);

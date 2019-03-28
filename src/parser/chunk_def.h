@@ -150,8 +150,8 @@ namespace lac
 		const x3::rule<class bracketedExpression, ast::BracketedExpression> bracketedExpression = "bracketedExpression";
 		const x3::rule<class tableIndexExpression, ast::TableIndexExpression> tableIndexExpression = "tableIndexExpression";
 		const x3::rule<class tableIndexName, ast::TableIndexName> tableIndexName = "tableIndexName";
-		const x3::rule<class prefixExpression, std::string> prefixExpression = "prefixExpression";
-		const x3::rule<class postPrefix, std::string> postPrefix = "postPrefix";
+		const x3::rule<class prefixExpression, ast::PrefixExpression> prefixExpression = "prefixExpression";
+		const x3::rule<class postPrefix, ast::PostPrefix> postPrefix = "postPrefix";
 		const x3::rule<class variable, std::string> variable = "variable";
 		const x3::rule<class variablePostfix, std::string> variablePostfix = "variablePostfix";
 		const x3::rule<class variablesList, std::string> variablesList = "variablesList";
@@ -287,10 +287,9 @@ namespace lac
 										  | numeral
 										  | literalString
 										  | tableConstructor
-			/*							  | functionDefinition
-										  | prefixExpression
-			*/
-			;
+			//							  | functionDefinition
+										  | prefixExpression;
+
 		const auto unaryOperation_def = unaryOperator >> expression;
 		const auto binaryOperation_def = binaryOperator >> expression;
 		const auto expression_def = simpleExpression >> -binaryOperation;

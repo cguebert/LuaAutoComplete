@@ -61,13 +61,17 @@ namespace lac
 			boost::optional<FieldsList> fields;
 		};
 
+		struct PrefixExpression;
+		using f_PrefixExpression = boost::spirit::x3::forward_ast<PrefixExpression>;
+
 		struct Operand
 			: boost::spirit::x3::variant<
 				  ExpressionConstant,
 				  double,
 				  std::string,
 				  f_UnaryOperation,
-				  TableConstructor>
+				  TableConstructor,
+				  f_PrefixExpression>
 		{
 			using base_type::base_type;
 			using base_type::operator=;
@@ -159,6 +163,21 @@ namespace lac
 		{
 			boost::optional<std::string> member;
 			Arguments arguments;
+		};
+
+		struct PostPrefix : boost::spirit::x3::variant<
+								TableIndexExpression,
+								TableIndexName,
+								FunctionCallEnd>
+		{
+			using base_type::base_type;
+			using base_type::operator=;
+		};
+
+		struct PrefixExpression
+		{
+			boost::spirit::x3::variant<BracketedExpression, std::string> start;
+			std::list<PostPrefix> rest;
 		};
 
 		struct Statement

@@ -81,6 +81,12 @@ namespace lac
 			out << "Table constructor";
 		}
 
+		void operator()(const PrefixExpression& pe) const
+		{
+			tab();
+			out << "Prefix expression";
+		}
+
 	private:
 		void tab() const
 		{

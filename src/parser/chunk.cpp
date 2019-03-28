@@ -213,11 +213,11 @@ namespace lac::parser
 	TEST_CASE("field")
 	{
 		CHECK(test_phrase_parser("[2] = 2", field));
-	//	CHECK(test_phrase_parser("[f(x)] = a", field));
+		CHECK(test_phrase_parser("[f(x)] = a", field));
 		CHECK(test_phrase_parser("x = 1", field));
-	//	CHECK(test_phrase_parser("x", field));
+		CHECK(test_phrase_parser("x", field));
 		CHECK(test_phrase_parser("42", field));
-	//	CHECK(test_phrase_parser("f(x)", field));
+		CHECK(test_phrase_parser("f(x)", field));
 
 		SUBCASE("by expression") {
 			ast::Field f;
@@ -256,12 +256,12 @@ namespace lac::parser
 		CHECK(test_phrase_parser("1, 2; 3", fieldsList));
 		CHECK(test_phrase_parser("1, 2; 3,", fieldsList));
 		CHECK(test_phrase_parser("1, 2; 3;", fieldsList));
-	/*	CHECK(test_phrase_parser("x", fieldsList));
+		CHECK(test_phrase_parser("x", fieldsList));
 		CHECK(test_phrase_parser("x,", fieldsList));
 		CHECK(test_phrase_parser("[2] = 2, 2, x, x = 1", fieldsList));
 		CHECK(test_phrase_parser("[2] = 2; 2, x; x = 1", fieldsList));
 		CHECK(test_phrase_parser("[2] = 2, 2; x; x = 1;", fieldsList));
-		CHECK(test_phrase_parser("[2] = 2, 2; x; x = 1,", fieldsList));*/
+		CHECK(test_phrase_parser("[2] = 2, 2; x; x = 1,", fieldsList));
 	}
 	
 	TEST_CASE("tableConstructor")
@@ -269,13 +269,13 @@ namespace lac::parser
 		CHECK(test_phrase_parser("{}", tableConstructor));
 		CHECK(test_phrase_parser("{1, 2, 3}", tableConstructor));
 		CHECK(test_phrase_parser("{'hello', 'World', 42}", tableConstructor));
-	/*	CHECK(test_phrase_parser("{x}", tableConstructor));
+		CHECK(test_phrase_parser("{x}", tableConstructor));
 		CHECK(test_phrase_parser("{ x }", tableConstructor));
 		CHECK(test_phrase_parser("{[2] = 2, 2, x, x = 1}", tableConstructor));
 		CHECK(test_phrase_parser("{ [2] = 2, 2, x, x = 1 }", tableConstructor));
 		CHECK(test_phrase_parser("{ [2] = 2; 2, x; x = 1 }", tableConstructor));
 		CHECK(test_phrase_parser("{[2] = 2, 2; x; x = 1;}", tableConstructor));
-		CHECK(test_phrase_parser("{[2] = 2, 2; x; x = 1,}", tableConstructor));*/
+		CHECK(test_phrase_parser("{[2] = 2, 2; x; x = 1,}", tableConstructor));
 	}
 	
 	TEST_CASE("parametersList")
@@ -331,8 +331,8 @@ namespace lac::parser
 	{
 		CHECK(test_phrase_parser("()", arguments));
 		CHECK(test_phrase_parser("(1, 2)", arguments));
-	//	CHECK(test_phrase_parser("(x)", arguments));
-	//	CHECK(test_phrase_parser("(x, 42, 'test')", arguments));
+		CHECK(test_phrase_parser("(x)", arguments));
+		CHECK(test_phrase_parser("(x, 42, 'test')", arguments));
 		CHECK(test_phrase_parser("{x=1}", arguments));
 		CHECK(test_phrase_parser("'test'", arguments));
 
@@ -392,7 +392,28 @@ namespace lac::parser
 			CHECK(fce.member.get() == "member");
 		}
 	}
-	/*
+	
+	TEST_CASE("postPrefixExpression")
+	{
+		SUBCASE("table index name") {
+			ast::PostPrefix pp;
+			REQUIRE(test_phrase_parser(".b", postPrefix, pp));
+			CHECK(pp.get().type() == typeid(ast::TableIndexName));
+		}
+
+		SUBCASE("table index expression") {
+			ast::PostPrefix pp;
+			REQUIRE(test_phrase_parser("[42]", postPrefix, pp));
+			CHECK(pp.get().type() == typeid(ast::TableIndexExpression));
+		}
+
+		SUBCASE("function call end") {
+			ast::PostPrefix pp;
+			REQUIRE(test_phrase_parser("(42)", postPrefix, pp));
+			CHECK(pp.get().type() == typeid(ast::FunctionCallEnd));
+		}
+	}
+
 	TEST_CASE("prefixExpression")
 	{
 		CHECK(test_phrase_parser("x", prefixExpression));
@@ -400,8 +421,31 @@ namespace lac::parser
 		CHECK(test_phrase_parser("(42)", prefixExpression));
 		CHECK(test_phrase_parser("('test')", prefixExpression));
 		CHECK(test_phrase_parser("(...)", prefixExpression));
+		CHECK(test_phrase_parser("a", prefixExpression));
+		CHECK(test_phrase_parser("a.b", prefixExpression));
+		CHECK(test_phrase_parser("a.b('c')", prefixExpression));
+		CHECK(test_phrase_parser("a.b('c'):d()", prefixExpression));
+		CHECK(test_phrase_parser("a.b('c'):d(42)", prefixExpression));
+
+		SUBCASE("bracketed expression") {
+			ast::PrefixExpression pe;
+			REQUIRE(test_phrase_parser("(42)", prefixExpression, pe));
+			CHECK(pe.start.get().type() == typeid(ast::BracketedExpression));
+		}
+
+		SUBCASE("name") {
+			ast::PrefixExpression pe;
+			REQUIRE(test_phrase_parser("a", prefixExpression, pe));
+			CHECK(pe.start.get().type() == typeid(std::string));
+		}
+
+		SUBCASE("rest") {
+			ast::PrefixExpression pe;
+			REQUIRE(test_phrase_parser("a.b.c", prefixExpression, pe));
+			CHECK(pe.rest.size() == 2);
+		}
 	}
-	*/
+	
 	TEST_CASE("expression")
 	{
 		CHECK(test_phrase_parser("nil", expression));
@@ -415,7 +459,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("{}", expression));
 		CHECK(test_phrase_parser("{1, 2}", expression));
 		CHECK(test_phrase_parser("{['test'] = 42, 3.14}", expression));
-	/*	CHECK(test_phrase_parser("function(a, b, c) return a + b / c; end", expression));
+	//	CHECK(test_phrase_parser("function(a, b, c) return a + b / c; end", expression));
 		CHECK(test_phrase_parser("x", expression));
 		CHECK(test_phrase_parser("a.b.c", expression));
 		CHECK(test_phrase_parser("a[b][c]", expression));
@@ -440,7 +484,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("func(x)", expression));
 		CHECK(test_phrase_parser("func(x, 42, 'test')", expression));
 		CHECK(test_phrase_parser("func{x, x=1}", expression));
-		CHECK(test_phrase_parser("func'42'", expression));*/
+		CHECK(test_phrase_parser("func'42'", expression));
 
 		SUBCASE("expression constant") {
 			ast::Expression ex;
@@ -507,7 +551,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("(42)", bracketedExpression));
 		CHECK(test_phrase_parser("(1 + 2)", bracketedExpression));
 		CHECK(test_phrase_parser("('hello' .. 'world')", bracketedExpression));
-	//	CHECK(test_phrase_parser("(x + 1)", bracketedExpression));
+		CHECK(test_phrase_parser("(x + 1)", bracketedExpression));
 
 		CHECK_FALSE(test_phrase_parser("42", bracketedExpression));
 		CHECK_FALSE(test_phrase_parser("()", bracketedExpression));
@@ -525,7 +569,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("['hello']", tableIndexExpression));
 		CHECK(test_phrase_parser("[42]", tableIndexExpression));
 		CHECK(test_phrase_parser("[42 + 3.14]", tableIndexExpression));
-	//	CHECK(test_phrase_parser("[x + 1]", tableIndexExpression));
+		CHECK(test_phrase_parser("[x + 1]", tableIndexExpression));
 
 		CHECK_FALSE(test_phrase_parser("[]", tableIndexExpression));
 
