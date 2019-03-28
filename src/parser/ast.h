@@ -206,6 +206,24 @@ namespace lac
 
 		using VariablesList = std::list<Variable>;
 
+		struct FunctionNameMember
+		{
+			std::string name;
+		};
+
+		struct FunctionName
+		{
+			std::string start;
+			std::vector<std::string> rest;
+			boost::optional<FunctionNameMember> member;
+		};
+
+		struct FunctionCall
+		{
+			Variable variable;
+			FunctionCallEnd functionCall;
+		};
+
 		struct Statement
 		{
 		};

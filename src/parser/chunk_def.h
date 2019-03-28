@@ -142,10 +142,11 @@ namespace lac
 		const x3::rule<class parametersList, ast::ParametersList> parametersList = "parametersList";
 		const x3::rule<class arguments, ast::Arguments> arguments = "arguments";
 		const x3::rule<class functionBody, ast::FunctionBody> functionBody = "functionBody";
-		const x3::rule<class functionCall, std::string> functionCall = "functionCall";
+		const x3::rule<class functionCall, ast::FunctionCall> functionCall = "functionCall";
 		const x3::rule<class functionCallEnd, ast::FunctionCallEnd> functionCallEnd = "functionCallEnd";
 		const x3::rule<class functionDefinition, ast::FunctionBody> functionDefinition = "functionDefinition";
-		const x3::rule<class functionName, std::string> functionName = "functionName";
+		const x3::rule<class functionNameMember, ast::FunctionNameMember> functionNameMember = "functionNameMember";
+		const x3::rule<class functionName, ast::FunctionName> functionName = "functionName";
 
 		const x3::rule<class bracketedExpression, ast::BracketedExpression> bracketedExpression = "bracketedExpression";
 		const x3::rule<class tableIndexExpression, ast::TableIndexExpression> tableIndexExpression = "tableIndexExpression";
@@ -258,7 +259,9 @@ namespace lac
 
 		const auto functionCallEnd_def = -(':' >> name) >> arguments;
 
-		const auto functionName_def = name >> *('.' >> name) >> -(':' >> name);
+		const auto functionNameMember_def = ':' >> name;
+
+		const auto functionName_def = name >> *('.' >> name) >> -functionNameMember;
 
 		// Variables
 		const auto bracketedExpression_def = '(' >> expression >> ')';
@@ -333,7 +336,7 @@ namespace lac
 							fieldByExpression, fieldByAssignement, field, fieldsList, tableConstructor,
 							parametersList, arguments,
 							functionBody, functionCall, functionCallEnd,
-							functionDefinition, functionName,
+							functionDefinition, functionNameMember, functionName,
 							bracketedExpression, tableIndexExpression, tableIndexName,
 							prefixExpression, postPrefix,
 							variable, variableFunctionCall, variablePostfix, variablesList,

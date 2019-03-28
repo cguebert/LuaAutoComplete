@@ -359,7 +359,7 @@ namespace lac::parser
 			CHECK(tc.fields->size() == 2);
 		}
 	}
-	/*
+	
 	TEST_CASE("functionCall")
 	{
 		CHECK(test_phrase_parser("func()", functionCall));
@@ -370,8 +370,25 @@ namespace lac::parser
 		CHECK(test_phrase_parser("func '42'", functionCall));
 
 		CHECK_FALSE(test_phrase_parser("func", functionCall));
+
+		SUBCASE("no member") {
+			ast::FunctionCall fc;
+			REQUIRE(test_phrase_parser("func()", functionCall, fc));
+			REQUIRE(fc.variable.start.get().type() == typeid(std::string));
+			CHECK(boost::get<std::string>(fc.variable.start) == "func");
+			CHECK(fc.functionCall.member.is_initialized() == false);
+		}
+
+		SUBCASE("with member") {
+			ast::FunctionCall fc;
+			REQUIRE(test_phrase_parser("func:member()", functionCall, fc));
+			REQUIRE(fc.variable.start.get().type() == typeid(std::string));
+			CHECK(boost::get<std::string>(fc.variable.start) == "func");
+			REQUIRE(fc.functionCall.member.is_initialized());
+			CHECK(fc.functionCall.member.get() == "member");
+		}
 	}
-	*/
+	
 	TEST_CASE("functionCallEnd")
 	{
 		CHECK(test_phrase_parser("()", functionCallEnd));
@@ -651,7 +668,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("a, b:c().d, e[2]", variablesList));
 		CHECK(test_phrase_parser("a.b, c(d).e", variablesList));
 	}
-	/*
+	
 	TEST_CASE("functionName")
 	{
 		CHECK(test_phrase_parser("test", functionName));
@@ -663,8 +680,37 @@ namespace lac::parser
 		CHECK_FALSE(test_phrase_parser(".a", functionName));
 		CHECK_FALSE(test_phrase_parser(":c", functionName));
 		CHECK_FALSE(test_phrase_parser(".a:c", functionName));
-	}
 
+		SUBCASE("one name") {
+			ast::FunctionName fn;
+			REQUIRE(test_phrase_parser("func", functionName, fn));
+			CHECK(fn.start == "func");
+			CHECK(fn.rest.size() == 0);
+			CHECK(fn.member.is_initialized() == false);
+		}
+
+		SUBCASE("multiple names") {
+			ast::FunctionName fn;
+			REQUIRE(test_phrase_parser("a.b.c", functionName, fn));
+			CHECK(fn.start == "a");
+			REQUIRE(fn.rest.size() == 2);
+			CHECK(fn.rest[0] == "b");
+			CHECK(fn.rest[1] == "c");
+			CHECK(fn.member.is_initialized() == false);
+		}
+
+		SUBCASE("multiple names and member") {
+			ast::FunctionName fn;
+			REQUIRE(test_phrase_parser("a.b.c:d", functionName, fn));
+			CHECK(fn.start == "a");
+			REQUIRE(fn.rest.size() == 2);
+			CHECK(fn.rest[0] == "b");
+			CHECK(fn.rest[1] == "c");
+			REQUIRE(fn.member.is_initialized() == true);
+			CHECK(fn.member->name == "d");
+		}
+	}
+	/*
 	TEST_CASE("label")
 	{
 		CHECK(test_phrase_parser("::test::", label));
