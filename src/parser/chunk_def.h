@@ -143,7 +143,7 @@ namespace lac
 		const x3::rule<class arguments, ast::Arguments> arguments = "arguments";
 		const x3::rule<class functionBody, ast::FunctionBody> functionBody = "functionBody";
 		const x3::rule<class functionCall, std::string> functionCall = "functionCall";
-		const x3::rule<class functionCallEnd, std::string> functionCallEnd = "functionCallEnd";
+		const x3::rule<class functionCallEnd, ast::FunctionCallEnd> functionCallEnd = "functionCallEnd";
 		const x3::rule<class functionDefinition, ast::FunctionBody> functionDefinition = "functionDefinition";
 		const x3::rule<class functionName, std::string> functionName = "functionName";
 

@@ -155,6 +155,12 @@ namespace lac
 			using base_type::operator=;
 		};
 
+		struct FunctionCallEnd
+		{
+			boost::optional<std::string> member;
+			Arguments arguments;
+		};
+
 		struct Statement
 		{
 		};

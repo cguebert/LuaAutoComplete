@@ -363,6 +363,7 @@ namespace lac::parser
 	TEST_CASE("functionCall")
 	{
 		CHECK(test_phrase_parser("func()", functionCall));
+		CHECK(test_phrase_parser("var:member()", functionCall));
 		CHECK(test_phrase_parser("func(x)", functionCall));
 		CHECK(test_phrase_parser("func(x, 42, 'test')", functionCall));
 		CHECK(test_phrase_parser("func {x, x=1}", functionCall));
@@ -370,7 +371,28 @@ namespace lac::parser
 
 		CHECK_FALSE(test_phrase_parser("func", functionCall));
 	}
+	*/
+	TEST_CASE("functionCallEnd")
+	{
+		CHECK(test_phrase_parser("()", functionCallEnd));
+		CHECK(test_phrase_parser(":member()", functionCallEnd));
+		CHECK(test_phrase_parser(":member(42)", functionCallEnd));
+		CHECK(test_phrase_parser("(42)", functionCallEnd));
 
+		SUBCASE("no member") {
+			ast::FunctionCallEnd fce;
+			REQUIRE(test_phrase_parser("(42)", functionCallEnd, fce));
+			CHECK(fce.member.is_initialized() == false);
+		}
+
+		SUBCASE("with member") {
+			ast::FunctionCallEnd fce;
+			REQUIRE(test_phrase_parser(":member(42)", functionCallEnd, fce));
+			REQUIRE(fce.member.is_initialized());
+			CHECK(fce.member.get() == "member");
+		}
+	}
+	/*
 	TEST_CASE("prefixExpression")
 	{
 		CHECK(test_phrase_parser("x", prefixExpression));
