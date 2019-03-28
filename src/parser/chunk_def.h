@@ -104,16 +104,6 @@ namespace lac
 			}
 		} unaryOperator;
 
-	/*	struct fieldSeparator_ : x3::symbols<std::string>
-		{
-			fieldSeparator_()
-			{
-				add
-					(",", ",")
-					(";", ";");
-			}
-		} fieldSeparator;*/
-
 		struct expressionConstant_ : x3::symbols<ast::ExpressionConstant>
 		{
 			expressionConstant_()
@@ -284,9 +274,9 @@ namespace lac
 
 		// Expressions
 		const auto simpleExpression_def = expressionConstant
+										  | unaryOperation
 										  | numeral
 										  | literalString
-										  | unaryOperation
 			/*							  | functionDefinition
 										  | tableConstructor
 										  | prefixExpression

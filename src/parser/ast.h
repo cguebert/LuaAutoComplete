@@ -51,13 +51,14 @@ namespace lac
 		};
 
 		struct UnaryOperation;
+		using f_UnaryOperation = boost::spirit::x3::forward_ast<UnaryOperation>;
 
 		struct Operand
 			: boost::spirit::x3::variant<
 				  ExpressionConstant,
 				  double,
 				  std::string,
-				  boost::spirit::x3::forward_ast<UnaryOperation>>
+				  f_UnaryOperation>
 		{
 			using base_type::base_type;
 			using base_type::operator=;

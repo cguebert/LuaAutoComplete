@@ -393,6 +393,50 @@ namespace lac::parser
 		CHECK(test_phrase_parser("func(x, 42, 'test')", expression));
 		CHECK(test_phrase_parser("func{x, x=1}", expression));
 		CHECK(test_phrase_parser("func'42'", expression));*/
+
+		SUBCASE("expression constant") {
+			ast::Expression ex;
+			REQUIRE(test_phrase_parser("nil", expression, ex));
+			REQUIRE(ex.first.get().type() == typeid(ast::ExpressionConstant));
+			CHECK(boost::get<ast::ExpressionConstant>(ex.first) == ast::ExpressionConstant::nil);
+		}
+
+		SUBCASE("numeral") {
+			ast::Expression ex;
+			REQUIRE(test_phrase_parser("42.3", expression, ex));
+			REQUIRE(ex.first.get().type() == typeid(double));
+			CHECK(boost::get<double>(ex.first) == 42.3);
+		}
+
+		SUBCASE("string") {
+			ast::Expression ex;
+			REQUIRE(test_phrase_parser("'test'", expression, ex));
+			REQUIRE(ex.first.get().type() == typeid(std::string));
+			CHECK(boost::get<std::string>(ex.first) == "test");
+		}
+
+		SUBCASE("unary operation") {
+			ast::Expression ex;
+			REQUIRE(test_phrase_parser("not true", expression, ex));
+			REQUIRE(ex.first.get().type() == typeid(ast::f_UnaryOperation));
+			auto uo = boost::get<ast::f_UnaryOperation>(ex.first.get()).get();
+			CHECK(uo.operation == ast::Operation::bnot);
+			REQUIRE(uo.expression.first.get().type() == typeid(ast::ExpressionConstant));
+			CHECK(boost::get<ast::ExpressionConstant>(uo.expression.first) == ast::ExpressionConstant::True);
+		}
+
+		SUBCASE("binary operation") {
+			ast::Expression ex;
+			REQUIRE(test_phrase_parser("1 + 2", expression, ex));
+			REQUIRE(ex.first.get().type() == typeid(double));
+			CHECK(boost::get<double>(ex.first) == 1);
+
+			REQUIRE(ex.rest.size() == 1);
+			const auto bo = ex.rest.front();
+			CHECK(bo.operation == ast::Operation::add);
+			REQUIRE(bo.expression.first.get().type() == typeid(double));
+			CHECK(boost::get<double>(bo.expression.first) == 2);
+		}
 	}
 
 	TEST_CASE("expressionsList")
