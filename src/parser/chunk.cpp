@@ -447,6 +447,56 @@ namespace lac::parser
 
 		CHECK_FALSE(test_phrase_parser("nil,", expressionsList));
 	}
+
+	TEST_CASE("bracketed expression")
+	{
+		CHECK(test_phrase_parser("(42)", bracketedExpression));
+		CHECK(test_phrase_parser("(1 + 2)", bracketedExpression));
+		CHECK(test_phrase_parser("('hello' .. 'world')", bracketedExpression));
+	//	CHECK(test_phrase_parser("(x + 1)", bracketedExpression));
+
+		CHECK_FALSE(test_phrase_parser("42", bracketedExpression));
+		CHECK_FALSE(test_phrase_parser("()", bracketedExpression));
+
+		SUBCASE("expression inside parentheses") {
+			ast::BracketedExpression be;
+			REQUIRE(test_phrase_parser("(42)", bracketedExpression, be));
+			REQUIRE(be.expression.first.get().type() == typeid(double));
+			CHECK(boost::get<double>(be.expression.first) == 42);
+		}
+	}
+
+	TEST_CASE("table index expression")
+	{
+		CHECK(test_phrase_parser("['hello']", tableIndexExpression));
+		CHECK(test_phrase_parser("[42]", tableIndexExpression));
+		CHECK(test_phrase_parser("[42 + 3.14]", tableIndexExpression));
+	//	CHECK(test_phrase_parser("[x + 1]", tableIndexExpression));
+
+		CHECK_FALSE(test_phrase_parser("[]", tableIndexExpression));
+
+		SUBCASE("expression") {
+			ast::TableIndexExpression tie;
+			REQUIRE(test_phrase_parser("[42]", tableIndexExpression, tie));
+			REQUIRE(tie.expression.first.get().type() == typeid(double));
+			CHECK(boost::get<double>(tie.expression.first) == 42);
+		}
+	}
+
+	TEST_CASE("table index name")
+	{
+		CHECK(test_phrase_parser(".x", tableIndexName));
+		CHECK(test_phrase_parser(".test", tableIndexName));
+
+		CHECK_FALSE(test_phrase_parser(".", tableIndexName));
+		CHECK_FALSE(test_phrase_parser(".42", tableIndexName));
+
+		SUBCASE("name") {
+			ast::TableIndexName tin;
+			REQUIRE(test_phrase_parser(".test", tableIndexName, tin));
+			CHECK(tin.name == "test");
+		}
+	}
 	
 	/*
 	TEST_CASE("variable")

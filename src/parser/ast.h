@@ -115,6 +115,21 @@ namespace lac
 			boost::optional<FieldsList> fields;
 		};
 
+		struct BracketedExpression
+		{
+			Expression expression;
+		};
+
+		struct TableIndexExpression
+		{
+			Expression expression;
+		};
+
+		struct TableIndexName
+		{
+			std::string name;
+		};
+
 		struct ParametersList
 		{
 			NamesList parameters;

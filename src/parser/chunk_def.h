@@ -147,6 +147,9 @@ namespace lac
 		const x3::rule<class functionDefinition, ast::FunctionBody> functionDefinition = "functionDefinition";
 		const x3::rule<class functionName, std::string> functionName = "functionName";
 
+		const x3::rule<class bracketedExpression, ast::BracketedExpression> bracketedExpression = "bracketedExpression";
+		const x3::rule<class tableIndexExpression, ast::TableIndexExpression> tableIndexExpression = "tableIndexExpression";
+		const x3::rule<class tableIndexName, ast::TableIndexName> tableIndexName = "tableIndexName";
 		const x3::rule<class prefixExpression, std::string> prefixExpression = "prefixExpression";
 		const x3::rule<class postPrefix, std::string> postPrefix = "postPrefix";
 		const x3::rule<class variable, std::string> variable = "variable";
@@ -254,21 +257,24 @@ namespace lac
 		const auto functionName_def = name >> *('.' >> name) >> -(':' >> name);
 
 		// Variables
-		const auto prefixExpression_def = (('(' >> expression >> ')')
+		const auto bracketedExpression_def = '(' >> expression >> ')';
+		const auto tableIndexExpression_def = '[' >> expression >> ']';
+		const auto tableIndexName_def = '.' >> name;
+		const auto prefixExpression_def = (bracketedExpression
 										   | name)
 										  >> *postPrefix;
 
-		const auto postPrefix_def = ('[' >> expression >> ']')
-									| ('.' >> name)
+		const auto postPrefix_def = tableIndexExpression
+									| tableIndexName
 									| functionCallEnd;
 
-		const auto variable_def = (('(' >> expression >> ')')
+		const auto variable_def = (bracketedExpression
 								   | name)
 								  >> *variablePostfix;
 
-		const auto variablePostfix_def = ('[' >> expression >> ']')
-										 | ('.' >> name)
-										 | (functionCallEnd >> variablePostfix);
+		const auto variablePostfix_def = tableIndexExpression
+										 | tableIndexName
+										 | (functionCallEnd >> variablePostfix); // Should not stop with a function call
 
 		const auto variablesList_def = variable % ',';
 
@@ -323,6 +329,7 @@ namespace lac
 							parametersList, arguments,
 							functionBody, functionCall, functionCallEnd,
 							functionDefinition, functionName,
+							bracketedExpression, tableIndexExpression, tableIndexName,
 							prefixExpression, postPrefix,
 							variable, variablePostfix, variablesList,
 							unaryOperation, binaryOperation,
