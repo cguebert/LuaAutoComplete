@@ -140,6 +140,21 @@ namespace lac
 			bool varargs = false;
 		};
 
+		struct EmptyArguments
+		{
+		};
+
+		struct Arguments
+			: boost::spirit::x3::variant<
+				  EmptyArguments,
+				  ExpressionsList,
+				  TableConstructor,
+				  std::string>
+		{
+			using base_type::base_type;
+			using base_type::operator=;
+		};
+
 		struct Statement
 		{
 		};

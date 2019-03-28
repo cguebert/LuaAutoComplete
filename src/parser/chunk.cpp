@@ -326,16 +326,40 @@ namespace lac::parser
 		CHECK(test_phrase_parser("function () end", functionDefinition));
 		CHECK(test_phrase_parser("function (a) x=a + 1; return x; end", functionDefinition));
 	}
-
+	*/
 	TEST_CASE("arguments")
 	{
 		CHECK(test_phrase_parser("()", arguments));
-		CHECK(test_phrase_parser("(x)", arguments));
-		CHECK(test_phrase_parser("(x, 42, 'test')", arguments));
+		CHECK(test_phrase_parser("(1, 2)", arguments));
+	//	CHECK(test_phrase_parser("(x)", arguments));
+	//	CHECK(test_phrase_parser("(x, 42, 'test')", arguments));
 		CHECK(test_phrase_parser("{x=1}", arguments));
 		CHECK(test_phrase_parser("'test'", arguments));
-	}
 
+		SUBCASE("empty arguments") {
+			ast::Arguments ar;
+			REQUIRE(test_phrase_parser("()", arguments, ar));
+			CHECK(ar.get().type() == typeid(ast::EmptyArguments));
+		}
+
+		SUBCASE("arguments expressions") {
+			ast::Arguments ar;
+			REQUIRE(test_phrase_parser("(1, 2)", arguments, ar));
+			REQUIRE(ar.get().type() == typeid(ast::ExpressionsList));
+			auto el = boost::get<ast::ExpressionsList>(ar);
+			CHECK(el.size() == 2);
+		}
+
+		SUBCASE("table") {
+			ast::Arguments ar;
+			REQUIRE(test_phrase_parser("{1, 2}", arguments, ar));
+			REQUIRE(ar.get().type() == typeid(ast::TableConstructor));
+			auto tc = boost::get<ast::TableConstructor>(ar);
+			REQUIRE(tc.fields.is_initialized());
+			CHECK(tc.fields->size() == 2);
+		}
+	}
+	/*
 	TEST_CASE("functionCall")
 	{
 		CHECK(test_phrase_parser("func()", functionCall));

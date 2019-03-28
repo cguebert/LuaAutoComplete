@@ -140,7 +140,7 @@ namespace lac
 		const x3::rule<class tableConstructor, ast::TableConstructor> tableConstructor = "tableConstructor";
 
 		const x3::rule<class parametersList, ast::ParametersList> parametersList = "parametersList";
-		const x3::rule<class arguments, std::string> arguments = "arguments";
+		const x3::rule<class arguments, ast::Arguments> arguments = "arguments";
 		const x3::rule<class functionBody, ast::FunctionBody> functionBody = "functionBody";
 		const x3::rule<class functionCall, std::string> functionCall = "functionCall";
 		const x3::rule<class functionCallEnd, std::string> functionCallEnd = "functionCallEnd";
@@ -242,7 +242,10 @@ namespace lac
 		const auto parametersList_def = (namesList >> -(lit(',') >> funcVarargs))
 										| (x3::attr(ast::NamesList{}) >> funcVarargs);
 
-		const auto arguments_def = ('(' >> -expressionsList >> ')')
+		const auto emptyArguments = lit('(') >> lit(')') >> x3::attr(ast::EmptyArguments());
+		const auto argumentsExpressions = '(' >> expressionsList >> ')';
+		const auto arguments_def = emptyArguments
+								   | argumentsExpressions
 								   | tableConstructor
 								   | literalString;
 
