@@ -109,6 +109,11 @@ namespace lac
 
 		using FieldsList = std::list<Field>;
 
+		struct TableConstructor
+		{
+			boost::optional<FieldsList> fields;
+		};
+
 		struct ParametersList
 		{
 			NamesList parameters;

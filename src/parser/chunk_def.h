@@ -104,7 +104,7 @@ namespace lac
 			}
 		} unaryOperator;
 
-		struct fieldSeparator_ : x3::symbols<std::string>
+	/*	struct fieldSeparator_ : x3::symbols<std::string>
 		{
 			fieldSeparator_()
 			{
@@ -112,7 +112,7 @@ namespace lac
 					(",", ",")
 					(";", ";");
 			}
-		} fieldSeparator;
+		} fieldSeparator;*/
 
 		struct expressionConstant_ : x3::symbols<ast::ExpressionConstant>
 		{
@@ -146,8 +146,8 @@ namespace lac
 		const x3::rule<class fieldByExpression, ast::FieldByExpression> fieldByExpression = "fieldByExpression";
 		const x3::rule<class fieldByAssignement, ast::FieldByAssignement> fieldByAssignement = "fieldByAssignement";
 		const x3::rule<class field, ast::Field> field = "field";
-		const x3::rule<class fieldsList, std::string> fieldsList = "fieldsList";
-		const x3::rule<class tableConstructor, std::string> tableConstructor = "tableConstructor";
+		const x3::rule<class fieldsList, ast::FieldsList> fieldsList = "fieldsList";
+		const x3::rule<class tableConstructor, ast::TableConstructor> tableConstructor = "tableConstructor";
 
 		const x3::rule<class parametersList, ast::ParametersList> parametersList = "parametersList";
 		const x3::rule<class arguments, std::string> arguments = "arguments";
@@ -239,6 +239,7 @@ namespace lac
 							   | fieldByAssignement
 							   | expression;
 
+		const auto fieldSeparator = lit(',') | lit(';');
 		const auto fieldsList_def = field >> *(fieldSeparator >> field) >> -fieldSeparator;
 
 		const auto tableConstructor_def = '{' >> -fieldsList >> '}';

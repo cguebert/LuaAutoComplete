@@ -248,28 +248,36 @@ namespace lac::parser
 			CHECK(boost::get<std::string>(ex.first) == "x");
 		}
 	}
-	/*
+	
 	TEST_CASE("fieldsList")
 	{
+		CHECK(test_phrase_parser("1, 2, 3", fieldsList));
+		CHECK(test_phrase_parser("1; 2; 3", fieldsList));
+		CHECK(test_phrase_parser("1, 2; 3", fieldsList));
+		CHECK(test_phrase_parser("1, 2; 3,", fieldsList));
+		CHECK(test_phrase_parser("1, 2; 3;", fieldsList));
+	/*	CHECK(test_phrase_parser("x", fieldsList));
+		CHECK(test_phrase_parser("x,", fieldsList));
 		CHECK(test_phrase_parser("[2] = 2, 2, x, x = 1", fieldsList));
 		CHECK(test_phrase_parser("[2] = 2; 2, x; x = 1", fieldsList));
-		CHECK(test_phrase_parser("x,", fieldsList));
 		CHECK(test_phrase_parser("[2] = 2, 2; x; x = 1;", fieldsList));
-		CHECK(test_phrase_parser("[2] = 2, 2; x; x = 1,", fieldsList));
+		CHECK(test_phrase_parser("[2] = 2, 2; x; x = 1,", fieldsList));*/
 	}
-
+	
 	TEST_CASE("tableConstructor")
 	{
 		CHECK(test_phrase_parser("{}", tableConstructor));
-		CHECK(test_phrase_parser("{x}", tableConstructor));
+		CHECK(test_phrase_parser("{1, 2, 3}", tableConstructor));
+		CHECK(test_phrase_parser("{'hello', 'World', 42}", tableConstructor));
+	/*	CHECK(test_phrase_parser("{x}", tableConstructor));
 		CHECK(test_phrase_parser("{ x }", tableConstructor));
 		CHECK(test_phrase_parser("{[2] = 2, 2, x, x = 1}", tableConstructor));
 		CHECK(test_phrase_parser("{ [2] = 2, 2, x, x = 1 }", tableConstructor));
 		CHECK(test_phrase_parser("{ [2] = 2; 2, x; x = 1 }", tableConstructor));
 		CHECK(test_phrase_parser("{[2] = 2, 2; x; x = 1;}", tableConstructor));
-		CHECK(test_phrase_parser("{[2] = 2, 2; x; x = 1,}", tableConstructor));
+		CHECK(test_phrase_parser("{[2] = 2, 2; x; x = 1,}", tableConstructor));*/
 	}
-	*/
+	
 	TEST_CASE("parametersList")
 	{
 		CHECK(test_phrase_parser("...", parametersList));
