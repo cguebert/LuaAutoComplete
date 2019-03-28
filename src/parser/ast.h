@@ -55,8 +55,8 @@ namespace lac
 		struct Operand
 			: boost::spirit::x3::variant<
 				  ExpressionConstant,
-				  std::string,
 				  double,
+				  std::string,
 				  boost::spirit::x3::forward_ast<UnaryOperation>>
 		{
 			using base_type::base_type;
@@ -86,6 +86,29 @@ namespace lac
 			Expression expression;
 		};
 
+		struct FieldByExpression
+		{
+			Expression key, value;
+		};
+
+		struct FieldByAssignement
+		{
+			std::string name;
+			Expression value;
+		};
+
+		struct Field
+			: boost::spirit::x3::variant<
+				  FieldByExpression,
+				  FieldByAssignement,
+				  Expression>
+		{
+			using base_type::base_type;
+			using base_type::operator=;
+		};
+
+		using FieldsList = std::list<Field>;
+
 		struct ParametersList
 		{
 			NamesList parameters;
@@ -94,14 +117,13 @@ namespace lac
 
 		struct Statement
 		{
-
 		};
 
 		struct Block
 		{
 			std::string tmp;
-		//	std::list<Statement> statements;
-		//	std::list<Expression> returnStatement;
+			//	std::list<Statement> statements;
+			//	std::list<Expression> returnStatement;
 		};
 
 		struct FunctionBody

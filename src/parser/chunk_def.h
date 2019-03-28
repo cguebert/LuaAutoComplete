@@ -143,7 +143,9 @@ namespace lac
 		const x3::rule<class longComment, std::string> longComment = "longComment";
 		const x3::rule<class comment, std::string> comment = "comment";
 
-		const x3::rule<class field, std::string> field = "field";
+		const x3::rule<class fieldByExpression, ast::FieldByExpression> fieldByExpression = "fieldByExpression";
+		const x3::rule<class fieldByAssignement, ast::FieldByAssignement> fieldByAssignement = "fieldByAssignement";
+		const x3::rule<class field, ast::Field> field = "field";
 		const x3::rule<class fieldsList, std::string> fieldsList = "fieldsList";
 		const x3::rule<class tableConstructor, std::string> tableConstructor = "tableConstructor";
 
@@ -231,8 +233,10 @@ namespace lac
 
 		//*** Complete syntax of Lua ***
 		// Table and fields
-		const auto field_def = ('[' >> expression >> lit(']') >> lit('=') >> expression)
-							   | (name >> '=' >> expression)
+		const auto fieldByExpression_def = '[' >> expression >> lit(']') >> lit('=') >> expression;
+		const auto fieldByAssignement_def = name >> '=' >> expression;
+		const auto field_def = fieldByExpression
+							   | fieldByAssignement
 							   | expression;
 
 		const auto fieldsList_def = field >> *(fieldSeparator >> field) >> -fieldSeparator;
@@ -278,17 +282,16 @@ namespace lac
 		const auto variablesList_def = variable % ',';
 
 		// Expressions
-		const auto unaryOperation_def = unaryOperator >> expression;
 		const auto simpleExpression_def = expressionConstant
 										  | numeral
 										  | literalString
 										  | unaryOperation
-			//	  | functionDefinition
-			/*
+			/*							  | functionDefinition
 										  | tableConstructor
 										  | prefixExpression
 			*/
 			;
+		const auto unaryOperation_def = unaryOperator >> expression;
 		const auto binaryOperation_def = binaryOperator >> expression;
 		const auto expression_def = simpleExpression >> -binaryOperation;
 
@@ -325,7 +328,7 @@ namespace lac
 							numeral, numeralAsString,
 							shortComment, longComment, comment,
 							skipper,
-							field, fieldsList, tableConstructor,
+							fieldByExpression, fieldByAssignement, field, fieldsList, tableConstructor,
 							parametersList, arguments,
 							functionBody, functionCall, functionCallEnd,
 							functionDefinition, functionName,

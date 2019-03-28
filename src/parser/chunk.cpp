@@ -177,17 +177,78 @@ namespace lac::parser
 
 		CHECK_FALSE(test_parser("test", comment));
 	}
-	/*
+	
+	TEST_CASE("field by expression")
+	{
+		CHECK(test_phrase_parser("[2] = 0", fieldByExpression));
+		CHECK(test_phrase_parser("['test'] = 42", fieldByExpression));
+		CHECK(test_phrase_parser("['hello' .. 'World'] = '!'", fieldByExpression));
+
+		ast::FieldByExpression fe;
+		REQUIRE(test_phrase_parser("['hello' .. 'World'] = 42", fieldByExpression, fe));
+		REQUIRE(fe.key.first.get().type() == typeid(std::string));
+		CHECK(boost::get<std::string>(fe.key.first) == "hello");
+
+		REQUIRE(fe.key.rest.size() == 1);
+		CHECK(fe.key.rest.front().operation == ast::Operation::concat);
+		REQUIRE(fe.key.rest.front().expression.first.get().type() == typeid(std::string));
+		CHECK(boost::get<std::string>(fe.key.rest.front().expression.first) == "World");
+
+		REQUIRE(fe.value.first.get().type() == typeid(double));
+		CHECK(boost::get<double>(fe.value.first) == 42.0);
+	}
+
+	TEST_CASE("field by assignement")
+	{
+		CHECK(test_phrase_parser("test = 0", fieldByAssignement));
+		CHECK(test_phrase_parser("x = 'test'", fieldByAssignement));
+
+		ast::FieldByAssignement fa;
+		REQUIRE(test_phrase_parser("x = 'test'", fieldByAssignement, fa));
+		CHECK(fa.name == "x");
+		REQUIRE(fa.value.first.get().type() == typeid(std::string));
+		CHECK(boost::get<std::string>(fa.value.first) == "test");
+	}
+
 	TEST_CASE("field")
 	{
 		CHECK(test_phrase_parser("[2] = 2", field));
-		CHECK(test_phrase_parser("[f(x)] = a", field));
+	//	CHECK(test_phrase_parser("[f(x)] = a", field));
 		CHECK(test_phrase_parser("x = 1", field));
-		CHECK(test_phrase_parser("x", field));
+	//	CHECK(test_phrase_parser("x", field));
 		CHECK(test_phrase_parser("42", field));
-		CHECK(test_phrase_parser("f(x)", field));
-	}
+	//	CHECK(test_phrase_parser("f(x)", field));
 
+		SUBCASE("by expression") {
+			ast::Field f;
+			REQUIRE(test_phrase_parser("['x'] = 42", field, f));
+			REQUIRE(f.get().type() == typeid(ast::FieldByExpression));
+			auto fe = boost::get<ast::FieldByExpression>(f.get());
+			CHECK(boost::get<std::string>(fe.key.first) == "x");
+			REQUIRE(fe.value.first.get().type() == typeid(double));
+			CHECK(boost::get<double>(fe.value.first) == 42.0);
+		}
+
+		SUBCASE("by assignment") {
+			ast::Field f;
+			REQUIRE(test_phrase_parser("x = 42", field, f));
+			REQUIRE(f.get().type() == typeid(ast::FieldByAssignement));
+			auto fa = boost::get<ast::FieldByAssignement>(f.get());
+			CHECK(boost::get<std::string>(fa.name) == "x");
+			REQUIRE(fa.value.first.get().type() == typeid(double));
+			CHECK(boost::get<double>(fa.value.first) == 42.0);
+		}
+
+		SUBCASE("expression only") {
+			ast::Field f;
+			REQUIRE(test_phrase_parser("'x'", field, f));
+			REQUIRE(f.get().type() == typeid(ast::Expression));
+			auto ex = boost::get<ast::Expression>(f.get());
+			CHECK(ex.first.get().type() == typeid(std::string));
+			CHECK(boost::get<std::string>(ex.first) == "x");
+		}
+	}
+	/*
 	TEST_CASE("fieldsList")
 	{
 		CHECK(test_phrase_parser("[2] = 2, 2, x, x = 1", fieldsList));
