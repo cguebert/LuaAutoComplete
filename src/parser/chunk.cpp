@@ -595,8 +595,37 @@ namespace lac::parser
 			CHECK(tin.name == "test");
 		}
 	}
-	
-	/*
+
+	TEST_CASE("variableFunctionCall")
+	{
+		CHECK(test_phrase_parser("().a", variableFunctionCall));
+		CHECK(test_phrase_parser(":a().b", variableFunctionCall));
+
+		CHECK_FALSE(test_phrase_parser("a().b", variableFunctionCall));
+		CHECK_FALSE(test_phrase_parser("(a)", variableFunctionCall));
+	}
+
+	TEST_CASE("variablePostfix")
+	{
+		SUBCASE("table index name") {
+			ast::VariablePostfix vp;
+			REQUIRE(test_phrase_parser(".b", variablePostfix, vp));
+			CHECK(vp.get().type() == typeid(ast::TableIndexName));
+		}
+
+		SUBCASE("table index expression") {
+			ast::VariablePostfix vp;
+			REQUIRE(test_phrase_parser("[42]", variablePostfix, vp));
+			CHECK(vp.get().type() == typeid(ast::TableIndexExpression));
+		}
+
+		SUBCASE("function call end") {
+			ast::VariablePostfix vp;
+			REQUIRE(test_phrase_parser("(42).a", variablePostfix, vp));
+			CHECK(vp.get().type() == typeid(ast::f_VariableFunctionCall));
+		}
+	}
+
 	TEST_CASE("variable")
 	{
 		CHECK(test_phrase_parser("a", variable));
@@ -615,14 +644,14 @@ namespace lac::parser
 		CHECK_FALSE(test_phrase_parser("a(b):d()", variable));
 		CHECK_FALSE(test_phrase_parser("a(b)[c]:d()", variable));
 	}
-
+	
 	TEST_CASE("variablesList")
 	{
 		CHECK(test_phrase_parser("a, b, c", variablesList));
 		CHECK(test_phrase_parser("a, b:c().d, e[2]", variablesList));
 		CHECK(test_phrase_parser("a.b, c(d).e", variablesList));
 	}
-
+	/*
 	TEST_CASE("functionName")
 	{
 		CHECK(test_phrase_parser("test", functionName));

@@ -152,9 +152,10 @@ namespace lac
 		const x3::rule<class tableIndexName, ast::TableIndexName> tableIndexName = "tableIndexName";
 		const x3::rule<class prefixExpression, ast::PrefixExpression> prefixExpression = "prefixExpression";
 		const x3::rule<class postPrefix, ast::PostPrefix> postPrefix = "postPrefix";
-		const x3::rule<class variable, std::string> variable = "variable";
-		const x3::rule<class variablePostfix, std::string> variablePostfix = "variablePostfix";
-		const x3::rule<class variablesList, std::string> variablesList = "variablesList";
+		const x3::rule<class variable, ast::Variable> variable = "variable";
+		const x3::rule<class variableFunctionCall, ast::VariableFunctionCall> variableFunctionCall = "variableFunctionCall";
+		const x3::rule<class variablePostfix, ast::VariablePostfix> variablePostfix = "variablePostfix";
+		const x3::rule<class variablesList, ast::VariablesList> variablesList = "variablesList";
 
 		const x3::rule<class unaryOperation, ast::UnaryOperation> unaryOperation = "unaryOperation";
 		const x3::rule<class binaryOperation, ast::BinaryOperation> binaryOperation = "binaryOperation";
@@ -275,9 +276,11 @@ namespace lac
 								   | name)
 								  >> *variablePostfix;
 
+		const auto variableFunctionCall_def = functionCallEnd >> variablePostfix; // Should not stop with a function call
+
 		const auto variablePostfix_def = tableIndexExpression
 										 | tableIndexName
-										 | (functionCallEnd >> variablePostfix); // Should not stop with a function call
+										 | variableFunctionCall;
 
 		const auto variablesList_def = variable % ',';
 
@@ -333,7 +336,7 @@ namespace lac
 							functionDefinition, functionName,
 							bracketedExpression, tableIndexExpression, tableIndexName,
 							prefixExpression, postPrefix,
-							variable, variablePostfix, variablesList,
+							variable, variableFunctionCall, variablePostfix, variablesList,
 							unaryOperation, binaryOperation,
 							simpleExpression, expression, expressionsList,
 							label, returnStatement, statement,

@@ -180,6 +180,32 @@ namespace lac
 			std::list<PostPrefix> rest;
 		};
 
+		struct VariableFunctionCall;
+		using f_VariableFunctionCall = boost::spirit::x3::forward_ast<VariableFunctionCall>;
+
+		struct VariablePostfix : boost::spirit::x3::variant<
+									 TableIndexExpression,
+									 TableIndexName,
+									 f_VariableFunctionCall>
+		{
+			using base_type::base_type;
+			using base_type::operator=;
+		};
+
+		struct VariableFunctionCall
+		{
+			FunctionCallEnd functionCall;
+			VariablePostfix postVariable;
+		};
+
+		struct Variable
+		{
+			boost::spirit::x3::variant<BracketedExpression, std::string> start;
+			std::list<VariablePostfix> rest;
+		};
+
+		using VariablesList = std::list<Variable>;
+
 		struct Statement
 		{
 		};
