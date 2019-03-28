@@ -67,10 +67,12 @@ namespace lac
 		using NamesList = std::vector<std::string>;
 
 		struct BinaryOperation;
+		using f_BinaryOperation = boost::spirit::x3::forward_ast<BinaryOperation>;
+
 		struct Expression
 		{
-			Operand first;
-			std::list<BinaryOperation> rest;
+			Operand operand;
+			boost::optional<f_BinaryOperation> binaryOperation;
 		};
 
 		using ExpressionsList = std::list<Expression>;

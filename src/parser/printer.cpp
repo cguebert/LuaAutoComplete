@@ -52,7 +52,7 @@ namespace lac
 			endl();
 			tab();
 			out << "UnaryOperation: ";
-			(*this)(uo.operation);
+			Printer(out, indent + 1)(uo.operation);
 			Printer(out, indent + 1)(uo.expression);
 		}
 
@@ -61,7 +61,7 @@ namespace lac
 			endl(); 
 			tab();
 			out << "BinaryOperation: ";
-			(*this)(bo.operation);
+			Printer(out, indent + 1)(bo.operation);
 			Printer(out, indent + 1)(bo.expression);
 		}
 
@@ -70,11 +70,9 @@ namespace lac
 			endl(); 
 			tab();
 			out << "Expression:\n";
-			Printer(out, indent + 1)(ex.first);
-			for (const auto& r : ex.rest)
-			{
-				Printer(out, indent + 1)(r);
-			}
+			Printer(out, indent + 1)(ex.operand);
+			if(ex.binaryOperation)
+				Printer(out, indent + 1)(ex.binaryOperation->get());
 		}
 
 	private:

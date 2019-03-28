@@ -186,16 +186,16 @@ namespace lac::parser
 
 		ast::FieldByExpression fe;
 		REQUIRE(test_phrase_parser("['hello' .. 'World'] = 42", fieldByExpression, fe));
-		REQUIRE(fe.key.first.get().type() == typeid(std::string));
-		CHECK(boost::get<std::string>(fe.key.first) == "hello");
+		REQUIRE(fe.key.operand.get().type() == typeid(std::string));
+		CHECK(boost::get<std::string>(fe.key.operand) == "hello");
 
-		REQUIRE(fe.key.rest.size() == 1);
-		CHECK(fe.key.rest.front().operation == ast::Operation::concat);
-		REQUIRE(fe.key.rest.front().expression.first.get().type() == typeid(std::string));
-		CHECK(boost::get<std::string>(fe.key.rest.front().expression.first) == "World");
+		REQUIRE(fe.key.binaryOperation.is_initialized());
+		CHECK(fe.key.binaryOperation->get().operation == ast::Operation::concat);
+		REQUIRE(fe.key.binaryOperation->get().expression.operand.get().type() == typeid(std::string));
+		CHECK(boost::get<std::string>(fe.key.binaryOperation->get().expression.operand) == "World");
 
-		REQUIRE(fe.value.first.get().type() == typeid(double));
-		CHECK(boost::get<double>(fe.value.first) == 42.0);
+		REQUIRE(fe.value.operand.get().type() == typeid(double));
+		CHECK(boost::get<double>(fe.value.operand) == 42.0);
 	}
 
 	TEST_CASE("field by assignement")
@@ -206,8 +206,8 @@ namespace lac::parser
 		ast::FieldByAssignement fa;
 		REQUIRE(test_phrase_parser("x = 'test'", fieldByAssignement, fa));
 		CHECK(fa.name == "x");
-		REQUIRE(fa.value.first.get().type() == typeid(std::string));
-		CHECK(boost::get<std::string>(fa.value.first) == "test");
+		REQUIRE(fa.value.operand.get().type() == typeid(std::string));
+		CHECK(boost::get<std::string>(fa.value.operand) == "test");
 	}
 
 	TEST_CASE("field")
@@ -224,9 +224,9 @@ namespace lac::parser
 			REQUIRE(test_phrase_parser("['x'] = 42", field, f));
 			REQUIRE(f.get().type() == typeid(ast::FieldByExpression));
 			auto fe = boost::get<ast::FieldByExpression>(f.get());
-			CHECK(boost::get<std::string>(fe.key.first) == "x");
-			REQUIRE(fe.value.first.get().type() == typeid(double));
-			CHECK(boost::get<double>(fe.value.first) == 42.0);
+			CHECK(boost::get<std::string>(fe.key.operand) == "x");
+			REQUIRE(fe.value.operand.get().type() == typeid(double));
+			CHECK(boost::get<double>(fe.value.operand) == 42.0);
 		}
 
 		SUBCASE("by assignment") {
@@ -235,8 +235,8 @@ namespace lac::parser
 			REQUIRE(f.get().type() == typeid(ast::FieldByAssignement));
 			auto fa = boost::get<ast::FieldByAssignement>(f.get());
 			CHECK(boost::get<std::string>(fa.name) == "x");
-			REQUIRE(fa.value.first.get().type() == typeid(double));
-			CHECK(boost::get<double>(fa.value.first) == 42.0);
+			REQUIRE(fa.value.operand.get().type() == typeid(double));
+			CHECK(boost::get<double>(fa.value.operand) == 42.0);
 		}
 
 		SUBCASE("expression only") {
@@ -244,8 +244,8 @@ namespace lac::parser
 			REQUIRE(test_phrase_parser("'x'", field, f));
 			REQUIRE(f.get().type() == typeid(ast::Expression));
 			auto ex = boost::get<ast::Expression>(f.get());
-			CHECK(ex.first.get().type() == typeid(std::string));
-			CHECK(boost::get<std::string>(ex.first) == "x");
+			CHECK(ex.operand.get().type() == typeid(std::string));
+			CHECK(boost::get<std::string>(ex.operand) == "x");
 		}
 	}
 	
@@ -397,45 +397,45 @@ namespace lac::parser
 		SUBCASE("expression constant") {
 			ast::Expression ex;
 			REQUIRE(test_phrase_parser("nil", expression, ex));
-			REQUIRE(ex.first.get().type() == typeid(ast::ExpressionConstant));
-			CHECK(boost::get<ast::ExpressionConstant>(ex.first) == ast::ExpressionConstant::nil);
+			REQUIRE(ex.operand.get().type() == typeid(ast::ExpressionConstant));
+			CHECK(boost::get<ast::ExpressionConstant>(ex.operand) == ast::ExpressionConstant::nil);
 		}
 
 		SUBCASE("numeral") {
 			ast::Expression ex;
 			REQUIRE(test_phrase_parser("42.3", expression, ex));
-			REQUIRE(ex.first.get().type() == typeid(double));
-			CHECK(boost::get<double>(ex.first) == 42.3);
+			REQUIRE(ex.operand.get().type() == typeid(double));
+			CHECK(boost::get<double>(ex.operand) == 42.3);
 		}
 
 		SUBCASE("string") {
 			ast::Expression ex;
 			REQUIRE(test_phrase_parser("'test'", expression, ex));
-			REQUIRE(ex.first.get().type() == typeid(std::string));
-			CHECK(boost::get<std::string>(ex.first) == "test");
+			REQUIRE(ex.operand.get().type() == typeid(std::string));
+			CHECK(boost::get<std::string>(ex.operand) == "test");
 		}
 
 		SUBCASE("unary operation") {
 			ast::Expression ex;
 			REQUIRE(test_phrase_parser("not true", expression, ex));
-			REQUIRE(ex.first.get().type() == typeid(ast::f_UnaryOperation));
-			auto uo = boost::get<ast::f_UnaryOperation>(ex.first.get()).get();
+			REQUIRE(ex.operand.get().type() == typeid(ast::f_UnaryOperation));
+			auto uo = boost::get<ast::f_UnaryOperation>(ex.operand.get()).get();
 			CHECK(uo.operation == ast::Operation::bnot);
-			REQUIRE(uo.expression.first.get().type() == typeid(ast::ExpressionConstant));
-			CHECK(boost::get<ast::ExpressionConstant>(uo.expression.first) == ast::ExpressionConstant::True);
+			REQUIRE(uo.expression.operand.get().type() == typeid(ast::ExpressionConstant));
+			CHECK(boost::get<ast::ExpressionConstant>(uo.expression.operand) == ast::ExpressionConstant::True);
 		}
 
 		SUBCASE("binary operation") {
 			ast::Expression ex;
 			REQUIRE(test_phrase_parser("1 + 2", expression, ex));
-			REQUIRE(ex.first.get().type() == typeid(double));
-			CHECK(boost::get<double>(ex.first) == 1);
+			REQUIRE(ex.operand.get().type() == typeid(double));
+			CHECK(boost::get<double>(ex.operand) == 1);
 
-			REQUIRE(ex.rest.size() == 1);
-			const auto bo = ex.rest.front();
+			REQUIRE(ex.binaryOperation.is_initialized());
+			const auto bo = ex.binaryOperation->get();
 			CHECK(bo.operation == ast::Operation::add);
-			REQUIRE(bo.expression.first.get().type() == typeid(double));
-			CHECK(boost::get<double>(bo.expression.first) == 2);
+			REQUIRE(bo.expression.operand.get().type() == typeid(double));
+			CHECK(boost::get<double>(bo.expression.operand) == 2);
 		}
 	}
 
@@ -461,8 +461,8 @@ namespace lac::parser
 		SUBCASE("expression inside parentheses") {
 			ast::BracketedExpression be;
 			REQUIRE(test_phrase_parser("(42)", bracketedExpression, be));
-			REQUIRE(be.expression.first.get().type() == typeid(double));
-			CHECK(boost::get<double>(be.expression.first) == 42);
+			REQUIRE(be.expression.operand.get().type() == typeid(double));
+			CHECK(boost::get<double>(be.expression.operand) == 42);
 		}
 	}
 
@@ -478,8 +478,8 @@ namespace lac::parser
 		SUBCASE("expression") {
 			ast::TableIndexExpression tie;
 			REQUIRE(test_phrase_parser("[42]", tableIndexExpression, tie));
-			REQUIRE(tie.expression.first.get().type() == typeid(double));
-			CHECK(boost::get<double>(tie.expression.first) == 42);
+			REQUIRE(tie.expression.operand.get().type() == typeid(double));
+			CHECK(boost::get<double>(tie.expression.operand) == 42);
 		}
 	}
 
