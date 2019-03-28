@@ -75,6 +75,12 @@ namespace lac
 				Printer(out, indent + 1)(ex.binaryOperation->get());
 		}
 
+		void operator()(const TableConstructor& tc) const
+		{
+			tab();
+			out << "Table constructor";
+		}
+
 	private:
 		void tab() const
 		{

@@ -283,8 +283,8 @@ namespace lac
 										  | unaryOperation
 										  | numeral
 										  | literalString
-			/*							  | functionDefinition
 										  | tableConstructor
+			/*							  | functionDefinition
 										  | prefixExpression
 			*/
 			;

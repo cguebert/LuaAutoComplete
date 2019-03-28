@@ -53,12 +53,21 @@ namespace lac
 		struct UnaryOperation;
 		using f_UnaryOperation = boost::spirit::x3::forward_ast<UnaryOperation>;
 
+		struct Field;
+		using FieldsList = std::list<Field>;
+
+		struct TableConstructor
+		{
+			boost::optional<FieldsList> fields;
+		};
+
 		struct Operand
 			: boost::spirit::x3::variant<
 				  ExpressionConstant,
 				  double,
 				  std::string,
-				  f_UnaryOperation>
+				  f_UnaryOperation,
+				  TableConstructor>
 		{
 			using base_type::base_type;
 			using base_type::operator=;
@@ -108,13 +117,6 @@ namespace lac
 		{
 			using base_type::base_type;
 			using base_type::operator=;
-		};
-
-		using FieldsList = std::list<Field>;
-
-		struct TableConstructor
-		{
-			boost::optional<FieldsList> fields;
 		};
 
 		struct BracketedExpression

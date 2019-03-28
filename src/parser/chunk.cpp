@@ -361,9 +361,14 @@ namespace lac::parser
 		CHECK(test_phrase_parser("nil", expression));
 		CHECK(test_phrase_parser("false", expression));
 		CHECK(test_phrase_parser("true", expression));
+		CHECK(test_phrase_parser("...", expression));
 		CHECK(test_phrase_parser("42", expression));
 		CHECK(test_phrase_parser("'test'", expression));
-		CHECK(test_phrase_parser("...", expression));
+		CHECK(test_phrase_parser("\"test\"", expression));
+		CHECK(test_phrase_parser("[[test]]", expression));
+		CHECK(test_phrase_parser("{}", expression));
+		CHECK(test_phrase_parser("{1, 2}", expression));
+		CHECK(test_phrase_parser("{['test'] = 42, 3.14}", expression));
 	/*	CHECK(test_phrase_parser("function(a, b, c) return a + b / c; end", expression));
 		CHECK(test_phrase_parser("x", expression));
 		CHECK(test_phrase_parser("a.b.c", expression));
@@ -375,9 +380,6 @@ namespace lac::parser
 		CHECK(test_phrase_parser("func(a, b).c", expression));
 		CHECK(test_phrase_parser("func(a, b)[c]", expression));
 		CHECK(test_phrase_parser("func(a, b)[c]:test('hello').d:e(f)", expression));
-		CHECK(test_phrase_parser("{}", expression));
-		CHECK(test_phrase_parser("{x}", expression));
-		CHECK(test_phrase_parser("{x; x=2}", expression));
 		CHECK(test_phrase_parser("a[-2]", expression));
 		CHECK(test_phrase_parser("a.x[1]", expression));
 		CHECK(test_phrase_parser("a.b.c", expression));
@@ -436,6 +438,12 @@ namespace lac::parser
 			CHECK(bo.operation == ast::Operation::add);
 			REQUIRE(bo.expression.operand.get().type() == typeid(double));
 			CHECK(boost::get<double>(bo.expression.operand) == 2);
+		}
+
+		SUBCASE("table constructor") {
+			ast::Expression ex;
+			REQUIRE(test_phrase_parser("{1, 2}", expression, ex));
+			REQUIRE(ex.operand.get().type() == typeid(ast::TableConstructor));
 		}
 	}
 
