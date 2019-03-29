@@ -134,7 +134,7 @@ namespace lac
 		const x3::rule<class comment, std::string> comment = "comment";
 
 		const x3::rule<class fieldByExpression, ast::FieldByExpression> fieldByExpression = "fieldByExpression";
-		const x3::rule<class fieldByAssignement, ast::FieldByAssignement> fieldByAssignement = "fieldByAssignement";
+		const x3::rule<class fieldByAssignment, ast::FieldByAssignment> fieldByAssignment = "fieldByAssignment";
 		const x3::rule<class field, ast::Field> field = "field";
 		const x3::rule<class fieldsList, ast::FieldsList> fieldsList = "fieldsList";
 		const x3::rule<class tableConstructor, ast::TableConstructor> tableConstructor = "tableConstructor";
@@ -164,7 +164,10 @@ namespace lac
 		const x3::rule<class expression, ast::Expression> expression = "expression";
 		const x3::rule<class expressionsList, ast::ExpressionsList> expressionsList = "expressionsList";
 
-		const x3::rule<class label, std::string> label = "label";
+		const x3::rule<class emptyStatement, ast::EmptyStatement> emptyStatement = "emptyStatement";
+		const x3::rule<class assignmentStatement, ast::AssignmentStatement> assignmentStatement = "assignmentStatement";
+		const x3::rule<class localAssignmentStatement, ast::LocalAssignmentStatement> localAssignmentStatement = "localAssignmentStatement";
+		const x3::rule<class label, ast::LabelStatement> label = "label";
 		const x3::rule<class statement, std::string> statement = "statement";
 		const x3::rule<class returnStatement, std::string> returnStatement = "returnStatement";
 
@@ -229,9 +232,9 @@ namespace lac
 		//*** Complete syntax of Lua ***
 		// Table and fields
 		const auto fieldByExpression_def = '[' >> expression >> lit(']') >> lit('=') >> expression;
-		const auto fieldByAssignement_def = name >> '=' >> expression;
+		const auto fieldByAssignment_def = name >> '=' >> expression;
 		const auto field_def = fieldByExpression
-							   | fieldByAssignement
+							   | fieldByAssignment
 							   | expression;
 
 		const auto fieldSeparator = lit(',') | lit(';');
@@ -303,6 +306,9 @@ namespace lac
 		const auto expressionsList_def = expression >> *(',' >> expression);
 
 		// Statements
+		const auto emptyStatement_def = ';' >> x3::attr(ast::EmptyArguments{});
+		const auto assignmentStatement_def = variablesList >> '=' >> expressionsList;
+		const auto localAssignmentStatement_def = "local" >> namesList >> -('=' >> expressionsList);
 		const auto label_def = "::" >> name >> "::";
 
 		const auto returnStatement_def = "return" >> -expressionsList >> -lit(';');
@@ -333,7 +339,7 @@ namespace lac
 							numeral, numeralAsString,
 							shortComment, longComment, comment,
 							skipper,
-							fieldByExpression, fieldByAssignement, field, fieldsList, tableConstructor,
+							fieldByExpression, fieldByAssignment, field, fieldsList, tableConstructor,
 							parametersList, arguments,
 							functionBody, functionCall, functionCallEnd,
 							functionDefinition, functionNameMember, functionName,
@@ -342,6 +348,7 @@ namespace lac
 							variable, variableFunctionCall, variablePostfix, variablesList,
 							unaryOperation, binaryOperation,
 							simpleExpression, expression, expressionsList,
+							emptyStatement, assignmentStatement, localAssignmentStatement,
 							label, returnStatement, statement,
 							block, chunk);
 	} // namespace parser

@@ -107,7 +107,7 @@ namespace lac
 			Expression key, value;
 		};
 
-		struct FieldByAssignement
+		struct FieldByAssignment
 		{
 			std::string name;
 			Expression value;
@@ -116,7 +116,7 @@ namespace lac
 		struct Field
 			: boost::spirit::x3::variant<
 				  FieldByExpression,
-				  FieldByAssignement,
+				  FieldByAssignment,
 				  Expression>
 		{
 			using base_type::base_type;
@@ -224,10 +224,6 @@ namespace lac
 			FunctionCallEnd functionCall;
 		};
 
-		struct Statement
-		{
-		};
-
 		struct Block
 		{
 			std::string tmp;
@@ -240,6 +236,102 @@ namespace lac
 			boost::optional<ParametersList> parameters;
 			Block block;
 		};
+
+		struct EmptyStatement
+		{
+		};
+
+		struct AssignmentStatement
+		{
+			VariablesList variables;
+			ExpressionsList expressions;
+		};
+
+		struct LocalAssignmentStatement
+		{
+			NamesList variables;
+			boost::optional<ExpressionsList> expressions;
+		};
+
+		struct LabelStatement
+		{
+			std::string name;
+		};
+
+		struct BreakStatement
+		{
+		};
+
+		struct GotoStatement
+		{
+			std::string label;
+		};
+
+		struct DoStatement
+		{
+			Block block;
+		};
+
+		struct WhileStatement
+		{
+			Expression condition;
+			Block block;
+		};
+
+		struct RepeatStatement
+		{
+			Block block;
+			Expression condition;
+		};
+
+		struct IfStatement
+		{
+			Expression condition;
+			Block block;
+		};
+
+		struct IfThenElseStatement
+		{
+			IfStatement first;
+			std::list<IfStatement> rest;
+			boost::optional<Block> elseBlock;
+		};
+
+		struct NumericalForStatement
+		{
+			std::string variable;
+			Expression first, last;
+			boost::optional<Expression> step;
+			Block block;
+		};
+
+		struct GenericForStatement
+		{
+			NamesList variables;
+			ExpressionsList expressions;
+			Block block;
+		};
+
+		struct FunctionDeclarationStatement
+		{
+			FunctionName name;
+			FunctionBody body;
+		};
+
+		struct LocalFunctionDeclarationStatement
+		{
+			std::string name;
+			FunctionBody body;
+		};
+
+		struct Statement : boost::spirit::x3::variant<
+							   EmptyStatement,
+							   AssignmentStatement>
+		{
+			using base_type::base_type;
+			using base_type::operator=;
+		};
+
 	} // namespace ast
 } // namespace lac
 

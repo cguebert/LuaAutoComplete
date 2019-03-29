@@ -198,13 +198,13 @@ namespace lac::parser
 		CHECK(boost::get<double>(fe.value.operand) == 42.0);
 	}
 
-	TEST_CASE("field by assignement")
+	TEST_CASE("field by assignment")
 	{
-		CHECK(test_phrase_parser("test = 0", fieldByAssignement));
-		CHECK(test_phrase_parser("x = 'test'", fieldByAssignement));
+		CHECK(test_phrase_parser("test = 0", fieldByAssignment));
+		CHECK(test_phrase_parser("x = 'test'", fieldByAssignment));
 
-		ast::FieldByAssignement fa;
-		REQUIRE(test_phrase_parser("x = 'test'", fieldByAssignement, fa));
+		ast::FieldByAssignment fa;
+		REQUIRE(test_phrase_parser("x = 'test'", fieldByAssignment, fa));
 		CHECK(fa.name == "x");
 		REQUIRE(fa.value.operand.get().type() == typeid(std::string));
 		CHECK(boost::get<std::string>(fa.value.operand) == "test");
@@ -232,8 +232,8 @@ namespace lac::parser
 		SUBCASE("by assignment") {
 			ast::Field f;
 			REQUIRE(test_phrase_parser("x = 42", field, f));
-			REQUIRE(f.get().type() == typeid(ast::FieldByAssignement));
-			auto fa = boost::get<ast::FieldByAssignement>(f.get());
+			REQUIRE(f.get().type() == typeid(ast::FieldByAssignment));
+			auto fa = boost::get<ast::FieldByAssignment>(f.get());
 			CHECK(boost::get<std::string>(fa.name) == "x");
 			REQUIRE(fa.value.operand.get().type() == typeid(double));
 			CHECK(boost::get<double>(fa.value.operand) == 42.0);
@@ -710,8 +710,103 @@ namespace lac::parser
 			CHECK(fn.member->name == "d");
 		}
 	}
-	/*
-	TEST_CASE("label")
+	
+	TEST_CASE("empty statement")
+	{
+		CHECK(test_phrase_parser(";", emptyStatement));
+	}
+
+	TEST_CASE("assignment statement")
+	{
+		CHECK(test_phrase_parser("x = 1", assignmentStatement));
+		CHECK(test_phrase_parser("x = 42 + 3.14", assignmentStatement));
+		CHECK(test_phrase_parser("x, y = 'hello', 'World'", assignmentStatement));
+
+		SUBCASE("one variable") {
+			ast::AssignmentStatement as;
+			REQUIRE(test_phrase_parser("x = 42", assignmentStatement, as));
+			REQUIRE(as.variables.size() == 1);
+			REQUIRE(as.expressions.size() == 1);
+			const auto& var = as.variables.front();
+			REQUIRE(var.start.get().type() == typeid(std::string));
+			CHECK(boost::get<std::string>(var.start) == "x");
+			const auto& exp = as.expressions.front();
+			REQUIRE(exp.operand.get().type() == typeid(double));
+			CHECK(boost::get<double>(exp.operand) == 42);
+		}
+
+		SUBCASE("two variables") {
+			ast::AssignmentStatement as;
+			REQUIRE(test_phrase_parser("x, y = 42, 'hello'", assignmentStatement, as));
+			REQUIRE(as.variables.size() == 2);
+			REQUIRE(as.expressions.size() == 2);
+
+			auto itVar = as.variables.begin();
+			const auto& x = *itVar;
+			REQUIRE(x.start.get().type() == typeid(std::string));
+			CHECK(boost::get<std::string>(x.start) == "x");
+
+			const auto& y = *(++itVar);
+			REQUIRE(y.start.get().type() == typeid(std::string));
+			CHECK(boost::get<std::string>(y.start) == "y");
+
+			auto itExp = as.expressions.begin();
+			const auto& exp1 = *itExp;
+			REQUIRE(exp1.operand.get().type() == typeid(double));
+			CHECK(boost::get<double>(exp1.operand) == 42);
+
+			const auto& exp2 = *(++itExp);
+			REQUIRE(exp2.operand.get().type() == typeid(std::string));
+			CHECK(boost::get<std::string>(exp2.operand) == "hello");
+		}
+	}
+
+	TEST_CASE("local assignment statement")
+	{
+		CHECK(test_phrase_parser("local x", localAssignmentStatement));
+		CHECK(test_phrase_parser("local x, y", localAssignmentStatement));
+		CHECK(test_phrase_parser("local x = 1", localAssignmentStatement));
+		CHECK(test_phrase_parser("local x = 42 + 3.14", localAssignmentStatement));
+		CHECK(test_phrase_parser("local x, y = 'hello', 'World'", localAssignmentStatement));
+
+		SUBCASE("one variable") {
+			ast::LocalAssignmentStatement las;
+			REQUIRE(test_phrase_parser("local x", localAssignmentStatement, las));
+			REQUIRE(las.variables.size() == 1);
+			CHECK(las.variables.front() == "x");
+			CHECK(las.expressions.is_initialized() == false);
+		}
+
+		SUBCASE("two variables") {
+			ast::LocalAssignmentStatement las;
+			REQUIRE(test_phrase_parser("local x, y", localAssignmentStatement, las));
+			REQUIRE(las.variables.size() == 2);
+			CHECK(las.variables[0] == "x");
+			CHECK(las.variables[1] == "y");
+			CHECK(las.expressions.is_initialized() == false);
+		}
+
+		SUBCASE("two variables assigned") {
+			ast::LocalAssignmentStatement las;
+			REQUIRE(test_phrase_parser("local x, y = 42, 'hello'", localAssignmentStatement, las));
+			REQUIRE(las.variables.size() == 2);
+			CHECK(las.variables[0] == "x");
+			CHECK(las.variables[1] == "y");
+
+			REQUIRE(las.expressions.is_initialized());
+			REQUIRE(las.expressions->size() == 2);
+			auto itExp = las.expressions->begin();
+			const auto& exp1 = *itExp;
+			REQUIRE(exp1.operand.get().type() == typeid(double));
+			CHECK(boost::get<double>(exp1.operand) == 42);
+
+			const auto& exp2 = *(++itExp);
+			REQUIRE(exp2.operand.get().type() == typeid(std::string));
+			CHECK(boost::get<std::string>(exp2.operand) == "hello");
+		}
+	}
+
+	TEST_CASE("label statement")
 	{
 		CHECK(test_phrase_parser("::test::", label));
 		CHECK(test_phrase_parser(":: test ::", label));
@@ -719,8 +814,14 @@ namespace lac::parser
 		CHECK_FALSE(test_phrase_parser("::test:", label));
 		CHECK_FALSE(test_phrase_parser(":: test 123 ::", label));
 		CHECK_FALSE(test_phrase_parser("::::", label));
-	}
 
+		SUBCASE("name") {
+			ast::LabelStatement ls;
+			REQUIRE(test_phrase_parser("::test::", label, ls));
+			CHECK(ls.name == "test");
+		}
+	}
+	/*
 	TEST_CASE("returnStatement")
 	{
 		CHECK(test_phrase_parser("return", returnStatement));
