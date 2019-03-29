@@ -308,7 +308,7 @@ namespace lac
 										  | numeral
 										  | literalString
 										  | tableConstructor
-										  // | functionDefinition
+										  | functionDefinition
 										  | prefixExpression;
 
 		const auto unaryOperation_def = unaryOperator >> expression;

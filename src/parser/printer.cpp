@@ -87,6 +87,12 @@ namespace lac
 			out << "Prefix expression";
 		}
 
+		void operator()(const FunctionBody& fb) const
+		{
+			tab();
+			out << "Function body";
+		}
+
 	private:
 		void tab() const
 		{

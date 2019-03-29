@@ -64,6 +64,9 @@ namespace lac
 		struct PrefixExpression;
 		using f_PrefixExpression = boost::spirit::x3::forward_ast<PrefixExpression>;
 
+		struct FunctionBody;
+		using f_FunctionBody = boost::spirit::x3::forward_ast<FunctionBody>;
+
 		struct Operand
 			: boost::spirit::x3::variant<
 				  ExpressionConstant,
@@ -71,7 +74,8 @@ namespace lac
 				  std::string,
 				  f_UnaryOperation,
 				  TableConstructor,
-				  f_PrefixExpression>
+				  f_PrefixExpression,
+				  f_FunctionBody>
 		{
 			using base_type::base_type;
 			using base_type::operator=;

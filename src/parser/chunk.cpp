@@ -503,7 +503,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("{}", expression));
 		CHECK(test_phrase_parser("{1, 2}", expression));
 		CHECK(test_phrase_parser("{['test'] = 42, 3.14}", expression));
-		//	CHECK(test_phrase_parser("function(a, b, c) return a + b / c; end", expression));
+		CHECK(test_phrase_parser("function(a, b, c) return a + b / c; end", expression));
 		CHECK(test_phrase_parser("x", expression));
 		CHECK(test_phrase_parser("a.b.c", expression));
 		CHECK(test_phrase_parser("a[b][c]", expression));
@@ -579,6 +579,13 @@ namespace lac::parser
 			CHECK(boost::get<double>(bo.expression.operand) == 2);
 		}
 
+		SUBCASE("function definition")
+		{
+			ast::Expression ex;
+			REQUIRE(test_phrase_parser("function(a, b, c) return a + b / c; end", expression, ex));
+			REQUIRE(ex.operand.get().type() == typeid(ast::f_FunctionBody));
+		}
+		
 		SUBCASE("table constructor")
 		{
 			ast::Expression ex;
@@ -935,10 +942,10 @@ namespace lac::parser
 		{
 			ast::IfThenElseStatement s;
 			REQUIRE(test_phrase_parser("if x < 10 then print(x) "
-				"elseif x < 20 then print(x / 2) "
-				"elseif x < 30 then print(x / 3) "
-				"else print(x / 4) end",
-				ifThenElseStatement, s));
+									   "elseif x < 20 then print(x / 2) "
+									   "elseif x < 30 then print(x / 3) "
+									   "else print(x / 4) end",
+									   ifThenElseStatement, s));
 			CHECK(s.rest.size() == 2);
 			CHECK(s.elseBlock.is_initialized() == true);
 		}
