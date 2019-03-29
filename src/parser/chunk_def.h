@@ -21,7 +21,6 @@ namespace lac
 		using x3::alpha;
 		using x3::double_;
 		using x3::eol;
-		using x3::eps;
 		using x3::get;
 		using x3::hex;
 		using x3::lexeme;
@@ -118,73 +117,76 @@ namespace lac
 		} expressionConstant;
 		// clang-format on
 
-		const x3::rule<class name, std::string> name = "name";
-		const x3::rule<class namesList, std::vector<std::string>> namesList = "namesList";
+#define RULE(name, type) const x3::rule<class name, type> name = #name
+
+		RULE(name, std::string);
+		RULE(namesList, std::vector<std::string>);
 
 		const x3::rule<class openLongBracket> openLongBracket = "openLongBracket";
 		const x3::rule<class closeLongBacket> closeLongBacket = "closeLongBacket";
-		const x3::rule<class longLiteralString, std::string> longLiteralString = "longLiteralString";
-		const x3::rule<class literalString, std::string> literalString = "literalString";
+		RULE(longLiteralString, std::string);
+		RULE(literalString, std::string);
 
-		const x3::rule<class numeral, double> numeral = "numeral";
-		const x3::rule<class numeralAsString, std::string> numeralAsString = "numeralAsString";
+		RULE(numeral, double);
 
-		const x3::rule<class shortComment, std::string> shortComment = "shortComment";
-		const x3::rule<class longComment, std::string> longComment = "longComment";
-		const x3::rule<class comment, std::string> comment = "comment";
+		RULE(shortComment, std::string);
+		RULE(longComment, std::string);
+		RULE(comment, std::string);
 
-		const x3::rule<class fieldByExpression, ast::FieldByExpression> fieldByExpression = "fieldByExpression";
-		const x3::rule<class fieldByAssignment, ast::FieldByAssignment> fieldByAssignment = "fieldByAssignment";
-		const x3::rule<class field, ast::Field> field = "field";
-		const x3::rule<class fieldsList, ast::FieldsList> fieldsList = "fieldsList";
-		const x3::rule<class tableConstructor, ast::TableConstructor> tableConstructor = "tableConstructor";
+		RULE(fieldByExpression, ast::FieldByExpression);
+		RULE(fieldByAssignment, ast::FieldByAssignment);
+		RULE(field, ast::Field);
+		RULE(fieldsList, ast::FieldsList);
+		RULE(tableConstructor, ast::TableConstructor);
 
-		const x3::rule<class parametersList, ast::ParametersList> parametersList = "parametersList";
-		const x3::rule<class arguments, ast::Arguments> arguments = "arguments";
-		const x3::rule<class functionBody, ast::FunctionBody> functionBody = "functionBody";
-		const x3::rule<class functionCall, ast::FunctionCall> functionCall = "functionCall";
-		const x3::rule<class functionCallEnd, ast::FunctionCallEnd> functionCallEnd = "functionCallEnd";
-		const x3::rule<class functionDefinition, ast::FunctionBody> functionDefinition = "functionDefinition";
-		const x3::rule<class functionNameMember, ast::FunctionNameMember> functionNameMember = "functionNameMember";
-		const x3::rule<class functionName, ast::FunctionName> functionName = "functionName";
+		RULE(parametersList, ast::ParametersList);
+		RULE(arguments, ast::Arguments);
+		RULE(functionBody, ast::FunctionBody);
+		RULE(functionCall, ast::FunctionCall);
+		RULE(functionCallEnd, ast::FunctionCallEnd);
+		RULE(functionDefinition, ast::FunctionBody);
+		RULE(functionNameMember, ast::FunctionNameMember);
+		RULE(functionName, ast::FunctionName);
 
-		const x3::rule<class bracketedExpression, ast::BracketedExpression> bracketedExpression = "bracketedExpression";
-		const x3::rule<class tableIndexExpression, ast::TableIndexExpression> tableIndexExpression = "tableIndexExpression";
-		const x3::rule<class tableIndexName, ast::TableIndexName> tableIndexName = "tableIndexName";
-		const x3::rule<class prefixExpression, ast::PrefixExpression> prefixExpression = "prefixExpression";
-		const x3::rule<class postPrefix, ast::PostPrefix> postPrefix = "postPrefix";
-		const x3::rule<class variable, ast::Variable> variable = "variable";
-		const x3::rule<class variableFunctionCall, ast::VariableFunctionCall> variableFunctionCall = "variableFunctionCall";
-		const x3::rule<class variablePostfix, ast::VariablePostfix> variablePostfix = "variablePostfix";
-		const x3::rule<class variablesList, ast::VariablesList> variablesList = "variablesList";
+		RULE(bracketedExpression, ast::BracketedExpression);
+		RULE(tableIndexExpression, ast::TableIndexExpression);
+		RULE(tableIndexName, ast::TableIndexName);
+		RULE(prefixExpression, ast::PrefixExpression);
+		RULE(postPrefix, ast::PostPrefix);
+		RULE(variable, ast::Variable);
+		RULE(variableFunctionCall, ast::VariableFunctionCall);
+		RULE(variablePostfix, ast::VariablePostfix);
+		RULE(variablesList, ast::VariablesList);
 
-		const x3::rule<class unaryOperation, ast::UnaryOperation> unaryOperation = "unaryOperation";
-		const x3::rule<class binaryOperation, ast::BinaryOperation> binaryOperation = "binaryOperation";
-		const x3::rule<class simpleExpression, ast::Operand> simpleExpression = "simpleExpression";
-		const x3::rule<class expression, ast::Expression> expression = "expression";
-		const x3::rule<class expressionsList, ast::ExpressionsList> expressionsList = "expressionsList";
+		RULE(unaryOperation, ast::UnaryOperation);
+		RULE(binaryOperation, ast::BinaryOperation);
+		RULE(simpleExpression, ast::Operand);
+		RULE(expression, ast::Expression);
+		RULE(expressionsList, ast::ExpressionsList);
 
-		const x3::rule<class assignmentStatement, ast::AssignmentStatement> assignmentStatement = "assignmentStatement";
-		const x3::rule<class labelStatement, ast::LabelStatement> labelStatement = "labelStatement";
-		const x3::rule<class gotoStatement, ast::GotoStatement> gotoStatement = "gotoStatement";
-		const x3::rule<class breakStatement, ast::BreakStatement> breakStatement = "breakStatement";
-		const x3::rule<class doStatement, ast::DoStatement> doStatement = "doStatement";
-		const x3::rule<class whileStatement, ast::WhileStatement> whileStatement = "whileStatement";
-		const x3::rule<class repeatStatement, ast::RepeatStatement> repeatStatement = "repeatStatement";
-		const x3::rule<class ifStatement, ast::IfStatement> ifStatement = "ifStatement";
-		const x3::rule<class elseIfStatement, ast::IfStatement> elseIfStatement = "elseIfStatement";
-		const x3::rule<class ifThenElseStatement, ast::IfThenElseStatement> ifThenElseStatement = "ifThenElseStatement";
-		const x3::rule<class numericalForStatement, ast::NumericalForStatement> numericalForStatement = "numericalForStatement";
-		const x3::rule<class genericForStatement, ast::GenericForStatement> genericForStatement = "genericForStatement";
-		const x3::rule<class functionDeclarationStatement, ast::FunctionDeclarationStatement> functionDeclarationStatement = "functionDeclarationStatement";
-		const x3::rule<class localFunctionDeclarationStatement, ast::LocalFunctionDeclarationStatement> localFunctionDeclarationStatement = "localFunctionDeclarationStatement";
-		const x3::rule<class localAssignmentStatement, ast::LocalAssignmentStatement> localAssignmentStatement = "localAssignmentStatement";
+		RULE(assignmentStatement, ast::AssignmentStatement);
+		RULE(labelStatement, ast::LabelStatement);
+		RULE(gotoStatement, ast::GotoStatement);
+		RULE(breakStatement, ast::BreakStatement);
+		RULE(doStatement, ast::DoStatement);
+		RULE(whileStatement, ast::WhileStatement);
+		RULE(repeatStatement, ast::RepeatStatement);
+		RULE(ifStatement, ast::IfStatement);
+		RULE(elseIfStatement, ast::IfStatement);
+		RULE(ifThenElseStatement, ast::IfThenElseStatement);
+		RULE(numericalForStatement, ast::NumericalForStatement);
+		RULE(genericForStatement, ast::GenericForStatement);
+		RULE(functionDeclarationStatement, ast::FunctionDeclarationStatement);
+		RULE(localFunctionDeclarationStatement, ast::LocalFunctionDeclarationStatement);
+		RULE(localAssignmentStatement, ast::LocalAssignmentStatement);
 
-		const x3::rule<class returnStatement, ast::ReturnStatement> returnStatement = "returnStatement";
-		const x3::rule<class statement, ast::Statement> statement = "statement";
+		RULE(returnStatement, ast::ReturnStatement);
+		RULE(statement, ast::Statement);
 
-		const x3::rule<class block, ast::Block> block = "block";
-		const x3::rule<class chunk, ast::Block> chunk = "chunk";
+		RULE(block, ast::Block);
+		RULE(chunk, ast::Block);
+
+#undef RULE
 
 		// Names
 		const auto name_def = lexeme[((alpha | char_('_'))
@@ -223,7 +225,6 @@ namespace lac
 		const auto numeral_def = (lit("0x") >> hex)
 								 | (lit("0X") >> hex)
 								 | double_;
-		const auto numeralAsString_def = raw[numeral];
 
 		// Comments
 		const auto shortComment_def = "--" >> lexeme[*(char_ - eol)] >> -eol;
@@ -365,7 +366,7 @@ namespace lac
 		BOOST_SPIRIT_DEFINE(name, namesList,
 							openLongBracket, closeLongBacket,
 							longLiteralString, literalString,
-							numeral, numeralAsString,
+							numeral,
 							shortComment, longComment, comment,
 							skipper,
 							fieldByExpression, fieldByAssignment, field, fieldsList, tableConstructor,

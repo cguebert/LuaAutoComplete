@@ -148,18 +148,6 @@ namespace lac::parser
 		TEST_VALUE("0Xa0", numeral, double(0xa0));
 	}
 
-	TEST_CASE("numeral as string")
-	{
-		TEST_VALUE("0", numeralAsString, "0");
-		TEST_VALUE("-1", numeralAsString, "-1");
-		TEST_VALUE("0.1", numeralAsString, "0.1");
-		TEST_VALUE("1e2", numeralAsString, "1e2");
-		TEST_VALUE("1.2e3", numeralAsString, "1.2e3");
-		TEST_VALUE("1.2e-3", numeralAsString, "1.2e-3");
-		TEST_VALUE("0xa0", numeralAsString, "0xa0");
-		TEST_VALUE("0Xa0", numeralAsString, "0Xa0");
-	}
-
 	TEST_CASE("comment")
 	{
 		TEST_VALUE("--test", comment, "test");
