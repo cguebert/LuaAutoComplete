@@ -42,4 +42,5 @@ BOOST_FUSION_ADAPT_STRUCT(lac::ast::NumericalForStatement, variable, first, last
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::GenericForStatement, variables, expressions, block);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::FunctionDeclarationStatement, name, body);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::LocalFunctionDeclarationStatement, name, body);
+BOOST_FUSION_ADAPT_STRUCT(lac::ast::ReturnStatement, expressions);
 

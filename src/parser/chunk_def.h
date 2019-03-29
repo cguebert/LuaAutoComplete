@@ -167,9 +167,13 @@ namespace lac
 		const x3::rule<class emptyStatement, ast::EmptyStatement> emptyStatement = "emptyStatement";
 		const x3::rule<class assignmentStatement, ast::AssignmentStatement> assignmentStatement = "assignmentStatement";
 		const x3::rule<class localAssignmentStatement, ast::LocalAssignmentStatement> localAssignmentStatement = "localAssignmentStatement";
-		const x3::rule<class label, ast::LabelStatement> label = "label";
+		const x3::rule<class labelStatement, ast::LabelStatement> labelStatement = "labelStatement";
+		const x3::rule<class gotoStatement, ast::GotoStatement> gotoStatement = "gotoStatement";
+		const x3::rule<class breakStatement, ast::BreakStatement> breakStatement = "breakStatement";
+		const x3::rule<class doStatement, ast::DoStatement> doStatement = "doStatement";
+
 		const x3::rule<class statement, std::string> statement = "statement";
-		const x3::rule<class returnStatement, std::string> returnStatement = "returnStatement";
+		const x3::rule<class returnStatement, ast::ReturnStatement> returnStatement = "returnStatement";
 
 		const x3::rule<class block, std::string> block = "block";
 		const x3::rule<class chunk, std::string> chunk = "chunk";
@@ -296,7 +300,7 @@ namespace lac
 										  | numeral
 										  | literalString
 										  | tableConstructor
-			//							  | functionDefinition
+										  //							  | functionDefinition
 										  | prefixExpression;
 
 		const auto unaryOperation_def = unaryOperator >> expression;
@@ -309,25 +313,28 @@ namespace lac
 		const auto emptyStatement_def = ';' >> x3::attr(ast::EmptyArguments{});
 		const auto assignmentStatement_def = variablesList >> '=' >> expressionsList;
 		const auto localAssignmentStatement_def = "local" >> namesList >> -('=' >> expressionsList);
-		const auto label_def = "::" >> name >> "::";
+		const auto labelStatement_def = "::" >> name >> "::";
+		const auto gotoStatement_def = "goto" >> name;
+		const auto breakStatement_def = "break" >> x3::attr(ast::BreakStatement{});
+		const auto doStatement_def = "do" >> block >> "end";
 
 		const auto returnStatement_def = "return" >> -expressionsList >> -lit(';');
 
 		const auto statement_def = ';'
 								   | (variablesList >> '=' >> expressionsList)
 								   | functionCall
-								   | label
-								   | "break"
+								   | labelStatement
 								   | ("goto" >> name)
+								   | "break"
 								   | ("do" >> block >> "end")
-								   | ("while" >> expression >> "do" >> block >> "end")
+								 /*  | ("while" >> expression >> "do" >> block >> "end")
 								   | ("repeat" >> block >> "until" >> expression)
 								   | ("if" >> expression >> "then" >> block >> *("elseif" >> expression >> "then" >> block) >> -("else" >> block) >> "end")
 								   | ("for" >> name >> '=' >> expression >> ',' >> expression >> -(',' >> expression) >> "do" >> block >> "end")
 								   | ("for" >> namesList >> "in" >> expressionsList >> "do" >> block >> "end")
 								   | ("function" >> functionName >> functionBody)
 								   | ("local" >> lit("function") >> name >> functionBody)
-								   | ("local" >> namesList >> -('=' >> expressionsList));
+								   | ("local" >> namesList >> -('=' >> expressionsList))*/;
 
 		// Blocks
 		const auto block_def = name; //*statement >> -returnStatement;
@@ -349,7 +356,8 @@ namespace lac
 							unaryOperation, binaryOperation,
 							simpleExpression, expression, expressionsList,
 							emptyStatement, assignmentStatement, localAssignmentStatement,
-							label, returnStatement, statement,
+							labelStatement, gotoStatement, breakStatement, doStatement,
+							returnStatement, statement,
 							block, chunk);
 	} // namespace parser
 

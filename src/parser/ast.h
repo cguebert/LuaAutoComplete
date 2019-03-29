@@ -224,6 +224,11 @@ namespace lac
 			FunctionCallEnd functionCall;
 		};
 
+		struct ReturnStatement
+		{
+			std::list<Expression> expressions;
+		};
+
 		struct Block
 		{
 			std::string tmp;
@@ -258,13 +263,13 @@ namespace lac
 			std::string name;
 		};
 
-		struct BreakStatement
-		{
-		};
-
 		struct GotoStatement
 		{
 			std::string label;
+		};
+
+		struct BreakStatement
+		{
 		};
 
 		struct DoStatement
@@ -326,7 +331,12 @@ namespace lac
 
 		struct Statement : boost::spirit::x3::variant<
 							   EmptyStatement,
-							   AssignmentStatement>
+							   AssignmentStatement,
+							   LocalAssignmentStatement,
+							   LabelStatement,
+							   GotoStatement,
+							   BreakStatement,
+							   DoStatement>
 		{
 			using base_type::base_type;
 			using base_type::operator=;

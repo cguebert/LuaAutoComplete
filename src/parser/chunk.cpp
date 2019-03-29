@@ -808,20 +808,44 @@ namespace lac::parser
 
 	TEST_CASE("label statement")
 	{
-		CHECK(test_phrase_parser("::test::", label));
-		CHECK(test_phrase_parser(":: test ::", label));
+		CHECK(test_phrase_parser("::test::", labelStatement));
+		CHECK(test_phrase_parser(":: test ::", labelStatement));
 
-		CHECK_FALSE(test_phrase_parser("::test:", label));
-		CHECK_FALSE(test_phrase_parser(":: test 123 ::", label));
-		CHECK_FALSE(test_phrase_parser("::::", label));
+		CHECK_FALSE(test_phrase_parser("::test:", labelStatement));
+		CHECK_FALSE(test_phrase_parser(":: test 123 ::", labelStatement));
+		CHECK_FALSE(test_phrase_parser("::::", labelStatement));
 
 		SUBCASE("name") {
 			ast::LabelStatement ls;
-			REQUIRE(test_phrase_parser("::test::", label, ls));
+			REQUIRE(test_phrase_parser("::test::", labelStatement, ls));
 			CHECK(ls.name == "test");
 		}
 	}
-	/*
+
+	TEST_CASE("goto statement")
+	{
+		CHECK(test_phrase_parser("goto test", gotoStatement));
+		CHECK(test_phrase_parser("goto test123", gotoStatement));
+
+		CHECK_FALSE(test_phrase_parser("goto 123", gotoStatement));
+
+		SUBCASE("name") {
+			ast::GotoStatement gs;
+			REQUIRE(test_phrase_parser("goto test", gotoStatement, gs));
+			CHECK(gs.label == "test");
+		}
+	}
+
+	TEST_CASE("break statement")
+	{
+		CHECK(test_phrase_parser("break", breakStatement));
+	}
+
+	TEST_CASE("do statement")
+	{
+	//	CHECK(test_phrase_parser("do end", doStatement));
+	}
+	
 	TEST_CASE("returnStatement")
 	{
 		CHECK(test_phrase_parser("return", returnStatement));
@@ -832,8 +856,36 @@ namespace lac::parser
 		CHECK(test_phrase_parser("return x;", returnStatement));
 		CHECK(test_phrase_parser("return 1, x;", returnStatement));
 		CHECK(test_phrase_parser("return func(42), 'hello'", returnStatement));
-	}
 
+		SUBCASE("no expression") {
+			ast::ReturnStatement rs;
+			CHECK(test_phrase_parser("return", returnStatement, rs));
+			CHECK(rs.expressions.empty());
+		}
+
+		SUBCASE("one expression") {
+			ast::ReturnStatement rs;
+			CHECK(test_phrase_parser("return 42", returnStatement, rs));
+			REQUIRE(rs.expressions.size() == 1);
+			const auto& exp = rs.expressions.front();
+			REQUIRE(exp.operand.get().type() == typeid(double));
+			CHECK(boost::get<double>(exp.operand) == 42);
+		}
+
+		SUBCASE("two expressions") {
+			ast::ReturnStatement rs;
+			CHECK(test_phrase_parser("return 42, 'hello'", returnStatement, rs));
+			REQUIRE(rs.expressions.size() == 2);
+			auto it = rs.expressions.begin();
+			const auto& exp1 = *it;
+			REQUIRE(exp1.operand.get().type() == typeid(double));
+			CHECK(boost::get<double>(exp1.operand) == 42);
+			const auto& exp2 = *(++it);
+			REQUIRE(exp2.operand.get().type() == typeid(std::string));
+			CHECK(boost::get<std::string>(exp2.operand) == "hello");
+		}
+	}
+	/*
 	TEST_CASE("statement")
 	{
 		CHECK(test_phrase_parser(";", statement));
@@ -857,6 +909,11 @@ namespace lac::parser
 		CHECK(test_phrase_parser("local a, b = 2.34, 42", statement));
 
 		CHECK_FALSE(test_phrase_parser("test", statement));
+	}*/
+
+	/*TEST_CASE("block")
+	{
+		CHECK(test_phrase_parser("local x = 42; return x", block));
 	}*/
 
 	TEST_CASE("Printer")
