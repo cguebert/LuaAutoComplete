@@ -184,7 +184,7 @@ namespace lac
 		const x3::rule<class statement, ast::Statement> statement = "statement";
 
 		const x3::rule<class block, ast::Block> block = "block";
-		const x3::rule<class chunk, std::string> chunk = "chunk";
+		const x3::rule<class chunk, ast::Block> chunk = "chunk";
 
 		// Names
 		const auto name_def = lexeme[((alpha | char_('_'))
@@ -360,7 +360,7 @@ namespace lac
 
 		// Blocks
 		const auto block_def = *statement >> -returnStatement;
-		const auto chunk_def = name; //block
+		const auto chunk_def = block;
 
 		BOOST_SPIRIT_DEFINE(name, namesList,
 							openLongBracket, closeLongBacket,

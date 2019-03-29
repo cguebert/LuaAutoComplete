@@ -12,7 +12,7 @@ namespace lac
     namespace parser
     {
         namespace x3 = boost::spirit::x3;
-        using chunk_type = x3::rule<class chunk, std::string>;
+        using chunk_type = x3::rule<class chunk, ast::Block>;
         BOOST_SPIRIT_DECLARE(chunk_type);
     }
 

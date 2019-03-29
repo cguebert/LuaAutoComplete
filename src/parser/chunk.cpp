@@ -1129,6 +1129,22 @@ namespace lac::parser
 	TEST_CASE("block")
 	{
 		CHECK(test_phrase_parser("local x = 42; return x", block));
+
+		SUBCASE("no return")
+		{
+			ast::Block b;
+			CHECK(test_phrase_parser("x = 2", block, b));
+			CHECK(b.statements.size() == 1);
+			CHECK(b.returnStatement.is_initialized() == false);
+		}
+
+		SUBCASE("with return")
+		{
+			ast::Block b;
+			CHECK(test_phrase_parser("local x = 2\n print(x) return x + 42", block, b));
+			CHECK(b.statements.size() == 2);
+			CHECK(b.returnStatement.is_initialized() == true);
+		}
 	}
 
 	TEST_CASE("Printer")
