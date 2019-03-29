@@ -136,16 +136,31 @@ namespace lac::parser
 		TEST_VALUE("[[test]]", literalString, "test");
 	}
 
-	TEST_CASE("numeral")
+	TEST_CASE("numeral int")
 	{
-		TEST_VALUE("0", numeral, 0.0);
-		TEST_VALUE("-1", numeral, -1.0);
-		TEST_VALUE("0.1", numeral, 0.1);
-		TEST_VALUE("1e2", numeral, 1e2);
-		TEST_VALUE("1.2e3", numeral, 1.2e3);
-		TEST_VALUE("1.2e-3", numeral, 1.2e-3);
-		TEST_VALUE("0xa0", numeral, double(0xa0));
-		TEST_VALUE("0Xa0", numeral, double(0xa0));
+		TEST_VALUE("0", numeralInt, 0);
+		TEST_VALUE("42", numeralInt, 42);
+		TEST_VALUE("-1", numeralInt, -1);
+		TEST_VALUE("0xa0", numeralInt, int(0xa0));
+		TEST_VALUE("0Xa0", numeralInt, int(0xa0));
+
+		CHECK_FALSE(test_parser("0.0", numeralInt));
+	}
+
+	TEST_CASE("numeral float")
+	{
+		TEST_VALUE("0", numeralFloat, 0.0);
+		TEST_VALUE("0.1", numeralFloat, 0.1);
+		TEST_VALUE("3.14", numeralFloat, 3.14);
+		TEST_VALUE("-3.14", numeralFloat, -3.14);
+		TEST_VALUE("1e2", numeralFloat, 1e2);
+		TEST_VALUE("1.2e3", numeralFloat, 1.2e3);
+		TEST_VALUE("1.2e-3", numeralFloat, 1.2e-3);
+
+		CHECK(test_phrase_parser("3.14", numeralFloat));
+		CHECK(test_phrase_parser("42.3", numeralFloat));
+
+		CHECK_FALSE(test_phrase_parser("42,3", numeralFloat));
 	}
 
 	TEST_CASE("comment")
@@ -190,8 +205,8 @@ namespace lac::parser
 		REQUIRE(fe.key.binaryOperation->get().expression.operand.get().type() == typeid(std::string));
 		CHECK(boost::get<std::string>(fe.key.binaryOperation->get().expression.operand) == "World");
 
-		REQUIRE(fe.value.operand.get().type() == typeid(double));
-		CHECK(boost::get<double>(fe.value.operand) == 42.0);
+		REQUIRE(fe.value.operand.get().type() == typeid(int));
+		CHECK(boost::get<int>(fe.value.operand) == 42);
 	}
 
 	TEST_CASE("field by assignment")
@@ -222,8 +237,8 @@ namespace lac::parser
 			REQUIRE(f.get().type() == typeid(ast::FieldByExpression));
 			auto fe = boost::get<ast::FieldByExpression>(f.get());
 			CHECK(boost::get<std::string>(fe.key.operand) == "x");
-			REQUIRE(fe.value.operand.get().type() == typeid(double));
-			CHECK(boost::get<double>(fe.value.operand) == 42.0);
+			REQUIRE(fe.value.operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(fe.value.operand) == 42.0);
 		}
 
 		SUBCASE("by assignment")
@@ -233,8 +248,8 @@ namespace lac::parser
 			REQUIRE(f.get().type() == typeid(ast::FieldByAssignment));
 			auto fa = boost::get<ast::FieldByAssignment>(f.get());
 			CHECK(boost::get<std::string>(fa.name) == "x");
-			REQUIRE(fa.value.operand.get().type() == typeid(double));
-			CHECK(boost::get<double>(fa.value.operand) == 42.0);
+			REQUIRE(fa.value.operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(fa.value.operand) == 42);
 		}
 
 		SUBCASE("expression only")
@@ -316,7 +331,7 @@ namespace lac::parser
 			REQUIRE(pl.parameters.size() == 0);
 		}
 	}
-	/*
+	
 	TEST_CASE("functionBody")
 	{
 		CHECK(test_phrase_parser("() end", functionBody));
@@ -328,7 +343,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("function () end", functionDefinition));
 		CHECK(test_phrase_parser("function (a) x=a + 1; return x; end", functionDefinition));
 	}
-	*/
+	
 	TEST_CASE("arguments")
 	{
 		CHECK(test_phrase_parser("()", arguments));
@@ -485,6 +500,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("true", expression));
 		CHECK(test_phrase_parser("...", expression));
 		CHECK(test_phrase_parser("42", expression));
+		CHECK(test_phrase_parser("3.14", expression));
 		CHECK(test_phrase_parser("'test'", expression));
 		CHECK(test_phrase_parser("\"test\"", expression));
 		CHECK(test_phrase_parser("[[test]]", expression));
@@ -526,7 +542,15 @@ namespace lac::parser
 			CHECK(boost::get<ast::ExpressionConstant>(ex.operand) == ast::ExpressionConstant::nil);
 		}
 
-		SUBCASE("numeral")
+		SUBCASE("numeral int")
+		{
+			ast::Expression ex;
+			REQUIRE(test_phrase_parser("42", expression, ex));
+			REQUIRE(ex.operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(ex.operand) == 42);
+		}
+
+		SUBCASE("numeral float")
 		{
 			ast::Expression ex;
 			REQUIRE(test_phrase_parser("42.3", expression, ex));
@@ -557,14 +581,14 @@ namespace lac::parser
 		{
 			ast::Expression ex;
 			REQUIRE(test_phrase_parser("1 + 2", expression, ex));
-			REQUIRE(ex.operand.get().type() == typeid(double));
-			CHECK(boost::get<double>(ex.operand) == 1);
+			REQUIRE(ex.operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(ex.operand) == 1);
 
 			REQUIRE(ex.binaryOperation.is_initialized());
 			const auto bo = ex.binaryOperation->get();
 			CHECK(bo.operation == ast::Operation::add);
-			REQUIRE(bo.expression.operand.get().type() == typeid(double));
-			CHECK(boost::get<double>(bo.expression.operand) == 2);
+			REQUIRE(bo.expression.operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(bo.expression.operand) == 2);
 		}
 
 		SUBCASE("function definition")
@@ -605,8 +629,8 @@ namespace lac::parser
 		{
 			ast::BracketedExpression be;
 			REQUIRE(test_phrase_parser("(42)", bracketedExpression, be));
-			REQUIRE(be.expression.operand.get().type() == typeid(double));
-			CHECK(boost::get<double>(be.expression.operand) == 42);
+			REQUIRE(be.expression.operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(be.expression.operand) == 42);
 		}
 	}
 
@@ -623,8 +647,8 @@ namespace lac::parser
 		{
 			ast::TableIndexExpression tie;
 			REQUIRE(test_phrase_parser("[42]", tableIndexExpression, tie));
-			REQUIRE(tie.expression.operand.get().type() == typeid(double));
-			CHECK(boost::get<double>(tie.expression.operand) == 42);
+			REQUIRE(tie.expression.operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(tie.expression.operand) == 42);
 		}
 	}
 
@@ -769,8 +793,8 @@ namespace lac::parser
 			REQUIRE(var.start.get().type() == typeid(std::string));
 			CHECK(boost::get<std::string>(var.start) == "x");
 			const auto& exp = as.expressions.front();
-			REQUIRE(exp.operand.get().type() == typeid(double));
-			CHECK(boost::get<double>(exp.operand) == 42);
+			REQUIRE(exp.operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(exp.operand) == 42);
 		}
 
 		SUBCASE("two variables")
@@ -791,8 +815,8 @@ namespace lac::parser
 
 			auto itExp = as.expressions.begin();
 			const auto& exp1 = *itExp;
-			REQUIRE(exp1.operand.get().type() == typeid(double));
-			CHECK(boost::get<double>(exp1.operand) == 42);
+			REQUIRE(exp1.operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(exp1.operand) == 42);
 
 			const auto& exp2 = *(++itExp);
 			REQUIRE(exp2.operand.get().type() == typeid(std::string));
@@ -839,8 +863,8 @@ namespace lac::parser
 			REQUIRE(las.expressions->size() == 2);
 			auto itExp = las.expressions->begin();
 			const auto& exp1 = *itExp;
-			REQUIRE(exp1.operand.get().type() == typeid(double));
-			CHECK(boost::get<double>(exp1.operand) == 42);
+			REQUIRE(exp1.operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(exp1.operand) == 42);
 
 			const auto& exp2 = *(++itExp);
 			REQUIRE(exp2.operand.get().type() == typeid(std::string));
@@ -949,10 +973,10 @@ namespace lac::parser
 			ast::NumericalForStatement s;
 			REQUIRE(test_phrase_parser("for x = 1, 10 do print(x) end", numericalForStatement, s));
 			CHECK(s.variable == "x");
-			REQUIRE(s.first.operand.get().type() == typeid(double));
-			CHECK(boost::get<double>(s.first.operand) == 1);
-			REQUIRE(s.last.operand.get().type() == typeid(double));
-			CHECK(boost::get<double>(s.last.operand) == 10);
+			REQUIRE(s.first.operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(s.first.operand) == 1);
+			REQUIRE(s.last.operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(s.last.operand) == 10);
 			CHECK(s.step.is_initialized() == false);
 		}
 
@@ -961,13 +985,13 @@ namespace lac::parser
 			ast::NumericalForStatement s;
 			REQUIRE(test_phrase_parser("for x = 1, 10, 2 do print(x) end", numericalForStatement, s));
 			CHECK(s.variable == "x");
-			REQUIRE(s.first.operand.get().type() == typeid(double));
-			CHECK(boost::get<double>(s.first.operand) == 1);
-			REQUIRE(s.last.operand.get().type() == typeid(double));
-			CHECK(boost::get<double>(s.last.operand) == 10);
+			REQUIRE(s.first.operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(s.first.operand) == 1);
+			REQUIRE(s.last.operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(s.last.operand) == 10);
 			REQUIRE(s.step.is_initialized());
-			REQUIRE(s.step->operand.get().type() == typeid(double));
-			CHECK(boost::get<double>(s.step->operand) == 2);
+			REQUIRE(s.step->operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(s.step->operand) == 2);
 		}
 	}
 
@@ -1059,8 +1083,8 @@ namespace lac::parser
 			CHECK(test_phrase_parser("return 42", returnStatement, rs));
 			REQUIRE(rs.expressions.size() == 1);
 			const auto& exp = rs.expressions.front();
-			REQUIRE(exp.operand.get().type() == typeid(double));
-			CHECK(boost::get<double>(exp.operand) == 42);
+			REQUIRE(exp.operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(exp.operand) == 42);
 		}
 
 		SUBCASE("two expressions")
@@ -1070,8 +1094,8 @@ namespace lac::parser
 			REQUIRE(rs.expressions.size() == 2);
 			auto it = rs.expressions.begin();
 			const auto& exp1 = *it;
-			REQUIRE(exp1.operand.get().type() == typeid(double));
-			CHECK(boost::get<double>(exp1.operand) == 42);
+			REQUIRE(exp1.operand.get().type() == typeid(int));
+			CHECK(boost::get<int>(exp1.operand) == 42);
 			const auto& exp2 = *(++it);
 			REQUIRE(exp2.operand.get().type() == typeid(std::string));
 			CHECK(boost::get<std::string>(exp2.operand) == "hello");

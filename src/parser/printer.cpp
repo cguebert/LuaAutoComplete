@@ -35,6 +35,11 @@ namespace lac
 			out << '"' << str << '"';
 		}
 
+		void operator()(int v) const
+		{
+			out << v;
+		}
+
 		void operator()(double v) const
 		{
 			out << v;

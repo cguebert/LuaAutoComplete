@@ -70,6 +70,7 @@ namespace lac
 		struct Operand
 			: boost::spirit::x3::variant<
 				  ExpressionConstant,
+				  int,
 				  double,
 				  std::string,
 				  f_UnaryOperation,

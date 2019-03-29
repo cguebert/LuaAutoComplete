@@ -23,6 +23,7 @@ namespace lac
 		using x3::eol;
 		using x3::get;
 		using x3::hex;
+		using x3::int_;
 		using x3::lexeme;
 		using x3::lit;
 		using x3::omit;
@@ -117,7 +118,7 @@ namespace lac
 		} expressionConstant;
 		// clang-format on
 
-#define RULE(name, type) const x3::rule<class name, type> name = #name
+#define RULE(name, type) const x3::rule<class name, type> name = #name;
 
 		RULE(name, std::string);
 		RULE(namesList, std::vector<std::string>);
@@ -127,7 +128,8 @@ namespace lac
 		RULE(longLiteralString, std::string);
 		RULE(literalString, std::string);
 
-		RULE(numeral, double);
+		RULE(numeralInt, int);
+		RULE(numeralFloat, double);
 
 		RULE(shortComment, std::string);
 		RULE(longComment, std::string);
@@ -222,9 +224,10 @@ namespace lac
 											  | longLiteralString];
 
 		// Numerals
-		const auto numeral_def = (lit("0x") >> hex)
+		const auto numeralInt_def = (lit("0x") >> hex)
 								 | (lit("0X") >> hex)
-								 | double_;
+								 | (int_ >> !lit('.'));
+		const auto numeralFloat_def = double_;
 
 		// Comments
 		const auto shortComment_def = "--" >> lexeme[*(char_ - eol)] >> -eol;
@@ -306,7 +309,8 @@ namespace lac
 		// Expressions
 		const auto simpleExpression_def = expressionConstant
 										  | unaryOperation
-										  | numeral
+										  | numeralInt
+										  | numeralFloat
 										  | literalString
 										  | tableConstructor
 										  | functionDefinition
@@ -366,7 +370,7 @@ namespace lac
 		BOOST_SPIRIT_DEFINE(name, namesList,
 							openLongBracket, closeLongBacket,
 							longLiteralString, literalString,
-							numeral,
+							numeralInt, numeralFloat,
 							shortComment, longComment, comment,
 							skipper,
 							fieldByExpression, fieldByAssignment, field, fieldsList, tableConstructor,
