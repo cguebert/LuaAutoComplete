@@ -6,6 +6,11 @@
 #include <iomanip>
 #include <iostream>
 
+std::ostream& operator<< (std::ostream& os, const std::type_info& value) {
+	os << value.name();
+	return os;
+}
+
 namespace lac::parser
 {
 	BOOST_SPIRIT_INSTANTIATE(chunk_type, iterator_type, context_type);
@@ -885,36 +890,47 @@ namespace lac::parser
 			CHECK(boost::get<std::string>(exp2.operand) == "hello");
 		}
 	}
-	/*
+	
+	template<class T>
+	bool testStatementType(const std::string& str)
+	{
+		ast::Statement s;
+		if (!test_phrase_parser(str, statement, s))
+			return false;
+
+		CHECK(s.get().type() == typeid(T));
+		return s.get().type() == typeid(T);
+	}
+
 	TEST_CASE("statement")
 	{
-		CHECK(test_phrase_parser(";", statement));
-		CHECK(test_phrase_parser("x = 2", statement));
-		CHECK(test_phrase_parser("a, b = 2.34, 42", statement));
-		CHECK(test_phrase_parser("a(b)", statement));
-		CHECK(test_phrase_parser("a:b(c, 42)", statement));
-		CHECK(test_phrase_parser("::test::", statement));
-		CHECK(test_phrase_parser("break", statement));
-		CHECK(test_phrase_parser("goto test", statement));
-		CHECK(test_phrase_parser("do x = x+1 end", statement));
-		CHECK(test_phrase_parser("while x < 10 do x = x + 1 end", statement));
-		CHECK(test_phrase_parser("repeat x = x + 1 until x > 10", statement));
-		CHECK(test_phrase_parser("if x < 10 then x = x + 1 else x = x - 1 end", statement));
-		CHECK(test_phrase_parser("if x < 10 then x = x + 1 elseif x > 20 then x = x - 1 end", statement));
-		CHECK(test_phrase_parser("for x = 0, 10 do print(x) end", statement));
-		CHECK(test_phrase_parser("for x in 1, 2, 3 do print(x) end", statement));
-		CHECK(test_phrase_parser("function test() return 42 end", statement));
-		CHECK(test_phrase_parser("local function test() return 42 end", statement));
-		CHECK(test_phrase_parser("local x = 42", statement));
-		CHECK(test_phrase_parser("local a, b = 2.34, 42", statement));
-
+		CHECK(testStatementType<ast::EmptyStatement>(";"));
+		CHECK(testStatementType<ast::AssignmentStatement>("x = 2"));
+		CHECK(testStatementType<ast::AssignmentStatement>("a, b = 2.34, 42"));
+		CHECK(testStatementType<ast::FunctionCall>("a(b)"));
+		CHECK(testStatementType<ast::FunctionCall>("a:b(c, 42)"));
+		CHECK(testStatementType<ast::LabelStatement>("::test::"));
+		CHECK(testStatementType<ast::BreakStatement>("break"));
+		CHECK(testStatementType<ast::GotoStatement>("goto test"));
+		CHECK(testStatementType<ast::DoStatement>("do x = x+1 end"));
+		CHECK(testStatementType<ast::WhileStatement>("while x < 10 do x = x + 1 end"));
+		CHECK(testStatementType<ast::RepeatStatement>("repeat x = x + 1 until x > 10"));
+		CHECK(testStatementType<ast::IfThenElseStatement>("if x < 10 then x = x + 1 else x = x - 1 end"));
+		CHECK(testStatementType<ast::IfThenElseStatement>("if x < 10 then x = x + 1 elseif x > 20 then x = x - 1 end"));
+		CHECK(testStatementType<ast::NumericalForStatement>("for x = 0, 10 do print(x) end"));
+		CHECK(testStatementType<ast::GenericForStatement>("for x in 1, 2, 3 do print(x) end"));
+		CHECK(testStatementType<ast::FunctionDeclarationStatement>("function test() return 42 end"));
+		CHECK(testStatementType<ast::LocalFunctionDeclarationStatement>("local function test() return 42 end"));
+		CHECK(testStatementType<ast::LocalAssignmentStatement>("local x = 42"));
+		CHECK(testStatementType<ast::LocalAssignmentStatement>("local a, b = 2.34, 42"));
+		
 		CHECK_FALSE(test_phrase_parser("test", statement));
-	}*/
+	}
 
-	/*TEST_CASE("block")
+	TEST_CASE("block")
 	{
 		CHECK(test_phrase_parser("local x = 42; return x", block));
-	}*/
+	}
 
 	TEST_CASE("Printer")
 	{

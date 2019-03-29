@@ -164,18 +164,26 @@ namespace lac
 		const x3::rule<class expression, ast::Expression> expression = "expression";
 		const x3::rule<class expressionsList, ast::ExpressionsList> expressionsList = "expressionsList";
 
-		const x3::rule<class emptyStatement, ast::EmptyStatement> emptyStatement = "emptyStatement";
 		const x3::rule<class assignmentStatement, ast::AssignmentStatement> assignmentStatement = "assignmentStatement";
-		const x3::rule<class localAssignmentStatement, ast::LocalAssignmentStatement> localAssignmentStatement = "localAssignmentStatement";
 		const x3::rule<class labelStatement, ast::LabelStatement> labelStatement = "labelStatement";
 		const x3::rule<class gotoStatement, ast::GotoStatement> gotoStatement = "gotoStatement";
 		const x3::rule<class breakStatement, ast::BreakStatement> breakStatement = "breakStatement";
 		const x3::rule<class doStatement, ast::DoStatement> doStatement = "doStatement";
+		const x3::rule<class whileStatement, ast::WhileStatement> whileStatement = "whileStatement";
+		const x3::rule<class repeatStatement, ast::RepeatStatement> repeatStatement = "repeatStatement";
+		const x3::rule<class ifStatement, ast::IfStatement> ifStatement = "ifStatement";
+		const x3::rule<class elseIfStatement, ast::IfStatement> elseIfStatement = "elseIfStatement";
+		const x3::rule<class ifThenElseStatement, ast::IfThenElseStatement> ifThenElseStatement = "ifThenElseStatement";
+		const x3::rule<class numericalForStatement, ast::NumericalForStatement> numericalForStatement = "numericalForStatement";
+		const x3::rule<class genericForStatement, ast::GenericForStatement> genericForStatement = "genericForStatement";
+		const x3::rule<class functionDeclarationStatement, ast::FunctionDeclarationStatement> functionDeclarationStatement = "functionDeclarationStatement";
+		const x3::rule<class localFunctionDeclarationStatement, ast::LocalFunctionDeclarationStatement> localFunctionDeclarationStatement = "localFunctionDeclarationStatement";
+		const x3::rule<class localAssignmentStatement, ast::LocalAssignmentStatement> localAssignmentStatement = "localAssignmentStatement";
 
-		const x3::rule<class statement, std::string> statement = "statement";
 		const x3::rule<class returnStatement, ast::ReturnStatement> returnStatement = "returnStatement";
+		const x3::rule<class statement, ast::Statement> statement = "statement";
 
-		const x3::rule<class block, std::string> block = "block";
+		const x3::rule<class block, ast::Block> block = "block";
 		const x3::rule<class chunk, std::string> chunk = "chunk";
 
 		// Names
@@ -300,7 +308,7 @@ namespace lac
 										  | numeral
 										  | literalString
 										  | tableConstructor
-										  //							  | functionDefinition
+										  // | functionDefinition
 										  | prefixExpression;
 
 		const auto unaryOperation_def = unaryOperator >> expression;
@@ -310,35 +318,49 @@ namespace lac
 		const auto expressionsList_def = expression >> *(',' >> expression);
 
 		// Statements
-		const auto emptyStatement_def = ';' >> x3::attr(ast::EmptyArguments{});
+		const auto emptyStatement = lit(';') >> x3::attr(ast::EmptyStatement{});
 		const auto assignmentStatement_def = variablesList >> '=' >> expressionsList;
-		const auto localAssignmentStatement_def = "local" >> namesList >> -('=' >> expressionsList);
 		const auto labelStatement_def = "::" >> name >> "::";
 		const auto gotoStatement_def = "goto" >> name;
 		const auto breakStatement_def = "break" >> x3::attr(ast::BreakStatement{});
 		const auto doStatement_def = "do" >> block >> "end";
+		const auto whileStatement_def = "while" >> expression >> "do" >> block >> "end";
+		const auto repeatStatement_def = "repeat" >> block >> "until" >> expression;
+		const auto ifStatement_def = "if" >> expression >> "then" >> block;
+		const auto elseIfStatement_def = "elseif" >> expression >> "then" >> block;
+		const auto ifThenElseStatement_def = ifStatement
+											 >> *(elseIfStatement)
+											 >> -("else" >> block)
+											 >> "end";
+		const auto numericalForStatement_def = "for" >> name >> '=' >> expression
+											   >> ',' >> expression >> -(',' >> expression)
+											   >> "do" >> block >> "end";
+		const auto genericForStatement_def = "for" >> namesList >> "in" >> expressionsList >> "do" >> block >> "end";
+		const auto functionDeclarationStatement_def = "function" >> functionName >> functionBody;
+		const auto localFunctionDeclarationStatement_def = "local" >> lit("function") >> name >> functionBody;
+		const auto localAssignmentStatement_def = "local" >> namesList >> -('=' >> expressionsList);
+
+		const auto statement_def = emptyStatement
+								   | assignmentStatement
+								   | functionCall
+								   | labelStatement
+								   | gotoStatement
+								   | breakStatement
+								   | doStatement
+								   | whileStatement
+								   | repeatStatement
+								   | ifThenElseStatement
+								   | numericalForStatement
+								   | genericForStatement
+								   | functionDeclarationStatement
+								   | localFunctionDeclarationStatement
+								   | localAssignmentStatement;
 
 		const auto returnStatement_def = "return" >> -expressionsList >> -lit(';');
 
-		const auto statement_def = ';'
-								   | (variablesList >> '=' >> expressionsList)
-								   | functionCall
-								   | labelStatement
-								   | ("goto" >> name)
-								   | "break"
-								   | ("do" >> block >> "end")
-								 /*  | ("while" >> expression >> "do" >> block >> "end")
-								   | ("repeat" >> block >> "until" >> expression)
-								   | ("if" >> expression >> "then" >> block >> *("elseif" >> expression >> "then" >> block) >> -("else" >> block) >> "end")
-								   | ("for" >> name >> '=' >> expression >> ',' >> expression >> -(',' >> expression) >> "do" >> block >> "end")
-								   | ("for" >> namesList >> "in" >> expressionsList >> "do" >> block >> "end")
-								   | ("function" >> functionName >> functionBody)
-								   | ("local" >> lit("function") >> name >> functionBody)
-								   | ("local" >> namesList >> -('=' >> expressionsList))*/;
-
 		// Blocks
-		const auto block_def = name; //*statement >> -returnStatement;
-		const auto chunk_def = block;
+		const auto block_def = *statement >> -returnStatement;
+		const auto chunk_def = name; //block
 
 		BOOST_SPIRIT_DEFINE(name, namesList,
 							openLongBracket, closeLongBacket,
@@ -355,8 +377,12 @@ namespace lac
 							variable, variableFunctionCall, variablePostfix, variablesList,
 							unaryOperation, binaryOperation,
 							simpleExpression, expression, expressionsList,
-							emptyStatement, assignmentStatement, localAssignmentStatement,
+							assignmentStatement, localAssignmentStatement,
 							labelStatement, gotoStatement, breakStatement, doStatement,
+							whileStatement, repeatStatement,
+							ifStatement, elseIfStatement, ifThenElseStatement,
+							numericalForStatement, genericForStatement,
+							functionDeclarationStatement, localFunctionDeclarationStatement,
 							returnStatement, statement,
 							block, chunk);
 	} // namespace parser

@@ -229,11 +229,12 @@ namespace lac
 			std::list<Expression> expressions;
 		};
 
+		struct Statement;
+
 		struct Block
 		{
-			std::string tmp;
-			//	std::list<Statement> statements;
-			//	std::list<Expression> returnStatement;
+			std::list<Statement> statements;
+			boost::optional<ReturnStatement> returnStatement;
 		};
 
 		struct FunctionBody
@@ -250,12 +251,6 @@ namespace lac
 		{
 			VariablesList variables;
 			ExpressionsList expressions;
-		};
-
-		struct LocalAssignmentStatement
-		{
-			NamesList variables;
-			boost::optional<ExpressionsList> expressions;
 		};
 
 		struct LabelStatement
@@ -329,14 +324,28 @@ namespace lac
 			FunctionBody body;
 		};
 
+		struct LocalAssignmentStatement
+		{
+			NamesList variables;
+			boost::optional<ExpressionsList> expressions;
+		};
+
 		struct Statement : boost::spirit::x3::variant<
 							   EmptyStatement,
 							   AssignmentStatement,
-							   LocalAssignmentStatement,
+							   FunctionCall,
 							   LabelStatement,
 							   GotoStatement,
 							   BreakStatement,
-							   DoStatement>
+							   DoStatement,
+							   WhileStatement,
+							   RepeatStatement,
+							   IfThenElseStatement,
+							   NumericalForStatement,
+							   GenericForStatement,
+							   FunctionDeclarationStatement,
+							   LocalFunctionDeclarationStatement,
+							   LocalAssignmentStatement>
 		{
 			using base_type::base_type;
 			using base_type::operator=;

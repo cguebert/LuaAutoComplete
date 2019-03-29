@@ -27,8 +27,6 @@ BOOST_FUSION_ADAPT_STRUCT(lac::ast::FunctionName, start, rest, member);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::FunctionCall, variable, functionCall);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::FunctionBody, parameters, block);
 
-BOOST_FUSION_ADAPT_STRUCT(lac::ast::Block, tmp);
-
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::AssignmentStatement, variables, expressions);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::LocalAssignmentStatement, variables, expressions);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::LabelStatement, name);
@@ -44,3 +42,4 @@ BOOST_FUSION_ADAPT_STRUCT(lac::ast::FunctionDeclarationStatement, name, body);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::LocalFunctionDeclarationStatement, name, body);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::ReturnStatement, expressions);
 
+BOOST_FUSION_ADAPT_STRUCT(lac::ast::Block, statements, returnStatement);
