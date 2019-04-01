@@ -50,6 +50,12 @@ namespace lac
 			True
 		};
 
+		// Position of the item in the input stream
+		struct PositionAnnotated
+		{
+			size_t begin = 0, end = 0;
+		};
+
 		struct UnaryOperation;
 		using f_UnaryOperation = boost::spirit::x3::forward_ast<UnaryOperation>;
 
@@ -76,7 +82,8 @@ namespace lac
 				  f_UnaryOperation,
 				  TableConstructor,
 				  f_PrefixExpression,
-				  f_FunctionBody>
+				  f_FunctionBody>,
+			  PositionAnnotated
 		{
 			using base_type::base_type;
 			using base_type::operator=;
@@ -203,7 +210,7 @@ namespace lac
 			VariablePostfix postVariable;
 		};
 
-		struct Variable
+		struct Variable : PositionAnnotated
 		{
 			boost::spirit::x3::variant<BracketedExpression, std::string> start;
 			std::list<VariablePostfix> rest;

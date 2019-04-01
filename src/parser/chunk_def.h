@@ -6,6 +6,7 @@
 #include <parser/ast.h>
 #include <parser/ast_adapted.h>
 #include <parser/chunk.h>
+#include <parser/positions.h>
 
 namespace lac
 {
@@ -118,7 +119,7 @@ namespace lac
 		} expressionConstant;
 		// clang-format on
 
-#define RULE(name, type) const x3::rule<class name, type> name = #name;
+#define RULE(name, type) const x3::rule<struct name, type> name = #name;
 
 		RULE(name, std::string);
 		RULE(namesList, std::vector<std::string>);
@@ -188,6 +189,10 @@ namespace lac
 		RULE(block, ast::Block);
 		RULE(chunk, ast::Block);
 
+		struct simpleExpression : pos::annotate_position
+		{
+		};
+
 #undef RULE
 
 		// Names
@@ -210,7 +215,7 @@ namespace lac
 		{
 		};
 		auto set_bracket = [](auto& ctx) { get<long_bracket_tag>(ctx) = _attr(ctx); };
-		auto is_bracket = [](auto& ctx) { _pass(ctx) = (x3::get<long_bracket_tag>(ctx) == _attr(ctx)); };
+		auto is_bracket = [](auto& ctx) { _pass(ctx) = (get<long_bracket_tag>(ctx) == _attr(ctx)); };
 		const auto openLongBracket_def = '[' >> (*char_('='))[set_bracket] >> '[';
 		const auto closeLongBacket_def = ']' >> (*char_('='))[is_bracket] >> ']';
 		const auto longLiteralString_def = with<long_bracket_tag>(std::string())
@@ -225,8 +230,8 @@ namespace lac
 
 		// Numerals
 		const auto numeralInt_def = (lit("0x") >> hex)
-								 | (lit("0X") >> hex)
-								 | (int_ >> !lit('.'));
+									| (lit("0X") >> hex)
+									| (int_ >> !lit('.'));
 		const auto numeralFloat_def = double_;
 
 		// Comments

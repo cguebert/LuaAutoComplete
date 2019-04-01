@@ -1,5 +1,6 @@
 #include <parser/chunk_def.h>
 #include <parser/config.h>
+#include <parser/positions.h>
 #include <parser/printer.h>
 
 #include <doctest/doctest.h>
@@ -331,7 +332,7 @@ namespace lac::parser
 			REQUIRE(pl.parameters.size() == 0);
 		}
 	}
-	
+
 	TEST_CASE("functionBody")
 	{
 		CHECK(test_phrase_parser("() end", functionBody));
@@ -343,7 +344,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("function () end", functionDefinition));
 		CHECK(test_phrase_parser("function (a) x=a + 1; return x; end", functionDefinition));
 	}
-	
+
 	TEST_CASE("arguments")
 	{
 		CHECK(test_phrase_parser("()", arguments));
@@ -597,7 +598,7 @@ namespace lac::parser
 			REQUIRE(test_phrase_parser("function(a, b, c) return a + b / c; end", expression, ex));
 			REQUIRE(ex.operand.get().type() == typeid(ast::f_FunctionBody));
 		}
-		
+
 		SUBCASE("table constructor")
 		{
 			ast::Expression ex;
@@ -1164,8 +1165,22 @@ namespace lac::parser
 		ast::Expression ex;
 		REQUIRE(test_phrase_parser("'hello' + 42 / 3.15 * - 2", expression, ex));
 
-		std::cout << "---------------\n";
+		/*	std::cout << "---------------\n";
 		print(ex);
-		std::cout << "\n---------------\n";
+		std::cout << "\n---------------\n";*/
+	}
+
+	TEST_CASE("Positions")
+	{
+		const std::string input{"'hello' .. 42"};
+		const std::string_view view = input;
+		pos::Positions positions{view.begin(), view.end()};
+		const auto parser = x3::with<pos::position_tag>(std::ref(positions))[expression];
+
+		ast::Expression ex;
+		REQUIRE(test_phrase_parser(view, parser, ex));
+		REQUIRE(ex.operand.get().type() == typeid(std::string));
+		CHECK(ex.operand.begin == 0);
+		CHECK(ex.operand.end == 6);
 	}
 } // namespace lac::parser
