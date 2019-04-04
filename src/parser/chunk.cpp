@@ -1,6 +1,7 @@
 #include <parser/chunk_def.h>
 #include <parser/config.h>
 #include <parser/printer.h>
+#include <parser/positions.h>
 
 #include <doctest/doctest.h>
 #include <iostream>
@@ -20,7 +21,9 @@ namespace lac::parser
 	{
 		auto f = input.begin();
 		const auto l = input.end();
-		return x3::parse(f, l, p, args...) && f == l;
+		pos::Positions positions{f, l};
+		const auto parser = x3::with<pos::position_tag>(std::ref(positions))[p];
+		return x3::parse(f, l, parser, args...) && f == l;
 	}
 
 	template <class P, class... Args>
@@ -28,7 +31,9 @@ namespace lac::parser
 	{
 		auto f = input.begin();
 		const auto l = input.end();
-		return x3::phrase_parse(f, l, p, x3::ascii::space, args...) && f == l;
+		pos::Positions positions{f, l};
+		const auto parser = x3::with<pos::position_tag>(std::ref(positions))[p];
+		return x3::phrase_parse(f, l, parser, x3::ascii::space, args...) && f == l;
 	}
 
 	template <class P, class V>
@@ -51,7 +56,7 @@ namespace lac::parser
 	SUBCASE(a) { test_value(a, b, c); }
 
 	using namespace lac::parser;
-	/*
+	
 	TEST_CASE("keyword")
 	{
 		std::string v;
@@ -1166,5 +1171,5 @@ namespace lac::parser
 		//std::cout << "---------------\n";
 		//print(ex);
 		//std::cout << "\n---------------\n";
-	}*/
+	}
 } // namespace lac::parser

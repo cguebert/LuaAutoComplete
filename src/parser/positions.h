@@ -56,17 +56,12 @@ namespace lac
 			std::enable_if_t<!is_position_annotated<AST>> annotate(AST& ast, Iterator begin, Iterator end)
 			{
 				// Do nothing here
-				size_t b = begin - m_begin, e = end - m_begin;
-				std::cout << "parsed non-ast: " << b << " - " << e << std::endl;
-				std::cout << typeid(ast).name() << std::endl;
 			}
 
 			void annotate(ast::PositionAnnotated& ast, Iterator begin, Iterator end)
 			{
 				ast.begin = begin - m_begin;
 				ast.end = end - m_begin;
-
-				std::cout << "parsed ast: " << ast.begin << " - " << ast.end << std::endl;
 			}
 
 		private:
