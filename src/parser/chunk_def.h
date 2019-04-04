@@ -193,6 +193,10 @@ namespace lac
 		{
 		};
 
+		struct variable : pos::annotate_position
+		{
+		};
+
 #undef RULE
 
 		// Names

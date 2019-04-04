@@ -9,7 +9,6 @@
 #include <boost/fusion/include/io.hpp>
 #include <boost/optional.hpp>
 
-#include <iostream>
 #include <string>
 
 namespace lac
@@ -362,6 +361,8 @@ namespace lac
 			using base_type::base_type;
 			using base_type::operator=;
 		};
+
+		using boost::fusion::operator<<;
 
 	} // namespace ast
 } // namespace lac

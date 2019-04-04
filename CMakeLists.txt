@@ -34,7 +34,3 @@ target_link_libraries(${target} PRIVATE ${DEFAULT_LINKER_OPTIONS})
 install(TARGETS ${target} RUNTIME DESTINATION release CONFIGURATIONS Release)
 install(TARGETS ${target} RUNTIME DESTINATION release CONFIGURATIONS RelWithDebInfo)
 install(TARGETS ${target} RUNTIME DESTINATION debug CONFIGURATIONS Debug)
-
-install(DIRECTORY share/ DESTINATION release CONFIGURATIONS Release)
-install(DIRECTORY share/ DESTINATION release CONFIGURATIONS RelWithDebInfo)
-install(DIRECTORY share/ DESTINATION debug CONFIGURATIONS Debug)
