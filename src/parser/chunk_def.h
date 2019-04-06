@@ -119,7 +119,11 @@ namespace lac
 		} expressionConstant;
 		// clang-format on
 
-#define RULE(name, type) const x3::rule<struct name, type> name = #name;
+#define RULE(name, type)                 \
+	struct name : pos::annotate_position \
+	{                                    \
+	};                                   \
+	const x3::rule<struct name, type> name = #name;
 
 		RULE(name, std::string);
 		RULE(namesList, std::vector<std::string>);
@@ -188,14 +192,6 @@ namespace lac
 
 		RULE(block, ast::Block);
 		RULE(chunk, ast::Block);
-
-		struct simpleExpression : pos::annotate_position
-		{
-		};
-
-		struct variable : pos::annotate_position
-		{
-		};
 
 #undef RULE
 

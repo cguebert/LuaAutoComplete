@@ -3,60 +3,19 @@
 #include <parser/printer.h>
 #include <parser/positions.h>
 
-#include <doctest/doctest.h>
+#include <helper/test_utils.h>
 #include <iostream>
 
-std::ostream& operator<<(std::ostream& os, const std::type_info& value)
-{
-	os << value.name();
-	return os;
-}
+using namespace lac::parser;
 
 namespace lac::parser
 {
 	BOOST_SPIRIT_INSTANTIATE(chunk_type, iterator_type, context_type);
 
-	template <class P, class... Args>
-	bool test_parser(std::string_view input, const P& p, Args&... args)
-	{
-		auto f = input.begin();
-		const auto l = input.end();
-		pos::Positions positions{f, l};
-		const auto parser = x3::with<pos::position_tag>(std::ref(positions))[p];
-		return x3::parse(f, l, parser, args...) && f == l;
-	}
+	using helper::test_value;
+	using helper::test_parser;
+	using helper::test_phrase_parser;
 
-	template <class P, class... Args>
-	bool test_phrase_parser(std::string_view input, const P& p, Args&... args)
-	{
-		auto f = input.begin();
-		const auto l = input.end();
-		pos::Positions positions{f, l};
-		const auto parser = x3::with<pos::position_tag>(std::ref(positions))[p];
-		return x3::phrase_parse(f, l, parser, x3::ascii::space, args...) && f == l;
-	}
-
-	template <class P, class V>
-	void test_value(std::string_view input, const P& p, const V& value)
-	{
-		V v;
-		CHECK(test_parser(input, p, v));
-		CHECK(v == value);
-	}
-
-	template <class P>
-	void test_value(std::string_view input, const P& p, const char* value)
-	{
-		std::string v;
-		CHECK(test_parser(input, p, v));
-		CHECK(v == std::string(value));
-	}
-
-#define TEST_VALUE(a, b, c) \
-	SUBCASE(a) { test_value(a, b, c); }
-
-	using namespace lac::parser;
-	
 	TEST_CASE("keyword")
 	{
 		std::string v;
