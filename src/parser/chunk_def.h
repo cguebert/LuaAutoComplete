@@ -87,8 +87,8 @@ namespace lac
 					(">=", Op::ge)
 					("==", Op::eq)
 					("~=", Op::ineq)
-					("and", Op::band)
-					("or", Op::bor);
+					("and", Op::land)
+					("or", Op::lor);
 			}
 		} binaryOperator;
 
@@ -101,7 +101,7 @@ namespace lac
 					("-", Op::unm)
 					("#", Op::len)
 					("~", Op::bnot)
-					("not", Op::bnot);
+					("not", Op::lnot);
 			}
 		} unaryOperator;
 

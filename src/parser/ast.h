@@ -38,7 +38,10 @@ namespace lac
 			gt,     // Greater than (>)
 			ge,     // Greater equal (>=)
 			eq,     // Equal (==)
-			ineq    // Inequal (~=)
+			ineq,   // Inequal (~=)
+			lnot,   // Logical NOT (not)
+			land,   // Logical AND (and)
+			lor     // Logical OR (or)
 		};
 
 		enum class ExpressionConstant
@@ -99,7 +102,7 @@ namespace lac
 			boost::optional<f_BinaryOperation> binaryOperation;
 		};
 
-		using ExpressionsList = std::list<Expression>;
+		using ExpressionsList = std::vector<Expression>;
 
 		struct UnaryOperation
 		{

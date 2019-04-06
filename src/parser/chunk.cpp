@@ -535,7 +535,7 @@ namespace lac::parser
 			REQUIRE(test_phrase_parser("not true", expression, ex));
 			REQUIRE(ex.operand.get().type() == typeid(ast::f_UnaryOperation));
 			auto uo = boost::get<ast::f_UnaryOperation>(ex.operand.get()).get();
-			CHECK(uo.operation == ast::Operation::bnot);
+			CHECK(uo.operation == ast::Operation::lnot);
 			REQUIRE(uo.expression.operand.get().type() == typeid(ast::ExpressionConstant));
 			CHECK(boost::get<ast::ExpressionConstant>(uo.expression.operand) == ast::ExpressionConstant::True);
 		}
