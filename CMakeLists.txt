@@ -12,6 +12,7 @@ project("LuaAutoComplete")
 include(cmake/CompileOptions.cmake)
 
 find_package(Boost)
+find_package(doctest CONFIG REQUIRED)
 
 set(target "LuaAutoComplete")
 
@@ -25,7 +26,7 @@ add_executable(${target} ${Header_Files} ${Source_Files})
 
 target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src) 
 
-target_link_libraries(${target} Boost::boost)
+target_link_libraries(${target} Boost::boost doctest::doctest)
 
 set_target_properties(${target} PROPERTIES ${DEFAULT_PROJECT_OPTIONS})
 target_compile_options(${target} PRIVATE ${DEFAULT_COMPILE_OPTIONS})
