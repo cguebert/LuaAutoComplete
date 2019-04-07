@@ -1,5 +1,7 @@
 #pragma once
 
+#include <analysis/scope.h>
+
 namespace lac
 {
 	namespace ast
@@ -8,8 +10,6 @@ namespace lac
 	}
 	namespace an
 	{
-		class Scope;
-
-		void analyseBlock(Scope& scope, const ast::Block& block);
+		Scope analyseBlock(const ast::Block& block, Scope* parentScope = nullptr);
 	} // namespace an
 } // namespace lac

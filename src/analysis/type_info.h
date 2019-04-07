@@ -15,7 +15,10 @@ namespace lac::an
 		table,
 		function,
 		userdata,
-		thread
+		thread,
+
+		unknown,
+		error
 	};
 
 	class TypeInfo
@@ -23,6 +26,12 @@ namespace lac::an
 	public:
 		TypeInfo();
 		TypeInfo(Type type);
+
+		// Returns destination if possible, error otherwise
+		TypeInfo convert(Type destination) const;
+
+		// Returns false only if type is error
+		operator bool() const;
 
 		Type type = Type::nil;
 

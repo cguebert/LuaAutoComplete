@@ -7,6 +7,41 @@ namespace lac::an
 	TypeInfo::TypeInfo(Type type)
 		: type(type)
 	{
-	
 	}
+
+	TypeInfo TypeInfo::convert(Type destination) const
+	{
+		if (type == destination)
+			return destination;
+
+		if (type == Type::error)
+			return Type::error;
+		if (type == Type::unknown)
+			return destination;
+
+		switch (destination)
+		{
+		case Type::boolean:
+			return Type::boolean;
+
+		case Type::number:
+			if (type == Type::number || type == Type::string)
+				return Type::number;
+			return Type::error;
+
+		case Type::string:
+			if (type == Type::string || type == Type::number)
+				return Type::string;
+			return Type::error;
+
+		default:
+			return Type::error;
+		}
+	}
+
+	TypeInfo::operator bool() const
+	{
+		return type != Type::error;
+	}
+
 } // namespace lac::an

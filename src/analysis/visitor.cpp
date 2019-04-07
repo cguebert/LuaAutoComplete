@@ -202,8 +202,10 @@ namespace lac::an
 		Scope& m_scope;
 	};
 
-	void analyseBlock(Scope& scope, const ast::Block& block)
+	Scope analyseBlock(const ast::Block& block, Scope* parentScope)
 	{
+		Scope scope(parentScope);
 		AnalysisVisitor{scope}(block);
+		return scope;
 	}
 } // namespace lac::an

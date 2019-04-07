@@ -21,7 +21,7 @@ namespace lac::an
 		});
 		if (it != m_variables.end())
 			return it->type;
-		return {};
+		return Type::nil;
 	}
 
 	void Scope::addChildScope(Scope scope)
