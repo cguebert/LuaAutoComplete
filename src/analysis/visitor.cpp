@@ -125,6 +125,7 @@ namespace lac::an
 
 		void operator()(const ast::LabelStatement& ls) const
 		{
+			m_scope.addLabel(ls.name);
 		}
 
 		void operator()(const ast::GotoStatement& gs) const
@@ -138,26 +139,51 @@ namespace lac::an
 
 		void operator()(const ast::DoStatement& ds) const
 		{
+			m_scope.addChildScope(analyseBlock(ds.block, &m_scope));
 		}
 
 		void operator()(const ast::WhileStatement& ws) const
 		{
+			m_scope.addChildScope(analyseBlock(ws.block, &m_scope));
 		}
 
 		void operator()(const ast::RepeatStatement& rs) const
 		{
+			m_scope.addChildScope(analyseBlock(rs.block, &m_scope));
 		}
 
 		void operator()(const ast::IfThenElseStatement& s) const
 		{
+			m_scope.addChildScope(analyseBlock(s.first.block, &m_scope));
+			for (const auto& es : s.rest)
+				m_scope.addChildScope(analyseBlock(es.block, &m_scope));
+			if (s.elseBlock)
+				m_scope.addChildScope(analyseBlock(*s.elseBlock, &m_scope));
 		}
 
 		void operator()(const ast::NumericalForStatement& s) const
 		{
+			Scope scope{&m_scope};
+			scope.addVariable(s.variable, Type::number);
+			analyseBlock(scope, s.block);
+			m_scope.addChildScope(std::move(scope));
 		}
 
 		void operator()(const ast::GenericForStatement& s) const
 		{
+			Scope scope{&m_scope};
+			size_t nbV = s.variables.size(), nbE = s.expressions.size();
+			for (size_t i = 0; i < nbV; ++i)
+			{
+				TypeInfo type;
+				// TODO: support expressions with multiple returns
+				if (i < nbE)
+					type = getType(m_scope, s.expressions[i]);
+				m_scope.addVariable(s.variables[i], type);
+			}
+
+			analyseBlock(scope, s.block);
+			m_scope.addChildScope(std::move(scope));
 		}
 
 		void operator()(const ast::FunctionDeclarationStatement& s) const
@@ -179,6 +205,7 @@ namespace lac::an
 			}
 			else
 			{
+				// TODO: visit expressions, add child scopes
 				size_t nbV = s.variables.size(), nbE = s.expressions->size();
 				const auto& expressions = *s.expressions;
 				for (size_t i = 0; i < nbV; ++i)

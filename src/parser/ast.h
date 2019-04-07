@@ -307,7 +307,7 @@ namespace lac
 		struct IfThenElseStatement
 		{
 			IfStatement first;
-			std::list<IfStatement> rest;
+			std::vector<IfStatement> rest;
 			boost::optional<Block> elseBlock;
 		};
 
