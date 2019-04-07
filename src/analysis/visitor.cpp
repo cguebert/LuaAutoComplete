@@ -16,102 +16,144 @@ namespace lac::an
 
 		void operator()(ast::ExpressionConstant ec) const
 		{
+			// Nothing to do here
 		}
 
 		void operator()(int v) const
 		{
+			// Nothing to do here
 		}
 
 		void operator()(double v) const
 		{
+			// Nothing to do here
 		}
 
 		void operator()(const std::string& str) const
 		{
+			// Nothing to do here
 		}
 
 		void operator()(const ast::UnaryOperation& uo) const
 		{
+			(*this)(uo.expression);
 		}
 
 		void operator()(const ast::BinaryOperation& bo) const
 		{
+			(*this)(bo.expression);
+		}
+
+		void operator()(const ast::FieldByExpression& f) const
+		{
+			(*this)(f.key);
+			(*this)(f.value);
+		}
+
+		void operator()(const ast::FieldByAssignment& f) const
+		{
+			(*this)(f.value);
 		}
 
 		void operator()(const ast::Field& f) const
 		{
-		}
-
-		void operator()(const ast::FieldsList& fl) const
-		{
+			boost::apply_visitor(*this, f);
 		}
 
 		void operator()(const ast::TableConstructor& tc) const
 		{
+			if (!tc.fields)
+			{
+				for (const auto& f : *tc.fields)
+					(*this)(f);
+			}
 		}
 
 		void operator()(const ast::FunctionBody& fb) const
 		{
+			Scope scope{&m_scope};
+			if (fb.parameters)
+			{
+				for (const auto& p : fb.parameters->parameters)
+					scope.addVariable(p, Type::unknown);
+			}
+
+			analyseBlock(scope, fb.block);
+			m_scope.addChildScope(std::move(scope));
 		}
 
-		void operator()(const ast::Operand& operand) const
+		void operator()(const ast::Operand& op) const
 		{
+			boost::apply_visitor(*this, op);
 		}
 
 		void operator()(const ast::Expression& ex) const
 		{
+			(*this)(ex.operand);
+			if (ex.binaryOperation)
+				(*this)(*ex.binaryOperation);
+		}
+
+		void operator()(const ast::ExpressionsList& el) const
+		{
+			for (const auto& ex : el)
+				(*this)(ex);
 		}
 
 		void operator()(const ast::BracketedExpression be) const
 		{
+			(*this)(be.expression);
 		}
 
 		void operator()(const ast::TableIndexExpression tie) const
 		{
+			(*this)(tie.expression);
 		}
 
 		void operator()(const ast::TableIndexName& tin) const
 		{
+			// Nothing to do here
 		}
 
-		void operator()(const ast::ParametersList& pl) const
+		void operator()(const ast::EmptyArguments& arg) const
 		{
-		}
-
-		void operator()(const ast::Arguments& arg) const
-		{
+			// Nothing to do here
 		}
 
 		void operator()(const ast::FunctionCallEnd& fce) const
 		{
-		}
-
-		void operator()(const ast::PostPrefix& pp) const
-		{
+			boost::apply_visitor(*this, fce.arguments);
 		}
 
 		void operator()(const ast::PrefixExpression& pe) const
 		{
-		}
-
-		void operator()(const ast::VariablePostfix& vp) const
-		{
+			boost::apply_visitor(*this, pe.start);
+			for (const auto& pp : pe.rest)
+				boost::apply_visitor(*this, pp);
 		}
 
 		void operator()(const ast::VariableFunctionCall& vfc) const
 		{
+			(*this)(vfc.functionCall);
+			boost::apply_visitor(*this, vfc.postVariable);
 		}
 
 		void operator()(const ast::Variable& v) const
 		{
+			boost::apply_visitor(*this, v.start);
+			for (const auto& vp : v.rest)
+				boost::apply_visitor(*this, vp);
 		}
 
-		void operator()(const ast::FunctionCall& fn) const
+		void operator()(const ast::FunctionCall& fc) const
 		{
+			(*this)(fc.functionCall);
 		}
 
 		void operator()(const ast::ReturnStatement& rs) const
 		{
+			for (const auto& ex : rs.expressions)
+				(*this)(ex);
 		}
 
 		void operator()(const ast::EmptyStatement&) const
@@ -205,7 +247,6 @@ namespace lac::an
 			}
 			else
 			{
-				// TODO: visit expressions, add child scopes
 				size_t nbV = s.variables.size(), nbE = s.expressions->size();
 				const auto& expressions = *s.expressions;
 				for (size_t i = 0; i < nbV; ++i)
@@ -216,6 +257,10 @@ namespace lac::an
 						type = getType(m_scope, expressions[i]);
 					m_scope.addVariable(s.variables[i], type);
 				}
+
+				// Visit expressions, add child scopes
+				for (const auto& e : *s.expressions)
+					(*this)(e);
 			}
 		}
 
