@@ -2,6 +2,22 @@
 
 namespace lac::an
 {
+	Parameter::Parameter(const Parameter& other)
+		: Parameter(other.name, *other.type)
+	{
+	}
+
+	Parameter::Parameter(std::string_view name)
+		: Parameter(name, Type::unknown)
+	{
+	}
+
+	Parameter::Parameter(std::string_view name, const TypeInfo& type)
+		: name(name)
+		, type(std::make_unique<TypeInfo>(type))
+	{
+	}
+
 	TypeInfo::TypeInfo() = default;
 
 	TypeInfo::TypeInfo(Type type)

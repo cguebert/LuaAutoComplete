@@ -10,6 +10,7 @@ namespace lac
 	}
 	namespace an
 	{
+		void analyseBlock(Scope& scope, const ast::Block& block);
 		Scope analyseBlock(const ast::Block& block, Scope* parentScope = nullptr);
 	} // namespace an
 } // namespace lac

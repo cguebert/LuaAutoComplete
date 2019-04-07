@@ -1,6 +1,8 @@
 #pragma once
 
 #include <map>
+#include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -21,6 +23,18 @@ namespace lac::an
 		error
 	};
 
+	class TypeInfo;
+	struct Parameter
+	{
+		Parameter(const Parameter& other);
+		Parameter(std::string_view name);
+		Parameter(std::string_view name, const TypeInfo& type);
+		Parameter(Parameter&&) = default;
+
+		const std::string name;
+		const std::unique_ptr<TypeInfo> type;
+	};
+
 	class TypeInfo
 	{
 	public:
@@ -39,7 +53,7 @@ namespace lac::an
 		std::map<std::string, TypeInfo> members;
 
 		// For functions
-		std::vector<TypeInfo> parameters;
+		std::vector<Parameter> parameters;
 		std::vector<TypeInfo> results;
 	};
 } // namespace lac::an

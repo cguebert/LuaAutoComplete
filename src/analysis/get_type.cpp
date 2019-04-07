@@ -77,8 +77,14 @@ namespace lac::an
 
 		TypeInfo operator()(const ast::FunctionBody& fb) const
 		{
-			// TODO: fill the function parameters and results
-			return Type::function;
+			TypeInfo info{Type::function};
+			if (fb.parameters)
+			{
+				for (const auto& p : fb.parameters->parameters)
+					info.parameters.emplace_back(p);
+			}
+			// TODO: fill the function results
+			return info;
 		}
 
 		TypeInfo operator()(const ast::PrefixExpression& pe) const

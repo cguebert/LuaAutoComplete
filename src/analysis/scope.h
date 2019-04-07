@@ -13,10 +13,22 @@ namespace lac::an
 	public:
 		Scope(Scope* parent = nullptr);
 
+		// This class cannot be copied
+		Scope(const Scope&) = delete;
+		Scope& operator=(const Scope&) = delete;
+
+		// But it can be moved
+		Scope(Scope&&) noexcept = default;
+		Scope& operator=(Scope&&) noexcept = default;
+
 		void addVariable(std::string_view name, TypeInfo type);
 		TypeInfo getVariableType(std::string_view name) const;
 
-		void addChildScope(Scope scope);
+		void addLabel(std::string_view name);
+		bool hasLabel(std::string_view name) const;
+
+		Scope& getGlobalScope();
+		void addChildScope(Scope&& scope);
 
 	private:
 		Scope* m_parent = nullptr;
@@ -27,7 +39,13 @@ namespace lac::an
 			TypeInfo type;
 		};
 
+		struct LabelInfo
+		{
+			std::string name;
+		};
+
 		std::vector<Scope> m_childs;
 		std::vector<VariableInfo> m_variables;
+		std::vector<LabelInfo> m_labels;
 	};
 } // namespace lac::an

@@ -50,7 +50,7 @@ namespace lac
 			EXPRESSION_TYPE("1 or 'test'", Type::unknown);
 			EXPRESSION_TYPE("'hello' and {1, 2}", Type::unknown);
 
-			// Conversions 
+			// Conversions
 			EXPRESSION_TYPE("42 + '3.14'", Type::number);
 			EXPRESSION_TYPE("'test' .. 2", Type::string);
 
@@ -60,6 +60,21 @@ namespace lac
 			EXPRESSION_TYPE("1 + {}", Type::error);
 			EXPRESSION_TYPE("1 + function() end", Type::error);
 			EXPRESSION_TYPE("2 > 'a'", Type::error);
+		}
+
+		TEST_CASE("Function definition")
+		{
+			ast::Block block;
+			REQUIRE(test_phrase_parser("local x = function(x, y, z) end", chunkRule(), block));
+
+			auto scope = analyseBlock(block);
+			const auto info = scope.getVariableType("x");
+			REQUIRE(info.type == Type::function);
+			REQUIRE(info.parameters.size() == 3);
+			CHECK(info.parameters[0].name == "x");
+			CHECK(info.parameters[0].type->type == Type::unknown);
+			CHECK(info.parameters[1].name == "y");
+			CHECK(info.parameters[2].name == "z");
 		}
 	} // namespace an
 } // namespace lac

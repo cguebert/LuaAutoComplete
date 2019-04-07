@@ -173,7 +173,7 @@ namespace lac::an
 			if (!s.expressions)
 			{
 				for (const auto& v : s.variables)
-					m_scope.addVariable(v, {Type::nil});
+					m_scope.addVariable(v, {Type::unknown});
 			}
 			else
 			{
@@ -202,10 +202,15 @@ namespace lac::an
 		Scope& m_scope;
 	};
 
+	void analyseBlock(Scope& scope, const ast::Block& block)
+	{
+		AnalysisVisitor{scope}(block);
+	}
+
 	Scope analyseBlock(const ast::Block& block, Scope* parentScope)
 	{
 		Scope scope(parentScope);
-		AnalysisVisitor{scope}(block);
+		analyseBlock(scope, block);
 		return scope;
 	}
 } // namespace lac::an
