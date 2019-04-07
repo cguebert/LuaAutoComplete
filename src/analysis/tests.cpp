@@ -62,7 +62,7 @@ namespace lac
 			EXPRESSION_TYPE("2 > 'a'", Type::error);
 		}
 
-		TEST_CASE("Function definition")
+		TEST_CASE("Function assignment")
 		{
 			ast::Block block;
 			REQUIRE(test_phrase_parser("local x = function(x, y, z) end", chunkRule(), block));
@@ -75,6 +75,20 @@ namespace lac
 			CHECK(info.parameters[0].type->type == Type::unknown);
 			CHECK(info.parameters[1].name == "y");
 			CHECK(info.parameters[2].name == "z");
+		}
+
+		TEST_CASE("Local function definition")
+		{
+			ast::Block block;
+			REQUIRE(test_phrase_parser("local function func(x, y) end", chunkRule(), block));
+
+			auto scope = analyseBlock(block);
+			const auto info = scope.getFunctionType("func");
+			REQUIRE(info.type == Type::function);
+			REQUIRE(info.parameters.size() == 2);
+			CHECK(info.parameters[0].name == "x");
+			CHECK(info.parameters[0].type->type == Type::unknown);
+			CHECK(info.parameters[1].name == "y");
 		}
 	} // namespace an
 } // namespace lac

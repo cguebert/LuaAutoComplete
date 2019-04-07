@@ -177,4 +177,9 @@ namespace lac::an
 	{
 		return GetType{scope}(e);
 	}
+
+	TypeInfo getType(const Scope& scope, const ast::FunctionBody& f)
+	{
+		return GetType{scope}(f);
+	}
 } // namespace lac::an

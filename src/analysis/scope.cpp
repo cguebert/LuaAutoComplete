@@ -11,7 +11,7 @@ namespace lac::an
 
 	void Scope::addVariable(std::string_view name, TypeInfo type)
 	{
-		m_variables.push_back(VariableInfo{std::string{name}, type});
+		m_variables.push_back(VariableInfo{std::string{name}, std::move(type)});
 	}
 
 	TypeInfo Scope::getVariableType(std::string_view name) const
@@ -41,6 +41,23 @@ namespace lac::an
 		if (m_parent)
 			return m_parent->hasLabel(name);
 		return false;
+	}
+
+	void Scope::addFunction(std::string_view name, TypeInfo type)
+	{
+		m_functions.push_back(FunctionInfo{std::string{name}, std::move(type)});
+	}
+
+	TypeInfo Scope::getFunctionType(std::string_view name) const
+	{
+		const auto it = std::find_if(m_functions.begin(), m_functions.end(), [name](const FunctionInfo& f) {
+			return f.name == name;
+		});
+		if (it != m_functions.end())
+			return it->type;
+		if (m_parent)
+			return m_parent->getFunctionType(name);
+		return Type::nil;
 	}
 
 	Scope& Scope::getGlobalScope()

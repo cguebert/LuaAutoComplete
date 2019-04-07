@@ -27,6 +27,9 @@ namespace lac::an
 		void addLabel(std::string_view name);
 		bool hasLabel(std::string_view name) const;
 
+		void addFunction(std::string_view name, TypeInfo type);
+		TypeInfo getFunctionType(std::string_view name) const;
+
 		Scope& getGlobalScope();
 		void addChildScope(Scope&& scope);
 
@@ -44,8 +47,15 @@ namespace lac::an
 			std::string name;
 		};
 
+		struct FunctionInfo
+		{
+			std::string name;
+			TypeInfo type;
+		};
+
 		std::vector<Scope> m_childs;
 		std::vector<VariableInfo> m_variables;
 		std::vector<LabelInfo> m_labels;
+		std::vector<FunctionInfo> m_functions;
 	};
 } // namespace lac::an

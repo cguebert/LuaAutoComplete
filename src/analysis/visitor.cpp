@@ -166,6 +166,8 @@ namespace lac::an
 
 		void operator()(const ast::LocalFunctionDeclarationStatement& s) const
 		{
+			auto funcType = getType(m_scope, s.body);
+			m_scope.addFunction(s.name, std::move(funcType));
 		}
 
 		void operator()(const ast::LocalAssignmentStatement& s) const
