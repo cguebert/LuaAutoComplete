@@ -70,11 +70,12 @@ namespace lac
 			auto scope = analyseBlock(block);
 			const auto info = scope.getVariableType("x");
 			REQUIRE(info.type == Type::function);
-			REQUIRE(info.parameters.size() == 3);
-			CHECK(info.parameters[0].name == "x");
-			CHECK(info.parameters[0].type->type == Type::unknown);
-			CHECK(info.parameters[1].name == "y");
-			CHECK(info.parameters[2].name == "z");
+			const auto& fd = info.function;
+			REQUIRE(fd.parameters.size() == 3);
+			CHECK(fd.parameters[0].name() == "x");
+			CHECK(fd.parameters[0].type().type == Type::unknown);
+			CHECK(fd.parameters[1].name() == "y");
+			CHECK(fd.parameters[2].name() == "z");
 		}
 
 		TEST_CASE("Local function definition")
@@ -85,10 +86,11 @@ namespace lac
 			auto scope = analyseBlock(block);
 			const auto info = scope.getFunctionType("func");
 			REQUIRE(info.type == Type::function);
-			REQUIRE(info.parameters.size() == 2);
-			CHECK(info.parameters[0].name == "x");
-			CHECK(info.parameters[0].type->type == Type::unknown);
-			CHECK(info.parameters[1].name == "y");
+			const auto& fd = info.function;
+			REQUIRE(fd.parameters.size() == 2);
+			CHECK(fd.parameters[0].name() == "x");
+			CHECK(fd.parameters[0].type().type == Type::unknown);
+			CHECK(fd.parameters[1].name() == "y");
 		}
 	} // namespace an
 } // namespace lac

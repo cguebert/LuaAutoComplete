@@ -2,26 +2,49 @@
 
 namespace lac::an
 {
-	Parameter::Parameter(const Parameter& other)
-		: Parameter(other.name, *other.type)
+	VariableInfo::VariableInfo(const VariableInfo& other)
+		: VariableInfo(other.name(), other.type())
 	{
 	}
 
-	Parameter::Parameter(std::string_view name)
-		: Parameter(name, Type::unknown)
+	VariableInfo::VariableInfo(std::string_view name)
+		: VariableInfo(name, Type::unknown)
 	{
 	}
 
-	Parameter::Parameter(std::string_view name, const TypeInfo& type)
-		: name(name)
-		, type(std::make_unique<TypeInfo>(type))
+	VariableInfo::VariableInfo(std::string_view name, const TypeInfo& type)
+		: m_name(name)
+		, m_type(std::make_unique<TypeInfo>(type))
 	{
+	}
+
+	VariableInfo& VariableInfo::operator=(const VariableInfo& other)
+	{
+		m_name = other.name();
+		m_type = std::make_unique<TypeInfo>(other.type());
+		return *this;
+	}
+
+	const std::string& VariableInfo::name() const
+	{
+		return m_name;
+	}
+
+	const TypeInfo& VariableInfo::type() const
+	{
+		return *m_type;
 	}
 
 	TypeInfo::TypeInfo() = default;
 
 	TypeInfo::TypeInfo(Type type)
 		: type(type)
+	{
+	}
+
+	TypeInfo::TypeInfo(std::string_view name)
+		: type(Type::userdata)
+		, userType(name)
 	{
 	}
 

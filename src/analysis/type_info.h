@@ -2,8 +2,8 @@
 
 #include <map>
 #include <memory>
-#include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace lac::an
@@ -24,15 +24,35 @@ namespace lac::an
 	};
 
 	class TypeInfo;
-	struct Parameter
+	class VariableInfo
 	{
-		Parameter(const Parameter& other);
-		Parameter(std::string_view name);
-		Parameter(std::string_view name, const TypeInfo& type);
-		Parameter(Parameter&&) = default;
+	public:
+		VariableInfo(const VariableInfo& other);
+		VariableInfo(std::string_view name);
+		VariableInfo(std::string_view name, const TypeInfo& type);
+		VariableInfo(VariableInfo&&) = default;
+		VariableInfo& operator=(const VariableInfo& other);
+		VariableInfo& operator=(VariableInfo&&) = default;
 
-		const std::string name;
-		const std::unique_ptr<TypeInfo> type;
+		const std::string& name() const;
+		const TypeInfo& type() const;
+
+	private:
+		std::string m_name;
+		std::unique_ptr<TypeInfo> m_type; // Unique_ptr to break the circular dependency
+	};
+
+	struct FunctionInfo
+	{
+		std::vector<VariableInfo> parameters;
+		std::vector<TypeInfo> results;
+	};
+
+	struct UserType
+	{
+		std::string name;
+		std::vector<VariableInfo> variables;
+		std::vector<FunctionInfo> methods;
 	};
 
 	class TypeInfo
@@ -40,6 +60,7 @@ namespace lac::an
 	public:
 		TypeInfo();
 		TypeInfo(Type type);
+		TypeInfo(std::string_view name); // User-defined type name
 
 		// Returns destination if possible, error otherwise
 		TypeInfo convert(Type destination) const;
@@ -53,7 +74,9 @@ namespace lac::an
 		std::map<std::string, TypeInfo> members;
 
 		// For functions
-		std::vector<Parameter> parameters;
-		std::vector<TypeInfo> results;
+		FunctionInfo function;
+
+		// For userdata
+		std::string userType;
 	};
 } // namespace lac::an

@@ -81,7 +81,7 @@ namespace lac::an
 			if (fb.parameters)
 			{
 				for (const auto& p : fb.parameters->parameters)
-					info.parameters.emplace_back(p);
+					info.function.parameters.emplace_back(p);
 			}
 			// TODO: fill the function results
 			return info;

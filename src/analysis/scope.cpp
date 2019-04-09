@@ -71,4 +71,17 @@ namespace lac::an
 	{
 		m_childs.push_back(std::move(scope));
 	}
+
+	void Scope::setUserDefined(UserDefined* userDefined)
+	{
+		getGlobalScope().m_userDefined = userDefined;
+	}
+
+	UserDefined* Scope::getUserDefined() const
+	{
+		return m_parent
+				   ? m_parent->getUserDefined()
+				   : m_userDefined;
+	}
+
 } // namespace lac::an

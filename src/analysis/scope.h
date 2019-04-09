@@ -8,6 +8,8 @@
 
 namespace lac::an
 {
+	class UserDefined;
+
 	class Scope
 	{
 	public:
@@ -33,8 +35,13 @@ namespace lac::an
 		Scope& getGlobalScope();
 		void addChildScope(Scope&& scope);
 
+		void setUserDefined(UserDefined* userDefined);
+
 	private:
+		UserDefined* getUserDefined() const;
+
 		Scope* m_parent = nullptr;
+		UserDefined* m_userDefined = nullptr;
 
 		struct VariableInfo
 		{
