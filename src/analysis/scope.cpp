@@ -1,4 +1,5 @@
 #include <analysis/scope.h>
+#include <analysis/user_defined.h>
 
 #include <algorithm>
 
@@ -9,29 +10,34 @@ namespace lac::an
 	{
 	}
 
-	void Scope::addVariable(std::string_view name, TypeInfo type)
+	void Scope::addVariable(const std::string& name, TypeInfo type)
 	{
-		m_variables.push_back(VariableInfo{std::string{name}, std::move(type)});
+		m_variables.push_back(VariableInfo{name, std::move(type)});
 	}
 
-	TypeInfo Scope::getVariableType(std::string_view name) const
+	TypeInfo Scope::getVariableType(const std::string& name) const
 	{
 		const auto it = std::find_if(m_variables.begin(), m_variables.end(), [name](const VariableInfo& v) {
 			return v.name == name;
 		});
 		if (it != m_variables.end())
 			return it->type;
+		if (m_userDefined)
+		{
+			if (auto var = m_userDefined->getVariable(name))
+				return *var;
+		}
 		if (m_parent)
 			return m_parent->getVariableType(name);
 		return Type::nil;
 	}
 
-	void Scope::addLabel(std::string_view name)
+	void Scope::addLabel(const std::string& name)
 	{
-		m_labels.push_back(LabelInfo{std::string{name}});
+		m_labels.push_back(LabelInfo{name});
 	}
 
-	bool Scope::hasLabel(std::string_view name) const
+	bool Scope::hasLabel(const std::string& name) const
 	{
 		const auto it = std::find_if(m_labels.begin(), m_labels.end(), [name](const LabelInfo& l) {
 			return l.name == name;
@@ -43,18 +49,23 @@ namespace lac::an
 		return false;
 	}
 
-	void Scope::addFunction(std::string_view name, TypeInfo type)
+	void Scope::addFunction(const std::string& name, TypeInfo type)
 	{
-		m_functions.push_back(FunctionInfo{std::string{name}, std::move(type)});
+		m_functions.push_back(FunctionInfo{name, std::move(type)});
 	}
 
-	TypeInfo Scope::getFunctionType(std::string_view name) const
+	TypeInfo Scope::getFunctionType(const std::string& name) const
 	{
 		const auto it = std::find_if(m_functions.begin(), m_functions.end(), [name](const FunctionInfo& f) {
 			return f.name == name;
 		});
 		if (it != m_functions.end())
 			return it->type;
+		if (m_userDefined)
+		{
+			if (auto func = m_userDefined->getFunction(name))
+				return *func;
+		}
 		if (m_parent)
 			return m_parent->getFunctionType(name);
 		return Type::nil;

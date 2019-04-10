@@ -6,7 +6,7 @@ namespace lac::an
 	{
 		m_variables[name] = type;
 	}
-	
+
 	const TypeInfo* UserDefined::getVariable(const std::string& name) const
 	{
 		const auto it = m_variables.find(name);
@@ -17,10 +17,12 @@ namespace lac::an
 
 	void UserDefined::addFreeFunction(const std::string& name, FunctionInfo func)
 	{
-		m_functions[name] = std::move(func);
+		TypeInfo info = Type::function;
+		info.function = std::move(func);
+		m_functions[name] = std::move(info);
 	}
 
-	const FunctionInfo* UserDefined::getFunction(const std::string& name) const
+	const TypeInfo* UserDefined::getFunction(const std::string& name) const
 	{
 		const auto it = m_functions.find(name);
 		if (it != m_functions.end())

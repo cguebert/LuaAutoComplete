@@ -1,6 +1,7 @@
 #include <parser/chunk.h>
 #include <analysis/scope.h>
 #include <analysis/visitor.h>
+#include <analysis/user_defined.h>
 
 #include <helper/test_utils.h>
 
@@ -92,5 +93,43 @@ namespace lac
 			CHECK(fd.parameters[0].type().type == Type::unknown);
 			CHECK(fd.parameters[1].name() == "y");
 		}
+
+		TEST_SUITE_BEGIN("User defined");
+
+		TEST_CASE("Variables")
+		{
+			UserDefined user;
+			user.addVariable("x", Type::number);
+			user.addVariable("y", Type::boolean);
+
+			Scope scope;
+			scope.setUserDefined(&user);
+
+			CHECK(scope.getVariableType("x").type == Type::number);
+			CHECK(scope.getVariableType("y").type == Type::boolean);
+		}
+
+		TEST_CASE("Functions")
+		{
+			UserDefined user;
+			user.addFreeFunction("func", {{{"x", Type::number},
+										   {"y"}},
+										  {Type::number}});
+
+			Scope scope;
+			scope.setUserDefined(&user);
+
+			const auto func = scope.getFunctionType("func");
+			REQUIRE(func.type == Type::function);
+			REQUIRE(func.function.results.size() == 1);
+			CHECK(func.function.results[0].type == Type::number);
+			REQUIRE(func.function.parameters.size() == 2);
+			CHECK(func.function.parameters[0].name() == "x");
+			CHECK(func.function.parameters[0].type().type == Type::number);
+			CHECK(func.function.parameters[1].name() == "y");
+			CHECK(func.function.parameters[1].type().type == Type::unknown);
+		}
+
+		TEST_SUITE_END();
 	} // namespace an
 } // namespace lac

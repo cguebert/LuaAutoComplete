@@ -62,7 +62,7 @@ namespace lac::an
 
 		void operator()(const ast::TableConstructor& tc) const
 		{
-			if (!tc.fields)
+			if (tc.fields)
 			{
 				for (const auto& f : *tc.fields)
 					(*this)(f);
