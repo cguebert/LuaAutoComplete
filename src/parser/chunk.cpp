@@ -14,7 +14,9 @@ namespace lac::parser
 
 	using helper::test_value;
 	using helper::test_parser;
+	using helper::test_parser_simple;
 	using helper::test_phrase_parser;
+	using helper::test_phrase_parser_simple;
 
 	TEST_CASE("keyword")
 	{
@@ -22,9 +24,9 @@ namespace lac::parser
 		TEST_VALUE("and", keyword, "and");
 		TEST_VALUE("nil", keyword, "nil");
 
-		CHECK_FALSE(test_parser("test", keyword));
+		CHECK_FALSE(test_parser_simple("test", keyword));
 	}
-
+	
 	TEST_CASE("name")
 	{
 		TEST_VALUE("test", name, "test");
@@ -38,7 +40,7 @@ namespace lac::parser
 		CHECK_FALSE(test_parser("break", name));
 		CHECK_FALSE(test_parser("while", name));
 	}
-
+	
 	TEST_CASE("namesList")
 	{
 		CHECK(test_phrase_parser("a", namesList));
@@ -737,7 +739,7 @@ namespace lac::parser
 
 	TEST_CASE("empty statement")
 	{
-		CHECK(test_phrase_parser(";", emptyStatement));
+		CHECK(test_phrase_parser_simple(";", emptyStatement));
 	}
 
 	TEST_CASE("assignment statement")
