@@ -71,6 +71,19 @@ namespace lac::an
 		return Type::nil;
 	}
 
+	UserType Scope::getUserType(const std::string& name) const
+	{
+		if (m_userDefined)
+		{
+			if (auto user = m_userDefined->getType(name))
+				return *user;
+		}
+
+		if (m_parent)
+			return m_parent->getUserType(name);
+		return {};
+	}
+
 	Scope& Scope::getGlobalScope()
 	{
 		return m_parent

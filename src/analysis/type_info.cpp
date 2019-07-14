@@ -1,5 +1,7 @@
 #include <analysis/type_info.h>
 
+#include <algorithm>
+
 namespace lac::an
 {
 	VariableInfo::VariableInfo(const VariableInfo& other)
@@ -34,6 +36,24 @@ namespace lac::an
 	{
 		return *m_type;
 	}
+
+	/****************************************************************************/
+
+	TypeInfo UserType::getVariableType(const std::string& name) const
+	{
+		return variables.count(name)
+				   ? variables.at(name)
+				   : TypeInfo{};
+	}
+
+	FunctionInfo UserType::getMethodType(const std::string& name) const
+	{
+		return methods.count(name)
+				   ? methods.at(name)
+				   : FunctionInfo{};
+	}
+
+	/****************************************************************************/
 
 	TypeInfo::TypeInfo() = default;
 

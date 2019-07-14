@@ -51,8 +51,11 @@ namespace lac::an
 	struct UserType
 	{
 		std::string name;
-		std::vector<VariableInfo> variables;
-		std::vector<FunctionInfo> methods;
+		std::map<std::string, TypeInfo> variables;
+		std::map<std::string, FunctionInfo> methods;
+
+		TypeInfo getVariableType(const std::string& name) const;
+		FunctionInfo getMethodType(const std::string& name) const;
 	};
 
 	class TypeInfo

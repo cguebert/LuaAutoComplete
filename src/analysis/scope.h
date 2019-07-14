@@ -31,6 +31,8 @@ namespace lac::an
 		void addFunction(const std::string& name, TypeInfo type);
 		TypeInfo getFunctionType(const std::string& name) const;
 
+		UserType getUserType(const std::string& name) const;
+
 		Scope& getGlobalScope();
 		void addChildScope(Scope&& scope);
 

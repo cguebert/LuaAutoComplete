@@ -136,8 +136,8 @@ namespace lac
 
 			UserType complexType;
 			complexType.name = "complex";
-			complexType.variables.emplace_back("real", Type::number);
-			complexType.variables.emplace_back("imag", Type::number);
+			complexType.variables["real"] = Type::number;
+			complexType.variables["imag"] = Type::number;
 			user.addType(complexType);
 
 			FunctionInfo createComplex;
@@ -149,12 +149,22 @@ namespace lac
 			Scope parentScope;
 			parentScope.setUserDefined(&user);
 
-			ast::Block block;
-			REQUIRE(test_phrase_parser("local x = createComplex(0.7, 1.0)", chunkRule(), block));
-			const auto scope = analyseBlock(block, &parentScope);
-			const auto info = scope.getVariableType("x");
-			CHECK(info.type == Type::userdata);
-			CHECK(info.userType == "complex");
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local x = createComplex(0.7, 1.0)", chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("x");
+				CHECK(info.type == Type::userdata);
+				CHECK(info.userType == "complex");
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local x = createComplex(0.7, 1.0).real", chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("x");
+				CHECK(info.type == Type::number);
+			}
 		}
 
 		TEST_SUITE_END();

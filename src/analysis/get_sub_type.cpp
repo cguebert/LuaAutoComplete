@@ -25,10 +25,22 @@ namespace lac::an
 		TypeInfo operator()(const ast::TableIndexName& tin) const
 		{
 			const auto parent = parentAsVariable();
-			if (!parent.members.count(tin.name))
-				return {};
+			if (parent.type == Type::table)
+			{
+				return parent.members.count(tin.name)
+						   ? parent.members.at(tin.name)
+						   : TypeInfo{};
+			}
+			else if (parent.type == Type::userdata)
+			{
+				const auto userType = m_scope.getUserType(parent.userType);
+				if (userType.name.empty())
+					return {};
 
-			return parent.members.at(tin.name);
+				return userType.getVariableType(tin.name);
+			}
+
+			return {};
 		}
 
 		TypeInfo operator()(const ast::FunctionCallEnd& fce) const
