@@ -1,4 +1,5 @@
 #include <analysis/get_type.h>
+#include <analysis/get_sub_type.h>
 
 namespace lac::an
 {
@@ -42,7 +43,7 @@ namespace lac::an
 
 		TypeInfo operator()(const std::string& str) const
 		{
-			return Type::string;
+			return TypeInfo::fromName(str);
 		}
 
 		TypeInfo operator()(const ast::UnaryOperation& uo) const
@@ -87,9 +88,31 @@ namespace lac::an
 			return info;
 		}
 
+		TypeInfo operator()(const ast::BracketedExpression& be) const
+		{
+			return (*this)(be.expression);
+		}
+
 		TypeInfo operator()(const ast::PrefixExpression& pe) const
 		{
-			return {}; // TODO: do something here
+			auto type = boost::apply_visitor(*this, pe.start);
+			if (pe.rest.empty())
+				return type;
+
+			for (const auto& r : pe.rest)
+				type = getSubType(m_scope, type, r);
+			return type;
+		}
+
+		TypeInfo operator()(const ast::Variable& v) const
+		{
+			auto type = boost::apply_visitor(*this, v.start);
+			if (v.rest.empty())
+				return type;
+
+			for (const auto& r : v.rest)
+				type = getSubType(m_scope, type, r);
+			return type;
 		}
 
 		TypeInfo operator()(const ast::Expression& e) const

@@ -60,7 +60,9 @@ namespace lac::an
 	public:
 		TypeInfo();
 		TypeInfo(Type type);
-		TypeInfo(std::string_view name); // User-defined type name
+
+		static TypeInfo fromTypeName(std::string_view name); // For used-defined types
+		static TypeInfo fromName(std::string_view name); // For either variable or function names (when we do not yet know) 
 
 		// Returns destination if possible, error otherwise
 		TypeInfo convert(Type destination) const;
@@ -78,5 +80,8 @@ namespace lac::an
 
 		// For userdata
 		std::string userType;
+
+		// For variable or function name
+		std::string name;
 	};
 } // namespace lac::an

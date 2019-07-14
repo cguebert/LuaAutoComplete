@@ -130,6 +130,33 @@ namespace lac
 			CHECK(func.function.parameters[1].type().type == Type::unknown);
 		}
 
+		TEST_CASE("Type")
+		{
+			UserDefined user;
+
+			UserType complexType;
+			complexType.name = "complex";
+			complexType.variables.emplace_back("real", Type::number);
+			complexType.variables.emplace_back("imag", Type::number);
+			user.addType(complexType);
+
+			FunctionInfo createComplex;
+			createComplex.parameters = {{"real", Type::number},
+										{"imag", Type::number}};
+			createComplex.results.emplace_back(TypeInfo::fromTypeName("complex"));
+			user.addFreeFunction("createComplex", createComplex);
+
+			Scope parentScope;
+			parentScope.setUserDefined(&user);
+
+			ast::Block block;
+			REQUIRE(test_phrase_parser("local x = createComplex(0.7, 1.0)", chunkRule(), block));
+			const auto scope = analyseBlock(block, &parentScope);
+			const auto info = scope.getVariableType("x");
+			CHECK(info.type == Type::userdata);
+			CHECK(info.userType == "complex");
+		}
+
 		TEST_SUITE_END();
 	} // namespace an
 } // namespace lac

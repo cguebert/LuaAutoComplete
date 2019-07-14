@@ -42,10 +42,18 @@ namespace lac::an
 	{
 	}
 
-	TypeInfo::TypeInfo(std::string_view name)
-		: type(Type::userdata)
-		, userType(name)
+	TypeInfo TypeInfo::fromTypeName(std::string_view name)
 	{
+		TypeInfo type{Type::userdata};
+		type.userType = name;
+		return type;
+	}
+
+	TypeInfo TypeInfo::fromName(std::string_view name)
+	{
+		TypeInfo type{Type::string};
+		type.name = name;
+		return type;
 	}
 
 	TypeInfo TypeInfo::convert(Type destination) const
