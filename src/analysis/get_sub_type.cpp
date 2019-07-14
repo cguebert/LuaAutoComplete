@@ -33,7 +33,7 @@ namespace lac::an
 			}
 			else if (parent.type == Type::userdata)
 			{
-				const auto userType = m_scope.getUserType(parent.userType);
+				const auto userType = m_scope.getUserType(parent.name);
 				if (userType.name.empty())
 					return {};
 

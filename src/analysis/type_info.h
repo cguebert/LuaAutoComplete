@@ -81,10 +81,7 @@ namespace lac::an
 		// For functions
 		FunctionInfo function;
 
-		// For userdata
-		std::string userType;
-
-		// For variable or function name
+		// For variable name, function name, or user-defined type
 		std::string name;
 	};
 } // namespace lac::an

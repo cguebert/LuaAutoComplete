@@ -155,7 +155,7 @@ namespace lac
 				const auto scope = analyseBlock(block, &parentScope);
 				const auto info = scope.getVariableType("x");
 				CHECK(info.type == Type::userdata);
-				CHECK(info.userType == "complex");
+				CHECK(info.name == "complex");
 			}
 
 			{

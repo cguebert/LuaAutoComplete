@@ -65,7 +65,7 @@ namespace lac::an
 	TypeInfo TypeInfo::fromTypeName(std::string_view name)
 	{
 		TypeInfo type{Type::userdata};
-		type.userType = name;
+		type.name = name;
 		return type;
 	}
 
