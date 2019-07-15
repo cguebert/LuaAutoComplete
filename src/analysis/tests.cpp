@@ -165,6 +165,22 @@ namespace lac
 				const auto info = scope.getVariableType("x");
 				CHECK(info.type == Type::number);
 			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local x = createComplex(0.7, 1.0); local y = x.imag", chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto infoX = scope.getVariableType("x");
+				CHECK(infoX.type == Type::userdata);
+				CHECK(infoX.name == "complex");
+				const auto type = scope.getUserType("complex");
+				CHECK(type.variables.size() == 2);
+				CHECK(type.getVariableType("real").type == Type::number);
+				CHECK(type.getVariableType("imag").type == Type::number);
+				CHECK(type.getVariableType("xxx").type == Type::nil);
+				const auto infoY = scope.getVariableType("y");
+				CHECK(infoY.type == Type::number);
+			}
 		}
 
 		TEST_SUITE_END();
