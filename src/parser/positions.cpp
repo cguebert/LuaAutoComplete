@@ -4,6 +4,24 @@
 
 #include <helper/test_utils.h>
 
+namespace
+{
+	template <class P, class A>
+	bool phrase_parser_elements(std::string_view input, const P& p, A& arg, lac::pos::Elements& elts)
+	{
+		auto f = input.begin();
+		const auto l = input.end();
+		lac::pos::Positions positions{f, l};
+		const auto parser = boost::spirit::x3::with<lac::pos::position_tag>(std::ref(positions))[p];
+		if (boost::spirit::x3::phrase_parse(f, l, parser, boost::spirit::x3::ascii::space, arg) && f == l)
+		{
+			elts = positions.elements();
+			return true;
+		}
+		return false;
+	}
+} // namespace
+
 namespace lac
 {
 	using helper::test_phrase_parser;
@@ -19,6 +37,20 @@ namespace lac
 		auto assignment = boost::get<ast::AssignmentStatement>(block.statements.front());
 		REQUIRE(assignment.variables.size() == 1);
 		auto var = assignment.variables.front();
+		CHECK(var.begin == 0);
+		CHECK(var.end == 7);
+	}
+
+	TEST_CASE("Elements")
+	{
+		auto chunk = chunkRule();
+
+		ast::Block block;
+		pos::Elements elements;
+		REQUIRE(phrase_parser_elements("testVar = 'hello' .. 42", chunk, block, elements));
+		REQUIRE(elements.size() == 1);
+		const auto var = elements.front();
+		CHECK(var.type == ast::ElementType::variable);
 		CHECK(var.begin == 0);
 		CHECK(var.end == 7);
 	}

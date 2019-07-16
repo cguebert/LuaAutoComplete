@@ -230,6 +230,8 @@ namespace lac::an
 
 		void operator()(const ast::FunctionDeclarationStatement& s) const
 		{
+			// TODO: it can be global function declaration
+			// or the declaration of a table method
 		}
 
 		void operator()(const ast::LocalFunctionDeclarationStatement& s) const

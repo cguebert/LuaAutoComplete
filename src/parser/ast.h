@@ -15,6 +15,19 @@ namespace lac
 {
 	namespace ast
 	{
+		enum class ElementType
+		{
+			not_defined,
+			keyword,
+			variable,
+			variable_member,
+			function,
+			function_member,
+			literal_string,
+			numeral,
+			comment
+		};
+
 		enum class Operation
 		{
 			add,    // Addition (+)
@@ -56,6 +69,11 @@ namespace lac
 		struct PositionAnnotated
 		{
 			size_t begin = 0, end = 0;
+		};
+
+		template <ElementType element>
+		struct ElementAnnotated : public PositionAnnotated
+		{
 		};
 
 		struct UnaryOperation;
@@ -212,7 +230,7 @@ namespace lac
 			VariablePostfix postVariable;
 		};
 
-		struct Variable : PositionAnnotated
+		struct Variable : ElementAnnotated<ElementType::variable>
 		{
 			boost::spirit::x3::variant<BracketedExpression, std::string> start;
 			std::list<VariablePostfix> rest;

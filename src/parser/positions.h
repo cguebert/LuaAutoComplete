@@ -5,6 +5,7 @@
 #include <boost/spirit/home/x3/support/context.hpp>
 
 #include <iostream>
+#include <vector>
 
 namespace lac
 {
@@ -38,14 +39,22 @@ namespace lac
 			struct HasTag<x3::context<ID, T, x3::unused_type>, ID> : std::true_type
 			{
 			};
-		}
+		} // namespace details
 
 		template <class T>
 		inline constexpr bool is_position_annotated = std::is_base_of<ast::PositionAnnotated, T>::value;
 
-		template<typename Iterator>
-		struct Positions
+		struct Element
 		{
+			size_t begin = 0, end = 0;
+			ast::ElementType type = ast::ElementType::not_defined;
+		};
+		using Elements = std::vector<Element>;
+
+		template <typename Iterator>
+		class Positions
+		{
+		public:
 			Positions(Iterator begin, Iterator end)
 				: m_begin(begin)
 				, m_end(end)
@@ -64,8 +73,27 @@ namespace lac
 				ast.end = end - m_begin;
 			}
 
+			template <ast::ElementType E>
+			void annotate(ast::ElementAnnotated<E>& ast, Iterator begin, Iterator end)
+			{
+				ast.begin = begin - m_begin;
+				ast.end = end - m_begin;
+
+				Element elt;
+				elt.begin = ast.begin;
+				elt.end = ast.end;
+				elt.type = E;
+				m_elements.push_back(elt);
+			}
+
+			const Elements& elements() const
+			{
+				return m_elements;
+			}
+
 		private:
 			Iterator m_begin, m_end;
+			Elements m_elements;
 		};
 
 		template <typename Context, typename Tag>
