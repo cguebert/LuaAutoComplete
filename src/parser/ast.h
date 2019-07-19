@@ -93,7 +93,7 @@ namespace lac
 		struct FunctionBody;
 		using f_FunctionBody = boost::spirit::x3::forward_ast<FunctionBody>;
 
-		struct Numeral : boost::spirit::x3::variant<int, double>, PositionAnnotated
+		struct Numeral : boost::spirit::x3::variant<int, double>, ElementAnnotated<ElementType::numeral>
 		{
 			using base_type::base_type;
 			using base_type::operator=;

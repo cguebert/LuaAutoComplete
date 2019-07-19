@@ -48,10 +48,16 @@ namespace lac
 		ast::Block block;
 		pos::Elements elements;
 		REQUIRE(phrase_parser_elements("testVar = 'hello' .. 42", chunk, block, elements));
-		REQUIRE(elements.size() == 1);
-		const auto var = elements.front();
+		REQUIRE(elements.size() == 2);
+
+		const auto var = elements[0];
 		CHECK(var.type == ast::ElementType::variable);
 		CHECK(var.begin == 0);
 		CHECK(var.end == 7);
+
+		const auto num = elements[1];
+		CHECK(num.type == ast::ElementType::numeral);
+		CHECK(num.begin == 21);
+		CHECK(num.end == 23);
 	}
 } // namespace lac
