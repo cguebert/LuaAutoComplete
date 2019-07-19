@@ -93,11 +93,30 @@ namespace lac
 		struct FunctionBody;
 		using f_FunctionBody = boost::spirit::x3::forward_ast<FunctionBody>;
 
+		struct Numeral : boost::spirit::x3::variant<int, double>, PositionAnnotated
+		{
+			using base_type::base_type;
+			using base_type::operator=;
+
+			bool isInt() const { return get().type() == typeid(int); }
+			bool isFloat() const { return get().type() == typeid(double); }
+
+			int asInt() const { return boost::get<int>(get()); }
+			double asFloat() const { return boost::get<double>(get()); }
+
+			double value() const 
+			{
+				if (isInt())
+					return asInt();
+				else
+					return asFloat();
+			}
+		};
+
 		struct Operand
 			: boost::spirit::x3::variant<
 				  ExpressionConstant,
-				  int,
-				  double,
+				  Numeral,
 				  std::string,
 				  f_UnaryOperation,
 				  TableConstructor,
@@ -107,6 +126,9 @@ namespace lac
 		{
 			using base_type::base_type;
 			using base_type::operator=;
+
+			bool isNumeral() const { return get().type() == typeid(Numeral); }
+			Numeral asNumeral() const { return boost::get<Numeral>(get()); }
 		};
 
 		using NamesList = std::vector<std::string>;

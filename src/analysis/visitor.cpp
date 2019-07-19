@@ -19,12 +19,7 @@ namespace lac::an
 			// Nothing to do here
 		}
 
-		void operator()(int v) const
-		{
-			// Nothing to do here
-		}
-
-		void operator()(double v) const
+		void operator()(const ast::Numeral&) const
 		{
 			// Nothing to do here
 		}

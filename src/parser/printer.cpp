@@ -45,6 +45,11 @@ namespace lac
 			out << v;
 		}
 
+		void operator()(const ast::Numeral& n) const
+		{
+			boost::apply_visitor(Printer(out, indent + 1), n);
+		}
+
 		void operator()(const Operand& operand) const
 		{
 			tab();

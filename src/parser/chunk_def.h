@@ -135,6 +135,7 @@ namespace lac
 
 		RULE(numeralInt, int);
 		RULE(numeralFloat, double);
+		RULE(numeral, ast::Numeral);
 
 		RULE(shortComment, std::string);
 		RULE(longComment, std::string);
@@ -233,6 +234,7 @@ namespace lac
 									| (lit("0X") >> hex)
 									| (int_ >> !lit('.'));
 		const auto numeralFloat_def = double_;
+		const auto numeral_def = numeralInt | numeralFloat;
 
 		// Comments
 		const auto shortComment_def = "--" >> lexeme[*(char_ - eol)] >> -eol;
@@ -314,8 +316,7 @@ namespace lac
 		// Expressions
 		const auto simpleExpression_def = expressionConstant
 										  | unaryOperation
-										  | numeralInt
-										  | numeralFloat
+										  | numeral
 										  | literalString
 										  | tableConstructor
 										  | functionDefinition
@@ -375,7 +376,7 @@ namespace lac
 		BOOST_SPIRIT_DEFINE(name, namesList,
 							openLongBracket, closeLongBacket,
 							longLiteralString, literalString,
-							numeralInt, numeralFloat,
+							numeralInt, numeralFloat, numeral,
 							shortComment, longComment, comment,
 							skipper,
 							fieldByExpression, fieldByAssignment, field, fieldsList, tableConstructor,

@@ -31,12 +31,7 @@ namespace lac::an
 			}
 		}
 
-		TypeInfo operator()(int v) const
-		{
-			return Type::number;
-		}
-
-		TypeInfo operator()(double v) const
+		TypeInfo operator()(const ast::Numeral&) const
 		{
 			return Type::number;
 		}
