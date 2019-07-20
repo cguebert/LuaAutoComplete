@@ -104,7 +104,7 @@ namespace lac
 			int asInt() const { return boost::get<int>(get()); }
 			double asFloat() const { return boost::get<double>(get()); }
 
-			double value() const 
+			double value() const
 			{
 				if (isInt())
 					return asInt();
@@ -113,11 +113,22 @@ namespace lac
 			}
 		};
 
+		struct LiteralString
+		{
+			LiteralString() = default;
+			LiteralString(std::string v)
+				: value(std::move(v))
+			{
+			}
+
+			std::string value;
+		};
+
 		struct Operand
 			: boost::spirit::x3::variant<
 				  ExpressionConstant,
 				  Numeral,
-				  std::string,
+				  LiteralString,
 				  f_UnaryOperation,
 				  TableConstructor,
 				  f_PrefixExpression,
@@ -128,7 +139,10 @@ namespace lac
 			using base_type::operator=;
 
 			bool isNumeral() const { return get().type() == typeid(Numeral); }
+			bool isLiteral() const { return get().type() == typeid(LiteralString); }
+
 			Numeral asNumeral() const { return boost::get<Numeral>(get()); }
+			LiteralString asLiteral() const { return boost::get<LiteralString>(get()); }
 		};
 
 		using NamesList = std::vector<std::string>;
@@ -207,7 +221,7 @@ namespace lac
 				  EmptyArguments,
 				  ExpressionsList,
 				  TableConstructor,
-				  std::string>
+				  LiteralString>
 		{
 			using base_type::base_type;
 			using base_type::operator=;

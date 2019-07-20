@@ -131,7 +131,8 @@ namespace lac
 		const x3::rule<class openLongBracket> openLongBracket = "openLongBracket";
 		const x3::rule<class closeLongBacket> closeLongBacket = "closeLongBacket";
 		RULE(longLiteralString, std::string);
-		RULE(literalString, std::string);
+		RULE(literalStringValue, std::string);
+		RULE(literalString, ast::LiteralString);
 
 		RULE(numeralInt, int);
 		RULE(numeralFloat, double);
@@ -225,9 +226,10 @@ namespace lac
 			 >> omit[closeLongBacket]];
 
 		// Literal strings
-		const auto literalString_def = lexeme[quotedString('\'')
-											  | quotedString('"')
-											  | longLiteralString];
+		const auto literalStringValue_def = lexeme[quotedString('\'')
+												   | quotedString('"')
+												   | longLiteralString];
+		const auto literalString_def = literalStringValue;
 
 		// Numerals
 		const auto numeralInt_def = (lit("0x") >> hex)
@@ -375,7 +377,7 @@ namespace lac
 
 		BOOST_SPIRIT_DEFINE(name, namesList,
 							openLongBracket, closeLongBacket,
-							longLiteralString, literalString,
+							longLiteralString, literalStringValue, literalString,
 							numeralInt, numeralFloat, numeral,
 							shortComment, longComment, comment,
 							skipper,

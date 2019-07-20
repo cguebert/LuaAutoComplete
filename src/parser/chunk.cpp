@@ -8,15 +8,25 @@
 
 using namespace lac::parser;
 
+namespace lac::ast
+{
+	
+
+	bool operator==(const LiteralString& lhs, const LiteralString& rhs)
+	{
+		return lhs.value == rhs.value;
+	}
+}
+
 namespace lac::parser
 {
 	BOOST_SPIRIT_INSTANTIATE(chunk_type, iterator_type, context_type);
 
-	using helper::test_value;
 	using helper::test_parser;
 	using helper::test_parser_simple;
 	using helper::test_phrase_parser;
 	using helper::test_phrase_parser_simple;
+	using helper::test_value;
 
 	TEST_CASE("keyword")
 	{
@@ -26,7 +36,7 @@ namespace lac::parser
 
 		CHECK_FALSE(test_parser_simple("test", keyword));
 	}
-	
+
 	TEST_CASE("name")
 	{
 		TEST_VALUE("test", name, "test");
@@ -40,7 +50,7 @@ namespace lac::parser
 		CHECK_FALSE(test_parser("break", name));
 		CHECK_FALSE(test_parser("while", name));
 	}
-	
+
 	TEST_CASE("namesList")
 	{
 		CHECK(test_phrase_parser("a", namesList));
@@ -57,38 +67,43 @@ namespace lac::parser
 		CHECK(list[2] == "c");
 	}
 
+	ast::LiteralString operator""_lit(const char* str, size_t len)
+	{
+		return ast::LiteralString{std::string{str, len}};
+	}
+
 	TEST_CASE("short literal string")
 	{
 		CHECK(test_parser("''", literalString));
 
-		TEST_VALUE("''", literalString, "");
-		TEST_VALUE("'test'", literalString, "test");
-		TEST_VALUE("\"test\"", literalString, "test");
-		TEST_VALUE("'test\" 123'", literalString, "test\" 123");
-		TEST_VALUE("\"test' 123\"", literalString, "test' 123");
-		TEST_VALUE("'test\\' 123'", literalString, "test' 123");
-		TEST_VALUE("\"test\\\" 123\"", literalString, "test\" 123");
-		TEST_VALUE("'line 1\r line 2'", literalString, "line 1\r line 2");
-
+		TEST_VALUE("''", literalString, ""_lit);
+		TEST_VALUE("'test'", literalString, "test"_lit);
+		TEST_VALUE("\"test\"", literalString, "test"_lit);
+		TEST_VALUE("'test\" 123'", literalString, "test\" 123"_lit);
+		TEST_VALUE("\"test' 123\"", literalString, "test' 123"_lit);
+		TEST_VALUE("'test\\' 123'", literalString, "test' 123"_lit);
+		TEST_VALUE("\"test\\\" 123\"", literalString, "test\" 123"_lit);
+		TEST_VALUE("'line 1\r line 2'", literalString, "line 1\r line 2"_lit);
+		
 		CHECK_FALSE(test_parser("no quotes here", literalString));
 		CHECK_FALSE(test_parser("'test", literalString));
 		CHECK_FALSE(test_parser("\"test'", literalString));
 
 		CHECK(test_phrase_parser("'test 1'", literalString));
 		CHECK(test_phrase_parser("'test 1\t 2'", literalString));
-
-		std::string v;
+		
+		ast::LiteralString v;
 		CHECK(test_phrase_parser("'test 1 \t2 3 4'", literalString, v));
-		CHECK(v == std::string("test 1 \t2 3 4"));
+		CHECK(v.value == std::string("test 1 \t2 3 4"));
 	}
 
 	TEST_CASE("long literal string")
 	{
-		TEST_VALUE("[[]]", literalString, "");
-		TEST_VALUE("[[test]]", literalString, "test");
-		TEST_VALUE("[[test] 123]]", literalString, "test] 123");
-		TEST_VALUE("[=[test]] 123]=]", literalString, "test]] 123");
-		TEST_VALUE("[==[test]=] 123]==]", literalString, "test]=] 123");
+		TEST_VALUE("[[]]", literalString, ""_lit);
+		TEST_VALUE("[[test]]", literalString, "test"_lit);
+		TEST_VALUE("[[test] 123]]", literalString, "test] 123"_lit);
+		TEST_VALUE("[=[test]] 123]=]", literalString, "test]] 123"_lit);
+		TEST_VALUE("[==[test]=] 123]==]", literalString, "test]=] 123"_lit);
 
 		CHECK_FALSE(test_parser("test", literalString));
 		CHECK_FALSE(test_parser("[[test]", literalString));
@@ -97,8 +112,8 @@ namespace lac::parser
 
 	TEST_CASE("literal string")
 	{
-		TEST_VALUE("'test'", literalString, "test");
-		TEST_VALUE("[[test]]", literalString, "test");
+		TEST_VALUE("'test'", literalString, "test"_lit);
+		TEST_VALUE("[[test]]", literalString, "test"_lit);
 	}
 
 	TEST_CASE("numeral int")
@@ -162,13 +177,13 @@ namespace lac::parser
 
 		ast::FieldByExpression fe;
 		REQUIRE(test_phrase_parser("['hello' .. 'World'] = 42", fieldByExpression, fe));
-		REQUIRE(fe.key.operand.get().type() == typeid(std::string));
-		CHECK(boost::get<std::string>(fe.key.operand) == "hello");
+		REQUIRE(fe.key.operand.isLiteral());
+		CHECK(fe.key.operand.asLiteral().value == "hello");
 
 		REQUIRE(fe.key.binaryOperation.is_initialized());
 		CHECK(fe.key.binaryOperation->get().operation == ast::Operation::concat);
-		REQUIRE(fe.key.binaryOperation->get().expression.operand.get().type() == typeid(std::string));
-		CHECK(boost::get<std::string>(fe.key.binaryOperation->get().expression.operand) == "World");
+		REQUIRE(fe.key.binaryOperation->get().expression.operand.isLiteral());
+		CHECK(fe.key.binaryOperation->get().expression.operand.asLiteral().value == "World");
 
 		REQUIRE(fe.value.operand.isNumeral());
 		const auto num = fe.value.operand.asNumeral();
@@ -184,8 +199,8 @@ namespace lac::parser
 		ast::FieldByAssignment fa;
 		REQUIRE(test_phrase_parser("x = 'test'", fieldByAssignment, fa));
 		CHECK(fa.name == "x");
-		REQUIRE(fa.value.operand.get().type() == typeid(std::string));
-		CHECK(boost::get<std::string>(fa.value.operand) == "test");
+		REQUIRE(fa.value.operand.isLiteral());
+		CHECK(fa.value.operand.asLiteral().value == "test");
 	}
 
 	TEST_CASE("field")
@@ -203,7 +218,8 @@ namespace lac::parser
 			REQUIRE(test_phrase_parser("['x'] = 42", field, f));
 			REQUIRE(f.get().type() == typeid(ast::FieldByExpression));
 			auto fe = boost::get<ast::FieldByExpression>(f.get());
-			CHECK(boost::get<std::string>(fe.key.operand) == "x");
+			REQUIRE(fe.key.operand.isLiteral());
+			CHECK(fe.key.operand.asLiteral().value == "x");
 			REQUIRE(fe.value.operand.isNumeral());
 			REQUIRE(fe.value.operand.asNumeral().isInt());
 			CHECK(fe.value.operand.asNumeral().asInt() == 42);
@@ -215,7 +231,7 @@ namespace lac::parser
 			REQUIRE(test_phrase_parser("x = 42", field, f));
 			REQUIRE(f.get().type() == typeid(ast::FieldByAssignment));
 			auto fa = boost::get<ast::FieldByAssignment>(f.get());
-			CHECK(boost::get<std::string>(fa.name) == "x");
+			CHECK(fa.name == "x");
 			REQUIRE(fa.value.operand.isNumeral());
 			REQUIRE(fa.value.operand.asNumeral().isInt());
 			CHECK(fa.value.operand.asNumeral().asInt() == 42);
@@ -227,8 +243,8 @@ namespace lac::parser
 			REQUIRE(test_phrase_parser("'x'", field, f));
 			REQUIRE(f.get().type() == typeid(ast::Expression));
 			auto ex = boost::get<ast::Expression>(f.get());
-			CHECK(ex.operand.get().type() == typeid(std::string));
-			CHECK(boost::get<std::string>(ex.operand) == "x");
+			CHECK(ex.operand.isLiteral());
+			CHECK(ex.operand.asLiteral().value == "x");
 		}
 	}
 
@@ -533,8 +549,8 @@ namespace lac::parser
 		{
 			ast::Expression ex;
 			REQUIRE(test_phrase_parser("'test'", expression, ex));
-			REQUIRE(ex.operand.get().type() == typeid(std::string));
-			CHECK(boost::get<std::string>(ex.operand) == "test");
+			REQUIRE(ex.operand.isLiteral());
+			CHECK(ex.operand.asLiteral().value == "test");
 		}
 
 		SUBCASE("unary operation")
@@ -796,8 +812,8 @@ namespace lac::parser
 			REQUIRE(exp1.operand.asNumeral().asInt() == 42);
 
 			const auto& exp2 = *(++itExp);
-			REQUIRE(exp2.operand.get().type() == typeid(std::string));
-			CHECK(boost::get<std::string>(exp2.operand) == "hello");
+			REQUIRE(exp2.operand.isLiteral());
+			CHECK(exp2.operand.asLiteral().value == "hello");
 		}
 	}
 
@@ -845,8 +861,8 @@ namespace lac::parser
 			REQUIRE(exp1.operand.asNumeral().asInt() == 42);
 
 			const auto& exp2 = *(++itExp);
-			REQUIRE(exp2.operand.get().type() == typeid(std::string));
-			CHECK(boost::get<std::string>(exp2.operand) == "hello");
+			REQUIRE(exp2.operand.isLiteral());
+			CHECK(exp2.operand.asLiteral().value == "hello");
 		}
 	}
 
@@ -1082,8 +1098,8 @@ namespace lac::parser
 			REQUIRE(exp1.operand.asNumeral().isInt());
 			REQUIRE(exp1.operand.asNumeral().asInt() == 42);
 			const auto& exp2 = *(++it);
-			REQUIRE(exp2.operand.get().type() == typeid(std::string));
-			CHECK(boost::get<std::string>(exp2.operand) == "hello");
+			REQUIRE(exp2.operand.isLiteral());
+			CHECK(exp2.operand.asLiteral().value == "hello");
 		}
 	}
 

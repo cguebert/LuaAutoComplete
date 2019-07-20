@@ -24,7 +24,7 @@ namespace lac::an
 			// Nothing to do here
 		}
 
-		void operator()(const std::string& str) const
+		void operator()(const ast::LiteralString& str) const
 		{
 			// Nothing to do here
 		}

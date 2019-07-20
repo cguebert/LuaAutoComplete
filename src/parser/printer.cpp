@@ -30,9 +30,9 @@ namespace lac
 			out << constants[static_cast<int>(ec)];
 		}
 
-		void operator()(const std::string& str) const
+		void operator()(const LiteralString& ls) const
 		{
-			out << '"' << str << '"';
+			out << '"' << ls.value << '"';
 		}
 
 		void operator()(int v) const
