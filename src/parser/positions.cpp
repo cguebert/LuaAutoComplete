@@ -65,4 +65,19 @@ namespace lac
 		CHECK(num.begin == 21);
 		CHECK(num.end == 23);
 	}
+
+	TEST_CASE("Elements 2")
+	{
+		auto chunk = chunkRule();
+
+		ast::Block block;
+		pos::Elements elements;
+		REQUIRE(phrase_parser_elements("goto toto", chunk, block, elements));
+		REQUIRE(elements.size() == 1);
+
+		const auto var = elements[0];
+		CHECK(var.type == ast::ElementType::keyword);
+		CHECK(var.begin == 0);
+		CHECK(var.end == 4);
+	}
 } // namespace lac

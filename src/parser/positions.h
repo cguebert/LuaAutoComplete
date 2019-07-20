@@ -46,6 +46,12 @@ namespace lac
 
 		struct Element
 		{
+			Element() = default;
+			Element(ast::ElementType type)
+				: type(type)
+			{
+			}
+
 			size_t begin = 0, end = 0;
 			ast::ElementType type = ast::ElementType::not_defined;
 		};
@@ -86,9 +92,19 @@ namespace lac
 				m_elements.push_back(elt);
 			}
 
+			void addElement(Element element)
+			{
+				m_elements.push_back(element);
+			}
+
 			const Elements& elements() const
 			{
 				return m_elements;
+			}
+
+			size_t pos(const Iterator it) const
+			{
+				return it - m_begin;
 			}
 
 		private:

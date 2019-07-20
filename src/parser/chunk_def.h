@@ -247,6 +247,41 @@ namespace lac
 			 >> omit[closeLongBacket]];
 		const auto comment_def = longComment | shortComment;
 
+		// Keywords
+		struct element_tag
+		{
+		};
+
+		auto startElement = [](auto& ctx) {
+			//	if constexpr (pos::has_tag<decltype(ctx), pos::position_tag>)
+			{
+				auto& positions = x3::get<pos::position_tag>(ctx).get();
+				auto& elt = get<element_tag>(ctx);
+				elt.begin = positions.pos(_where(ctx).begin());
+			}
+		};
+		auto endElement = [](auto& ctx) 
+		{
+			//	if constexpr (pos::has_tag<decltype(ctx), pos::position_tag>)
+			{
+				auto& positions = x3::get<pos::position_tag>(ctx).get();
+				auto& elt = get<element_tag>(ctx);
+				elt.end = positions.pos(_where(ctx).begin());
+				positions.addElement(elt);
+			}
+		};
+
+		const x3::rule<class keywordStart> keywordStart = "keywordStart";
+		const x3::rule<class keywordEnd> keywordEnd = "keywordEnd";
+		const auto keywordStart_def = x3::eps[startElement];
+		const auto keywordEnd_def = x3::eps[endElement];
+		auto kwd = [](const char* str) {
+			return with<element_tag>(pos::Element{ast::ElementType::keyword})
+				[omit[keywordStart]
+				 >> omit[x3::string(str)]
+				 >> x3::no_skip[omit[keywordEnd]]];
+		};
+
 		// A skipper that ignore whitespace and comments
 		const x3::rule<class skipper> skipper = "skipper";
 
@@ -334,7 +369,7 @@ namespace lac
 		const auto emptyStatement = lit(';') >> x3::attr(ast::EmptyStatement{});
 		const auto assignmentStatement_def = variablesList >> '=' >> expressionsList;
 		const auto labelStatement_def = "::" >> name >> "::";
-		const auto gotoStatement_def = "goto" >> name;
+		const auto gotoStatement_def = kwd("goto") >> name;
 		const auto breakStatement_def = "break" >> x3::attr(ast::BreakStatement{});
 		const auto doStatement_def = "do" >> block >> "end";
 		const auto whileStatement_def = "while" >> expression >> "do" >> block >> "end";
@@ -380,6 +415,7 @@ namespace lac
 							longLiteralString, literalStringValue, literalString,
 							numeralInt, numeralFloat, numeral,
 							shortComment, longComment, comment,
+							keywordStart, keywordEnd,
 							skipper,
 							fieldByExpression, fieldByAssignment, field, fieldsList, tableConstructor,
 							parametersList, arguments,
