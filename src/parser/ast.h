@@ -113,7 +113,7 @@ namespace lac
 			}
 		};
 
-		struct LiteralString
+		struct LiteralString : ElementAnnotated<ElementType::literal_string>
 		{
 			LiteralString() = default;
 			LiteralString(std::string v)
