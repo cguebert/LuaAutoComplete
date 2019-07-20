@@ -29,6 +29,11 @@ namespace lac::an
 			// Nothing to do here
 		}
 
+		void operator()(const std::string& str) const
+		{
+			// Nothing to do here
+		}
+
 		void operator()(const ast::UnaryOperation& uo) const
 		{
 			(*this)(uo.expression);

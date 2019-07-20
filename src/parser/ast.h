@@ -115,12 +115,6 @@ namespace lac
 
 		struct LiteralString : ElementAnnotated<ElementType::literal_string>
 		{
-			LiteralString() = default;
-			LiteralString(std::string v)
-				: value(std::move(v))
-			{
-			}
-
 			std::string value;
 		};
 

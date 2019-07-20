@@ -69,7 +69,9 @@ namespace lac::parser
 
 	ast::LiteralString operator""_lit(const char* str, size_t len)
 	{
-		return ast::LiteralString{std::string{str, len}};
+		ast::LiteralString tmp;
+		tmp.value = std::string{str, len};
+		return tmp;
 	}
 
 	TEST_CASE("short literal string")

@@ -41,6 +41,11 @@ namespace lac::an
 			return TypeInfo::fromName(str.value);
 		}
 
+		TypeInfo operator()(const std::string& str) const
+		{
+			return TypeInfo::fromName(str);
+		}
+
 		TypeInfo operator()(const ast::UnaryOperation& uo) const
 		{
 			const auto right = (*this)(uo.expression);
