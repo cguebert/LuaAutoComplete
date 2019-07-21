@@ -314,9 +314,9 @@ namespace lac
 								   | tableConstructor
 								   | literalString;
 
-		const auto functionBody_def = '(' >> -parametersList >> ')' >> block >> lit("end");
+		const auto functionBody_def = '(' >> -parametersList >> ')' >> block >> kwd("end");
 
-		const auto functionDefinition_def = lit("function") >> functionBody;
+		const auto functionDefinition_def = kwd("function") >> functionBody;
 
 		const auto functionCall_def = variable >> functionCallEnd;
 
@@ -370,23 +370,23 @@ namespace lac
 		const auto assignmentStatement_def = variablesList >> '=' >> expressionsList;
 		const auto labelStatement_def = "::" >> name >> "::";
 		const auto gotoStatement_def = kwd("goto") >> name;
-		const auto breakStatement_def = "break" >> x3::attr(ast::BreakStatement{});
-		const auto doStatement_def = "do" >> block >> "end";
-		const auto whileStatement_def = "while" >> expression >> "do" >> block >> "end";
-		const auto repeatStatement_def = "repeat" >> block >> "until" >> expression;
-		const auto ifStatement_def = "if" >> expression >> "then" >> block;
-		const auto elseIfStatement_def = "elseif" >> expression >> "then" >> block;
+		const auto breakStatement_def = kwd("break") >> x3::attr(ast::BreakStatement{});
+		const auto doStatement_def = kwd("do") >> block >> kwd("end");
+		const auto whileStatement_def = kwd("while") >> expression >> kwd("do") >> block >> kwd("end");
+		const auto repeatStatement_def = kwd("repeat") >> block >> kwd("until") >> expression;
+		const auto ifStatement_def = kwd("if") >> expression >> kwd("then") >> block;
+		const auto elseIfStatement_def = kwd("elseif") >> expression >> kwd("then") >> block;
 		const auto ifThenElseStatement_def = ifStatement
 											 >> *(elseIfStatement)
-											 >> -("else" >> block)
-											 >> "end";
-		const auto numericalForStatement_def = "for" >> name >> '=' >> expression
+											 >> -(kwd("else") >> block)
+											 >> kwd("end");
+		const auto numericalForStatement_def = kwd("for") >> name >> '=' >> expression
 											   >> ',' >> expression >> -(',' >> expression)
-											   >> "do" >> block >> "end";
-		const auto genericForStatement_def = "for" >> namesList >> "in" >> expressionsList >> "do" >> block >> "end";
-		const auto functionDeclarationStatement_def = "function" >> functionName >> functionBody;
-		const auto localFunctionDeclarationStatement_def = "local" >> lit("function") >> name >> functionBody;
-		const auto localAssignmentStatement_def = "local" >> namesList >> -('=' >> expressionsList);
+											   >> kwd("do") >> block >> kwd("end");
+		const auto genericForStatement_def = kwd("for") >> namesList >> kwd("in") >> expressionsList >> kwd("do") >> block >> kwd("end");
+		const auto functionDeclarationStatement_def = kwd("function") >> functionName >> functionBody;
+		const auto localFunctionDeclarationStatement_def = kwd("local") >> kwd("function") >> name >> functionBody;
+		const auto localAssignmentStatement_def = kwd("local") >> namesList >> -('=' >> expressionsList);
 
 		const auto statement_def = emptyStatement
 								   | assignmentStatement
@@ -404,7 +404,7 @@ namespace lac
 								   | localFunctionDeclarationStatement
 								   | localAssignmentStatement;
 
-		const auto returnStatement_def = "return" >> -expressionsList >> -lit(';');
+		const auto returnStatement_def = kwd("return") >> -expressionsList >> -lit(';');
 
 		// Blocks
 		const auto block_def = *statement >> -returnStatement;
