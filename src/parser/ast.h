@@ -19,13 +19,13 @@ namespace lac
 		{
 			not_defined,
 			keyword,
-			variable,
-			variable_member,
-			function,
-			function_member,
 			literal_string,
 			numeral,
-			comment
+			comment,
+			variable,
+			function,
+			member_variable,
+			member_function
 		};
 
 		enum class Operation

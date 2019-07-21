@@ -10,8 +10,6 @@ using namespace lac::parser;
 
 namespace lac::ast
 {
-	
-
 	bool operator==(const LiteralString& lhs, const LiteralString& rhs)
 	{
 		return lhs.value == rhs.value;

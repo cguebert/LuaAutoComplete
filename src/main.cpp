@@ -1,8 +1,87 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <doctest/doctest.h>
 
+#include <coloration/coloration_test.h>
+#include <parser/ast_adapted.h>
+#include <parser/chunk.h>
+#include <parser/config.h>
+#include <parser/positions.h>
+
+#include <fstream>
+
+#ifdef WIN32
+#include <windows.h>
+void activateColorConsole()
+{
+	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (hOut == INVALID_HANDLE_VALUE)
+		return;
+
+	DWORD dwMode = 0;
+	if (!GetConsoleMode(hOut, &dwMode))
+		return;
+
+	dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	if (!SetConsoleMode(hOut, dwMode))
+		return;
+}
+#else
+void activateColorConsole()
+{
+}
+#endif
+
+namespace
+{
+	std::string loadFile(std::string_view path)
+	{
+		std::ifstream in(path.data(), std::ios_base::binary);
+		if (!in)
+			return {};
+
+		std::string data;
+		in.seekg(0, std::ios_base::end);
+		data.resize(in.tellg());
+		in.seekg(0, std::ios_base::beg);
+		in.read(data.data(), data.size());
+		return data;
+	}
+
+	void colorProgram(std::string_view path)
+	{
+		activateColorConsole();
+		const auto data = loadFile(path);
+		if (data.empty())
+			return;
+
+		const auto view = std::string_view{data};
+		auto f = view.begin();
+		const auto l = view.end();
+		lac::pos::Positions positions{f, l};
+
+		auto chunk = lac::chunkRule();
+		const auto parser = boost::spirit::x3::with<lac::pos::position_tag>(std::ref(positions))[chunk];
+
+		lac::ast::Block block;
+		if (boost::spirit::x3::phrase_parse(f, l, parser, boost::spirit::x3::ascii::space, block) && f == l)
+		{
+			lac::printProgram(data, positions.elements());
+		}
+	}
+} // namespace
+
 int main(int argc, char** argv)
 {
+	for (int i = 1; i < argc; ++i)
+	{
+		const std::string cmd = argv[i];
+		if (cmd == "color")
+		{
+			colorProgram(argv[++i]);
+			return 0;
+		}
+	}
+
 	doctest::Context context;
 	context.applyCommandLine(argc, argv);
 
