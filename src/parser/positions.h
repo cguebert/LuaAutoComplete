@@ -89,12 +89,19 @@ namespace lac
 				elt.begin = ast.begin;
 				elt.end = ast.end;
 				elt.type = E;
-				m_elements.push_back(elt);
+				addElement(elt);
 			}
 
 			void addElement(Element element)
 			{
-				m_elements.push_back(element);
+				if (!m_elements.empty() 
+					&& m_elements.back().begin == element.begin
+					&& m_elements.back().end == element.end)
+				{
+					m_elements.back() = element;
+				}
+				else
+					m_elements.push_back(element);
 			}
 
 			const Elements& elements() const
