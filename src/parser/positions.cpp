@@ -1,6 +1,5 @@
 #include <parser/ast_adapted.h>
 #include <parser/chunk.h>
-#include <parser/config.h>
 
 #include <helper/test_utils.h>
 

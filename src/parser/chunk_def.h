@@ -8,6 +8,50 @@
 #include <parser/chunk.h>
 #include <parser/positions.h>
 
+/* From Lua 5.3 reference, 9 - The Complete Syntax of Lua:
+	chunk ::= block
+	block ::= {stat} [retstat]
+	stat ::=  ';' | 
+		varlist '=' explist | 
+		functioncall | 
+		label | 
+		break | 
+		goto Name | 
+		do block end | 
+		while exp do block end | 
+		repeat block until exp | 
+		if exp then block {elseif exp then block} [else block] end | 
+		for Name '=' exp ',' exp [',' exp] do block end | 
+		for namelist in explist do block end | 
+		function funcname funcbody | 
+		local function Name funcbody | 
+		local namelist ['=' explist] 
+	retstat ::= return [explist] [';']
+	label ::= '::' Name '::'
+	funcname ::= Name {'.' Name} [':' Name]
+	varlist ::= var {',' var}
+	var ::=  Name | prefixexp '[' exp ']' | prefixexp '.' Name 
+	namelist ::= Name {',' Name}
+	explist ::= exp {',' exp}
+	exp ::=  nil | false | true | Numeral | LiteralString | '...' | functiondef | 
+		prefixexp | tableconstructor | exp binop exp | unop exp 
+	prefixexp ::= var | functioncall | '(' exp ')'
+	functioncall ::=  prefixexp args | prefixexp ':' Name args 
+	args ::=  '(' [explist] ')' | tableconstructor | LiteralString 
+	functiondef ::= function funcbody
+	funcbody ::= '(' [parlist] ')' block end
+	parlist ::= namelist [',' '...'] | '...'
+	tableconstructor ::= '{' [fieldlist] '}'
+	fieldlist ::= field {fieldsep field} [fieldsep]
+	field ::= '[' exp ']' '=' exp | Name '=' exp | exp
+	fieldsep ::= ',' | ';'
+	binop ::=  '+' | '-' | '*' | '/' | '//' | '^' | '%' | 
+		'&' | '~' | '|' | '>>' | '<<' | '..' | 
+		'<' | '<=' | '>' | '>=' | '==' | '~=' | 
+		and | or
+	unop ::= '-' | not | '#' | '~'
+*/
+
 namespace lac
 {
 	namespace parser
@@ -251,7 +295,6 @@ namespace lac
 		struct element_tag
 		{
 		};
-
 		auto startElement = [](auto& ctx) {
 			//	if constexpr (pos::has_tag<decltype(ctx), pos::position_tag>)
 			{
@@ -260,8 +303,7 @@ namespace lac
 				elt.begin = positions.pos(_where(ctx).begin());
 			}
 		};
-		auto endElement = [](auto& ctx) 
-		{
+		auto endElement = [](auto& ctx) {
 			//	if constexpr (pos::has_tag<decltype(ctx), pos::position_tag>)
 			{
 				auto& positions = x3::get<pos::position_tag>(ctx).get();

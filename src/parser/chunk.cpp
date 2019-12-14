@@ -84,14 +84,14 @@ namespace lac::parser
 		TEST_VALUE("'test\\' 123'", literalString, "test' 123"_lit);
 		TEST_VALUE("\"test\\\" 123\"", literalString, "test\" 123"_lit);
 		TEST_VALUE("'line 1\r line 2'", literalString, "line 1\r line 2"_lit);
-		
+
 		CHECK_FALSE(test_parser("no quotes here", literalString));
 		CHECK_FALSE(test_parser("'test", literalString));
 		CHECK_FALSE(test_parser("\"test'", literalString));
 
 		CHECK(test_phrase_parser("'test 1'", literalString));
 		CHECK(test_phrase_parser("'test 1\t 2'", literalString));
-		
+
 		ast::LiteralString v;
 		CHECK(test_phrase_parser("'test 1 \t2 3 4'", literalString, v));
 		CHECK(v.value == std::string("test 1 \t2 3 4"));
