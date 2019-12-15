@@ -1180,9 +1180,10 @@ namespace lac
 	{
 		auto chunk = lac::chunkRule();
 		const auto parser = boost::spirit::x3::with<lac::pos::position_tag>(std::ref(positions))[chunk];
+		const auto skipper = boost::spirit::x3::with<lac::pos::position_tag>(std::ref(positions))[parser::skipper];
 
 		auto f = view.begin();
 		const auto l = view.end();
-		return boost::spirit::x3::phrase_parse(f, l, parser, parser::skipper, block) && f == l;
+		return boost::spirit::x3::phrase_parse(f, l, parser, skipper, block) && f == l;
 	}
 } // namespace lac

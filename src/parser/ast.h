@@ -221,7 +221,7 @@ namespace lac
 			using base_type::operator=;
 		};
 
-		struct FunctionCallEnd
+		struct FunctionCallEnd : ElementAnnotated<ElementType::function>
 		{
 			boost::optional<std::string> member;
 			Arguments arguments;

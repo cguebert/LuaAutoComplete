@@ -241,6 +241,33 @@ namespace lac
 
 #undef RULE
 
+		// To annotate rules with no struct attributes
+		struct element_tag
+		{
+		};
+		auto startElement = [](auto& ctx) {
+			// if constexpr (pos::has_tag<decltype(ctx), pos::position_tag>)
+			{
+				auto& positions = x3::get<pos::position_tag>(ctx).get();
+				auto& elt = get<element_tag>(ctx);
+				elt.begin = positions.pos(_where(ctx).begin());
+			}
+		};
+		auto endElement = [](auto& ctx) {
+			//	if constexpr (pos::has_tag<decltype(ctx), pos::position_tag>)
+			{
+				auto& positions = x3::get<pos::position_tag>(ctx).get();
+				auto& elt = get<element_tag>(ctx);
+				elt.end = positions.pos(_where(ctx).begin());
+				positions.addElement(elt);
+			}
+		};
+
+		const x3::rule<class elementStart> elementStart = "elementStart";
+		const x3::rule<class elementEnd> elementEnd = "elementEnd";
+		const auto elementStart_def = x3::eps[startElement];
+		const auto elementEnd_def = x3::eps[endElement];
+
 		// Names
 		const auto name_def = lexeme[((alpha | char_('_'))
 									  >> *(alnum | char_('_')))
@@ -292,42 +319,18 @@ namespace lac
 		const auto comment_def = longComment | shortComment;
 
 		// Keywords
-		struct element_tag
-		{
-		};
-		auto startElement = [](auto& ctx) {
-			//	if constexpr (pos::has_tag<decltype(ctx), pos::position_tag>)
-			{
-				auto& positions = x3::get<pos::position_tag>(ctx).get();
-				auto& elt = get<element_tag>(ctx);
-				elt.begin = positions.pos(_where(ctx).begin());
-			}
-		};
-		auto endElement = [](auto& ctx) {
-			//	if constexpr (pos::has_tag<decltype(ctx), pos::position_tag>)
-			{
-				auto& positions = x3::get<pos::position_tag>(ctx).get();
-				auto& elt = get<element_tag>(ctx);
-				elt.end = positions.pos(_where(ctx).begin());
-				positions.addElement(elt);
-			}
-		};
-
-		const x3::rule<class keywordStart> keywordStart = "keywordStart";
-		const x3::rule<class keywordEnd> keywordEnd = "keywordEnd";
-		const auto keywordStart_def = x3::eps[startElement];
-		const auto keywordEnd_def = x3::eps[endElement];
 		auto kwd = [](const char* str) {
 			return with<element_tag>(pos::Element{ast::ElementType::keyword})
-				[omit[keywordStart]
+				[omit[elementStart]
 				 >> omit[x3::string(str)]
-				 >> x3::no_skip[omit[keywordEnd]]];
+				 >> x3::no_skip[omit[elementEnd]]];
 		};
 
 		// A skipper that ignore whitespace and comments
 		const x3::rule<class skipper> skipper = "skipper";
 		const auto skipper_def = ascii::space
-								 | omit[comment];
+								 | with<element_tag>(pos::Element{ast::ElementType::comment})
+									 [x3::no_skip[omit[elementStart >> comment >> elementEnd]]];
 
 		//*** Complete syntax of Lua ***
 		// Table and fields
@@ -455,7 +458,7 @@ namespace lac
 							longLiteralString, literalStringValue, literalString,
 							numeralInt, numeralFloat, numeral,
 							shortComment, longComment, comment,
-							keywordStart, keywordEnd,
+							elementStart, elementEnd,
 							skipper,
 							fieldByExpression, fieldByAssignment, field, fieldsList, tableConstructor,
 							parametersList, arguments,
