@@ -32,6 +32,10 @@ set_target_properties(${target} PROPERTIES ${DEFAULT_PROJECT_OPTIONS})
 target_compile_options(${target} PRIVATE ${DEFAULT_COMPILE_OPTIONS})
 target_link_libraries(${target} PRIVATE ${DEFAULT_LINKER_OPTIONS})
 
+if(MSVC)
+    set_source_files_properties(src/parser/chunk.cpp PROPERTIES COMPILE_FLAGS "/bigobj")
+endif()
+
 install(TARGETS ${target} RUNTIME DESTINATION release CONFIGURATIONS Release)
 install(TARGETS ${target} RUNTIME DESTINATION release CONFIGURATIONS RelWithDebInfo)
 install(TARGETS ${target} RUNTIME DESTINATION debug CONFIGURATIONS Debug)

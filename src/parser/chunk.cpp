@@ -1,12 +1,9 @@
 #include <parser/chunk_def.h>
 #include <parser/config.h>
-#include <parser/printer.h>
 #include <parser/positions.h>
 
 #include <helper/test_utils.h>
 #include <iostream>
-
-using namespace lac::parser;
 
 namespace lac::ast
 {
@@ -14,7 +11,7 @@ namespace lac::ast
 	{
 		return lhs.value == rhs.value;
 	}
-}
+} // namespace lac::ast
 
 namespace lac::parser
 {
@@ -167,6 +164,22 @@ namespace lac::parser
 		}
 
 		CHECK_FALSE(test_parser("test", comment));
+	}
+
+	TEST_CASE("skipper")
+	{
+		CHECK(test_parser("-- test", skipper));
+		CHECK(test_parser("-- test\n", skipper));
+		CHECK(test_parser("--[[ ]]", skipper));
+		CHECK(test_parser("--[[ comment ]]", skipper));
+		CHECK(test_parser("--[[ this is a comment ]]", skipper));
+		CHECK(test_parser("--[[ this a long\tcomment ]]", skipper));
+		CHECK(test_parser("--[[\n]]", skipper));
+		CHECK(test_parser("--[[ this a very\nlong comment ]]", skipper));
+		CHECK(test_parser("--[[ this a \tvery\nlong\tcomment ]]", skipper));
+		CHECK(test_parser(" ", skipper));
+		CHECK(test_parser("\n", skipper));
+		CHECK(test_parser("\t", skipper));
 	}
 
 	TEST_CASE("field by expression")
@@ -1159,14 +1172,17 @@ namespace lac::parser
 			CHECK(b.returnStatement.is_initialized() == true);
 		}
 	}
-
-	TEST_CASE("Printer")
-	{
-		ast::Expression ex;
-		REQUIRE(test_phrase_parser("'hello' + 42 / 3.15 * - 2", expression, ex));
-
-		//std::cout << "---------------\n";
-		//print(ex);
-		//std::cout << "\n---------------\n";
-	}
 } // namespace lac::parser
+
+namespace lac
+{
+	bool parseString(std::string_view view, pos::Positions<std::string_view::const_iterator>& positions, ast::Block& block)
+	{
+		auto chunk = lac::chunkRule();
+		const auto parser = boost::spirit::x3::with<lac::pos::position_tag>(std::ref(positions))[chunk];
+
+		auto f = view.begin();
+		const auto l = view.end();
+		return boost::spirit::x3::phrase_parse(f, l, parser, parser::skipper, block) && f == l;
+	}
+} // namespace lac

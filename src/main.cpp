@@ -58,15 +58,10 @@ namespace
 		auto f = view.begin();
 		const auto l = view.end();
 		lac::pos::Positions positions{f, l};
-
-		auto chunk = lac::chunkRule();
-		const auto parser = boost::spirit::x3::with<lac::pos::position_tag>(std::ref(positions))[chunk];
-
 		lac::ast::Block block;
-		if (boost::spirit::x3::phrase_parse(f, l, parser, boost::spirit::x3::ascii::space, block) && f == l)
-		{
+
+		if (lac::parseString(view, positions, block))
 			lac::printProgram(data, positions.elements());
-		}
 	}
 } // namespace
 

@@ -326,10 +326,8 @@ namespace lac
 
 		// A skipper that ignore whitespace and comments
 		const x3::rule<class skipper> skipper = "skipper";
-
 		const auto skipper_def = ascii::space
-								 | omit[shortComment]
-								 | omit[longComment];
+								 | omit[comment];
 
 		//*** Complete syntax of Lua ***
 		// Table and fields
