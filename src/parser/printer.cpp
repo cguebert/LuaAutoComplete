@@ -60,6 +60,19 @@ namespace lac
 			return j;
 		}
 
+		nlohmann::json operator()(const NamesList& list) const
+		{
+			nlohmann::json j;
+			j["type"] = "NamesList";
+			if (!list.empty())
+			{
+				auto& names = j["names"];
+				for (const auto& name : list)
+					names.push_back(name);
+			}
+			return j;
+		}
+
 		nlohmann::json operator()(const ast::Numeral& n) const
 		{
 			return boost::apply_visitor(Printer{}, n);
@@ -163,9 +176,12 @@ namespace lac
 			nlohmann::json j;
 			j["type"] = "Variable";
 			j["start"] = boost::apply_visitor(Printer{}, v.start);
-			auto& rest = j["rest"];
-			for (const auto& post : v.rest)
-				rest.push_back((*this)(post));
+			if (!v.rest.empty())
+			{
+				auto& rest = j["rest"];
+				for (const auto& post : v.rest)
+					rest.push_back((*this)(post));
+			}
 			return j;
 		}
 
@@ -179,17 +195,81 @@ namespace lac
 			return j;
 		}
 
+		nlohmann::json operator()(const FieldByExpression& fbe) const
+		{
+			nlohmann::json j;
+			j["type"] = "FieldByExpression";
+			j["key"] = (*this)(fbe.key);
+			j["value"] = (*this)(fbe.value);
+			return j;
+		}
+
+		nlohmann::json operator()(const FieldByAssignment& fba) const
+		{
+			nlohmann::json j;
+			j["type"] = "FieldByAssignment";
+			j["name"] = (*this)(fba.name);
+			j["value"] = (*this)(fba.value);
+			return j;
+		}
+
+		nlohmann::json operator()(const Field& field) const
+		{
+			return boost::apply_visitor(Printer{}, field);
+		}
+
+		nlohmann::json operator()(const FieldsList& list) const
+		{
+			nlohmann::json j;
+			j["type"] = "FieldsList";
+			if (!list.empty())
+			{
+				auto& fields = j["fields"];
+				for (const auto& field : list)
+					fields.push_back((*this)(field));
+			}
+			return j;
+		}
+
 		nlohmann::json operator()(const TableConstructor& tc) const
 		{
 			nlohmann::json j;
-			j["type"] = "Table constructor";
+			j["type"] = "TableConstructor";
+			if (tc.fields)
+				j["fields"] = (*this)(*tc.fields);
 			return j;
+		}
+
+		nlohmann::json operator()(const PostPrefix& post) const
+		{
+			return boost::apply_visitor(Printer{}, post);
 		}
 
 		nlohmann::json operator()(const PrefixExpression& pe) const
 		{
 			nlohmann::json j;
-			j["type"] = "Prefix expression";
+			j["type"] = "PrefixExpression";
+			j["start"] = boost::apply_visitor(Printer{}, pe.start);
+			if (!pe.rest.empty())
+			{
+				auto& rest = j["rest"];
+				for (const auto& post : pe.rest)
+					rest.push_back((*this)(post));
+			}
+			return j;
+		}
+
+		nlohmann::json operator()(const ParametersList& list) const
+		{
+			nlohmann::json j;
+			j["type"] = "ParametersList";
+			if (!list.parameters.empty())
+			{
+				auto& parameters = j["parameters"];
+				for (const auto& par : list.parameters)
+					parameters.push_back(par);
+			}
+			j["varargs"] = list.varargs;
 			return j;
 		}
 
@@ -197,6 +277,9 @@ namespace lac
 		{
 			nlohmann::json j;
 			j["type"] = "Function body";
+			if (fb.parameters)
+				j["parameters"] = (*this)(*fb.parameters);
+			j["body"] = (*this)(fb.block);
 			return j;
 		}
 
@@ -214,10 +297,10 @@ namespace lac
 			auto& left = j["left"];
 			for (const auto& v : s.variables)
 				left.push_back((*this)(v));
-			
+
 			auto& right = j["right"];
 			for (const auto& sx : s.expressions)
-				left.push_back((*this)(sx));
+				right.push_back((*this)(sx));
 			return j;
 		}
 
@@ -232,6 +315,7 @@ namespace lac
 		{
 			nlohmann::json j;
 			j["type"] = "LabelStatement";
+			j["name"] = s.name;
 			return j;
 		}
 
@@ -239,6 +323,7 @@ namespace lac
 		{
 			nlohmann::json j;
 			j["type"] = "GotoStatement";
+			j["label"] = s.label;
 			return j;
 		}
 
@@ -253,6 +338,7 @@ namespace lac
 		{
 			nlohmann::json j;
 			j["type"] = "DoStatement";
+			j["body"] = (*this)(s.block);
 			return j;
 		}
 
@@ -260,6 +346,8 @@ namespace lac
 		{
 			nlohmann::json j;
 			j["type"] = "WhileStatement";
+			j["test"] = (*this)(s.condition);
+			j["body"] = (*this)(s.block);
 			return j;
 		}
 
@@ -267,6 +355,17 @@ namespace lac
 		{
 			nlohmann::json j;
 			j["type"] = "RepeatStatement";
+			j["test"] = (*this)(s.condition);
+			j["body"] = (*this)(s.block);
+			return j;
+		}
+
+		nlohmann::json operator()(const IfStatement& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "IfStatement";
+			j["test"] = (*this)(s.condition);
+			j["body"] = (*this)(s.block);
 			return j;
 		}
 
@@ -274,6 +373,15 @@ namespace lac
 		{
 			nlohmann::json j;
 			j["type"] = "IfThenElseStatement";
+			j["first"] = (*this)(s.first);
+			if (!s.rest.empty())
+			{
+				auto& rest = j["rest"];
+				for (const auto& ifs : s.rest)
+					rest.push_back((*this)(ifs));
+			}
+			if (s.elseBlock)
+				j["alternate"] = (*this)(*s.elseBlock);
 			return j;
 		}
 
@@ -281,6 +389,12 @@ namespace lac
 		{
 			nlohmann::json j;
 			j["type"] = "NumericalForStatement";
+			j["variable"] = s.variable;
+			j["first"] = (*this)(s.first);
+			j["last"] = (*this)(s.last);
+			if (s.step)
+				j["step"] = (*this)(*s.step);
+			j["body"] = (*this)(s.block);
 			return j;
 		}
 
@@ -288,6 +402,25 @@ namespace lac
 		{
 			nlohmann::json j;
 			j["type"] = "GenericForStatement";
+			j["variables"] = (*this)(s.variables);
+			j["expressions"] = (*this)(s.expressions);
+			j["body"] = (*this)(s.block);
+			return j;
+		}
+
+		nlohmann::json operator()(const FunctionName& fn) const
+		{
+			nlohmann::json j;
+			j["type"] = "FunctionName";
+			j["start"] = fn.start;
+			if (!fn.rest.empty())
+			{
+				auto& rest = j["rest"];
+				for (const auto& n : fn.rest)
+					rest.push_back(n);
+			}
+			if (fn.member)
+				j["member"] = fn.member->name;
 			return j;
 		}
 
@@ -295,6 +428,8 @@ namespace lac
 		{
 			nlohmann::json j;
 			j["type"] = "FunctionDeclarationStatement";
+			j["name"] = (*this)(s.name);
+			j["body"] = (*this)(s.body);
 			return j;
 		}
 
@@ -302,6 +437,8 @@ namespace lac
 		{
 			nlohmann::json j;
 			j["type"] = "LocalFunctionDeclarationStatement";
+			j["name"] = (*this)(s.name);
+			j["body"] = (*this)(s.body);
 			return j;
 		}
 
@@ -309,6 +446,16 @@ namespace lac
 		{
 			nlohmann::json j;
 			j["type"] = "LocalAssignmentStatement";
+			auto& left = j["left"];
+			for (const auto& v : s.variables)
+				left.push_back((*this)(v));
+
+			if (s.expressions)
+			{
+				auto& right = j["right"];
+				for (const auto& sx : *s.expressions)
+					right.push_back((*this)(sx));
+			}
 			return j;
 		}
 
