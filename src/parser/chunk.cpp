@@ -1186,4 +1186,11 @@ namespace lac
 		const auto l = view.end();
 		return boost::spirit::x3::phrase_parse(f, l, parser, skipper, block) && f == l;
 	}
+
+	bool parseString(std::string_view view, ast::Block& block)
+	{
+		auto f = view.begin();
+		const auto l = view.end();
+		return boost::spirit::x3::phrase_parse(f, l, lac::chunkRule(), parser::skipper, block) && f == l;
+	}
 } // namespace lac

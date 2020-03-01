@@ -2,9 +2,10 @@
 
 #include <parser/ast.h>
 
-#include <iostream>
+#include <nlohmann/json.hpp>
 
 namespace lac
 {
-	void print(const ast::Expression& ex, std::ostream& out = std::cout);
+	nlohmann::json toJson(const ast::Expression& ex);
+	nlohmann::json toJson(const ast::Block& block);
 }

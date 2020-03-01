@@ -17,6 +17,7 @@ namespace lac
 
 	parser::chunk_type chunkRule();
 
-	// This skips comments and spaces
+	// These skip comments and spaces
 	bool parseString(std::string_view view, pos::Positions<std::string_view::const_iterator>& positions, ast::Block& block);
+	bool parseString(std::string_view view, ast::Block& block);
 } // namespace lac

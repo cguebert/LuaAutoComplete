@@ -6,6 +6,7 @@
 #include <parser/chunk.h>
 #include <parser/config.h>
 #include <parser/positions.h>
+#include <parser/printer.h>
 
 #include <fstream>
 
@@ -63,6 +64,21 @@ namespace
 		if (lac::parseString(view, positions, block))
 			lac::printProgram(data, positions.elements());
 	}
+
+	void printAst(std::string_view path)
+	{
+		const auto data = loadFile(path);
+		if (data.empty())
+			return;
+
+		const auto view = std::string_view{data};
+		auto f = view.begin();
+		const auto l = view.end();
+		lac::ast::Block block;
+
+		if (lac::parseString(view, block))
+			std::cout << lac::toJson(block).dump(2, ' ');
+	}
 } // namespace
 
 int main(int argc, char** argv)
@@ -73,6 +89,11 @@ int main(int argc, char** argv)
 		if (cmd == "color")
 		{
 			colorProgram(argv[++i]);
+			return 0;
+		}
+		else if (cmd == "print_ast")
+		{
+			printAst(argv[++i]);
 			return 0;
 		}
 	}

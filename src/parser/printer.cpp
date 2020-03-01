@@ -4,16 +4,10 @@ namespace lac
 {
 	using namespace ast;
 
-	class Printer : public boost::static_visitor<void>
+	class Printer : public boost::static_visitor<nlohmann::json>
 	{
 	public:
-		Printer(std::ostream& out, int indent = 0)
-			: out(out)
-			, indent(indent)
-		{
-		}
-
-		void operator()(Operation op) const
+		std::string getString(Operation op) const
 		{
 			static const std::vector<std::string> constants = {
 				"+", "-", "*", "/", "//", "%",
@@ -21,106 +15,344 @@ namespace lac
 				"<<", ">>", "..", "#", "<",
 				"<=", ">", ">=", "==", "~="};
 
-			out << constants[static_cast<int>(op)];
+			return constants[static_cast<int>(op)];
 		}
 
-		void operator()(ExpressionConstant ec) const
+		nlohmann::json operator()(ExpressionConstant ec) const
 		{
 			static const std::vector<std::string> constants = {"nil", "...", "false", "true"};
-			out << constants[static_cast<int>(ec)];
+
+			nlohmann::json j;
+			j["type"] = "ExpressionConstant";
+			j["contant"] = constants[static_cast<int>(ec)];
+			return j;
 		}
 
-		void operator()(const LiteralString& ls) const
+		nlohmann::json operator()(const LiteralString& ls) const
 		{
-			out << '"' << ls.value << '"';
+			nlohmann::json j;
+			j["type"] = "LiteralString";
+			j["value"] = ls.value;
+			return j;
 		}
 
-		void operator()(int v) const
+		nlohmann::json operator()(int v) const
 		{
-			out << v;
+			nlohmann::json j;
+			j["type"] = "Numeral";
+			j["value"] = v;
+			return j;
 		}
 
-		void operator()(double v) const
+		nlohmann::json operator()(double v) const
 		{
-			out << v;
+			nlohmann::json j;
+			j["type"] = "Numeral";
+			j["value"] = v;
+			return j;
 		}
 
-		void operator()(const ast::Numeral& n) const
+		nlohmann::json operator()(std::string v) const
 		{
-			boost::apply_visitor(Printer(out, indent + 1), n);
+			nlohmann::json j;
+			j["type"] = "Name";
+			j["value"] = v;
+			return j;
 		}
 
-		void operator()(const Operand& operand) const
+		nlohmann::json operator()(const ast::Numeral& n) const
 		{
-			tab();
-			out << "Operand: ";
-			boost::apply_visitor(Printer(out, indent + 1), operand);
+			return boost::apply_visitor(Printer{}, n);
 		}
 
-		void operator()(const UnaryOperation& uo) const
+		nlohmann::json operator()(const Operand& operand) const
 		{
-			endl();
-			tab();
-			out << "UnaryOperation: ";
-			Printer(out, indent + 1)(uo.operation);
-			Printer(out, indent + 1)(uo.expression);
+			return boost::apply_visitor(Printer{}, operand);
 		}
 
-		void operator()(const BinaryOperation& bo) const
+		nlohmann::json operator()(const UnaryOperation& uo) const
 		{
-			endl(); 
-			tab();
-			out << "BinaryOperation: ";
-			Printer(out, indent + 1)(bo.operation);
-			Printer(out, indent + 1)(bo.expression);
+			nlohmann::json j;
+			j["type"] = "UnaryOperation";
+			j["operator"] = getString(uo.operation);
+			j["argument"] = (*this)(uo.expression);
+			return j;
 		}
 
-		void operator()(const Expression& ex) const
+		nlohmann::json operator()(const BinaryOperation& bo) const
 		{
-			endl(); 
-			tab();
-			out << "Expression:\n";
-			Printer(out, indent + 1)(ex.operand);
-			if(ex.binaryOperation)
-				Printer(out, indent + 1)(ex.binaryOperation->get());
+			nlohmann::json j;
+			j["type"] = "BinaryOperation";
+			j["operator"] = getString(bo.operation);
+			j["argument"] = (*this)(bo.expression);
+			return j;
 		}
 
-		void operator()(const TableConstructor& tc) const
+		nlohmann::json operator()(const BracketedExpression& be) const
 		{
-			tab();
-			out << "Table constructor";
+			nlohmann::json j;
+			j["type"] = "BracketedExpression";
+			j["expression"] = (*this)(be.expression);
+			return j;
 		}
 
-		void operator()(const PrefixExpression& pe) const
+		nlohmann::json operator()(const TableIndexExpression& tie) const
 		{
-			tab();
-			out << "Prefix expression";
+			nlohmann::json j;
+			j["type"] = "TableIndexExpression";
+			j["expression"] = (*this)(tie.expression);
+			return j;
 		}
 
-		void operator()(const FunctionBody& fb) const
+		nlohmann::json operator()(const TableIndexName& tin) const
 		{
-			tab();
-			out << "Function body";
+			nlohmann::json j;
+			j["type"] = "TableIndexName";
+			j["name"] = tin.name;
+			return j;
 		}
 
-	private:
-		void tab() const
+		nlohmann::json operator()(const ExpressionsList& list) const
 		{
-			for (int i = 0; i < indent; ++i)
-				out << "  ";
+			nlohmann::json j;
+			j["type"] = "ExpressionsList";
+			auto& expressions = j["expressions"];
+			for (const auto& ex : list)
+				expressions.push_back((*this)(ex));
+			return j;
 		}
 
-		void endl() const
+		nlohmann::json operator()(const EmptyArguments& ar) const
 		{
-			out << '\n';
+			nlohmann::json j;
+			j["type"] = "EmptyArguments";
+			return j;
 		}
 
-		std::ostream& out;
-		int indent = 0;
+		nlohmann::json operator()(const Arguments& ar) const
+		{
+			return boost::apply_visitor(Printer{}, ar);
+		}
+
+		nlohmann::json operator()(const FunctionCallEnd& fce) const
+		{
+			nlohmann::json j;
+			j["type"] = "FunctionCallEnd";
+			if (fce.member)
+				j["member"] = *fce.member;
+			j["arguments"] = (*this)(fce.arguments);
+			return j;
+		}
+
+		nlohmann::json operator()(const VariableFunctionCall& vfc) const
+		{
+			nlohmann::json j;
+			j["type"] = "VariableFunctionCall";
+			j["call"] = (*this)(vfc.functionCall);
+			j["post"] = (*this)(vfc.postVariable);
+			return j;
+		}
+
+		nlohmann::json operator()(const VariablePostfix& post) const
+		{
+			return boost::apply_visitor(Printer{}, post);
+		}
+
+		nlohmann::json operator()(const Variable& v) const
+		{
+			nlohmann::json j;
+			j["type"] = "Variable";
+			j["start"] = boost::apply_visitor(Printer{}, v.start);
+			auto& rest = j["rest"];
+			for (const auto& post : v.rest)
+				rest.push_back((*this)(post));
+			return j;
+		}
+
+		nlohmann::json operator()(const Expression& ex) const
+		{
+			nlohmann::json j;
+			j["type"] = "Expression";
+			j["left"] = (*this)(ex.operand);
+			if (ex.binaryOperation)
+				j["right"] = (*this)(*ex.binaryOperation);
+			return j;
+		}
+
+		nlohmann::json operator()(const TableConstructor& tc) const
+		{
+			nlohmann::json j;
+			j["type"] = "Table constructor";
+			return j;
+		}
+
+		nlohmann::json operator()(const PrefixExpression& pe) const
+		{
+			nlohmann::json j;
+			j["type"] = "Prefix expression";
+			return j;
+		}
+
+		nlohmann::json operator()(const FunctionBody& fb) const
+		{
+			nlohmann::json j;
+			j["type"] = "Function body";
+			return j;
+		}
+
+		nlohmann::json operator()(const EmptyStatement& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "EmptyStatement";
+			return j;
+		}
+
+		nlohmann::json operator()(const AssignmentStatement& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "AssignmentStatement";
+			auto& left = j["left"];
+			for (const auto& v : s.variables)
+				left.push_back((*this)(v));
+			
+			auto& right = j["right"];
+			for (const auto& sx : s.expressions)
+				left.push_back((*this)(sx));
+			return j;
+		}
+
+		nlohmann::json operator()(const FunctionCall& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "FunctionCall";
+			return j;
+		}
+
+		nlohmann::json operator()(const LabelStatement& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "LabelStatement";
+			return j;
+		}
+
+		nlohmann::json operator()(const GotoStatement& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "GotoStatement";
+			return j;
+		}
+
+		nlohmann::json operator()(const BreakStatement& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "BreakStatement";
+			return j;
+		}
+
+		nlohmann::json operator()(const DoStatement& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "DoStatement";
+			return j;
+		}
+
+		nlohmann::json operator()(const WhileStatement& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "WhileStatement";
+			return j;
+		}
+
+		nlohmann::json operator()(const RepeatStatement& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "RepeatStatement";
+			return j;
+		}
+
+		nlohmann::json operator()(const IfThenElseStatement& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "IfThenElseStatement";
+			return j;
+		}
+
+		nlohmann::json operator()(const NumericalForStatement& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "NumericalForStatement";
+			return j;
+		}
+
+		nlohmann::json operator()(const GenericForStatement& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "GenericForStatement";
+			return j;
+		}
+
+		nlohmann::json operator()(const FunctionDeclarationStatement& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "FunctionDeclarationStatement";
+			return j;
+		}
+
+		nlohmann::json operator()(const LocalFunctionDeclarationStatement& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "LocalFunctionDeclarationStatement";
+			return j;
+		}
+
+		nlohmann::json operator()(const LocalAssignmentStatement& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "LocalAssignmentStatement";
+			return j;
+		}
+
+		nlohmann::json operator()(const Statement& s) const
+		{
+			return boost::apply_visitor(Printer{}, s);
+		}
+
+		nlohmann::json operator()(const ReturnStatement& s) const
+		{
+			nlohmann::json j;
+			j["type"] = "ReturnStatement";
+			auto& argument = j["argument"];
+			if (s.expressions.empty())
+				argument.push_back(nullptr);
+			else
+			{
+				for (const auto& ex : s.expressions)
+					argument.push_back((*this)(ex));
+			}
+			return j;
+		}
+
+		nlohmann::json operator()(const Block& b) const
+		{
+			nlohmann::json j;
+			j["type"] = "Block";
+			auto& body = j["body"];
+			for (const auto& statement : b.statements)
+				body.push_back((*this)(statement));
+
+			if (b.returnStatement)
+				body.push_back((*this)(*b.returnStatement));
+			return j;
+		}
 	};
 
-	void print(const Expression& ex, std::ostream& out)
+	nlohmann::json toJson(const ast::Expression& ex)
 	{
-		Printer{out}(ex);
+		return Printer{}(ex);
+	}
+
+	nlohmann::json toJson(const ast::Block& block)
+	{
+		return Printer{}(block);
 	}
 } // namespace lac
