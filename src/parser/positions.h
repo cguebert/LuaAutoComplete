@@ -25,8 +25,18 @@ namespace lac
 			{
 			};
 
+			template <typename ID, typename T, typename Next, typename Tag>
+			struct HasTag<const x3::context<ID, T, Next>&, Tag> : HasTag<Next, Tag>
+			{
+			};
+
 			template <typename ID, typename T, typename Next>
 			struct HasTag<x3::context<ID, T, Next>, ID> : std::true_type
+			{
+			};
+
+			template <typename ID, typename T, typename Next>
+			struct HasTag<const x3::context<ID, T, Next>&, ID> : std::true_type
 			{
 			};
 
@@ -35,8 +45,18 @@ namespace lac
 			{
 			};
 
+			template <typename ID, typename T, typename Tag>
+			struct HasTag<const x3::context<ID, T, x3::unused_type>&, Tag> : std::false_type
+			{
+			};
+
 			template <typename ID, typename T>
 			struct HasTag<x3::context<ID, T, x3::unused_type>, ID> : std::true_type
+			{
+			};
+
+			template <typename ID, typename T>
+			struct HasTag<const x3::context<ID, T, x3::unused_type>&, ID> : std::true_type
 			{
 			};
 		} // namespace details

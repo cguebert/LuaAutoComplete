@@ -246,7 +246,7 @@ namespace lac
 		{
 		};
 		auto startElement = [](auto& ctx) {
-			// if constexpr (pos::has_tag<decltype(ctx), pos::position_tag>)
+			if constexpr (pos::has_tag<decltype(ctx), pos::position_tag>)
 			{
 				auto& positions = x3::get<pos::position_tag>(ctx).get();
 				auto& elt = get<element_tag>(ctx);
@@ -254,7 +254,7 @@ namespace lac
 			}
 		};
 		auto endElement = [](auto& ctx) {
-			//	if constexpr (pos::has_tag<decltype(ctx), pos::position_tag>)
+			if constexpr (pos::has_tag<decltype(ctx), pos::position_tag>)
 			{
 				auto& positions = x3::get<pos::position_tag>(ctx).get();
 				auto& elt = get<element_tag>(ctx);
