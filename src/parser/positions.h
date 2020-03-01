@@ -1,6 +1,7 @@
 #pragma once
 
 #include <parser/ast.h>
+#include <helper/algorithm.h>
 
 #include <boost/spirit/home/x3/support/context.hpp>
 
@@ -114,14 +115,19 @@ namespace lac
 
 			void addElement(Element element)
 			{
-				if (!m_elements.empty() 
-					&& m_elements.back().begin == element.begin
-					&& m_elements.back().end == element.end)
+				for (auto& elt : helper::reverse{m_elements})
 				{
-					m_elements.back() = element;
+					if (elt.end < element.begin)
+						break; // We can stop the search
+
+					if (elt.begin == element.begin && elt.end == element.end)
+					{
+						elt = element;
+						return;
+					}
 				}
-				else
-					m_elements.push_back(element);
+
+				m_elements.push_back(element);
 			}
 
 			const Elements& elements() const
