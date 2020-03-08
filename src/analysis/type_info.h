@@ -8,7 +8,7 @@
 
 namespace lac::an
 {
-	enum Type
+	enum class Type
 	{
 		nil,
 		boolean,
