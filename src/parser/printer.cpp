@@ -308,6 +308,8 @@ namespace lac
 		{
 			nlohmann::json j;
 			j["type"] = "FunctionCall";
+			j["left"] = (*this)(s.variable);
+			j["right"] = (*this)(s.functionCall);
 			return j;
 		}
 
