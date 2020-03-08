@@ -63,6 +63,27 @@ namespace lac
 			EXPRESSION_TYPE("2 > 'a'", Type::error);
 		}
 
+		TEST_CASE("Simple assignment")
+		{
+			ast::Block block;
+			REQUIRE(test_phrase_parser("x = 42", chunkRule(), block));
+
+			auto scope = analyseBlock(block);
+			const auto info = scope.getVariableType("x");
+			CHECK(info.type == Type::number);
+		}
+
+		TEST_CASE("Multiple assignments")
+		{
+			ast::Block block;
+			REQUIRE(test_phrase_parser("x, y, z = 42, true, 'test'", chunkRule(), block));
+
+			auto scope = analyseBlock(block);
+			CHECK(scope.getVariableType("x").type == Type::number);
+			CHECK(scope.getVariableType("y").type == Type::boolean);
+			CHECK(scope.getVariableType("z").type == Type::string);
+		}
+
 		TEST_CASE("Function assignment")
 		{
 			ast::Block block;

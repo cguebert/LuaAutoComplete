@@ -163,6 +163,29 @@ namespace lac::an
 
 		void operator()(const ast::AssignmentStatement& as) const
 		{
+			auto& global = m_scope.getGlobalScope();
+
+			size_t nbV = as.variables.size(), nbE = as.expressions.size();
+			auto varIt = as.variables.begin();
+			for (size_t i = 0; i < nbV; ++i)
+			{
+				TypeInfo type;
+				// TODO: support expressions with multiple returns
+				if (i < nbE)
+					type = getType(m_scope, as.expressions[i]);
+
+				auto& var = *varIt++;
+
+				// This only support named variables
+				if (var.start.get().type() == typeid(std::string) && var.rest.empty())
+					m_scope.addVariable(boost::get<std::string>(var.start.get()), type);
+
+				// TODO: support table members and other possibilities
+			}
+
+			// Visit expressions, add child scopes
+			for (const auto& e : as.expressions)
+				(*this)(e);
 		}
 
 		void operator()(const ast::LabelStatement& ls) const
