@@ -14,6 +14,21 @@ namespace lac::an
 {
 	class UserDefined;
 
+	enum class ElementType
+	{
+		variable,
+		function,
+		label
+	};
+
+	struct Element
+	{
+		ElementType elementType = ElementType::variable;
+		std::string name;
+		TypeInfo typeInfo;
+		bool local = true;
+	};
+
 	class Scope
 	{
 	public:
@@ -48,6 +63,8 @@ namespace lac::an
 
 		const ast::Block* block() const;
 		const std::vector<Scope>& children() const;
+
+		std::map<std::string, Element> getElements(bool localOnly = true) const;
 
 	private:
 		UserDefined* getUserDefined() const;

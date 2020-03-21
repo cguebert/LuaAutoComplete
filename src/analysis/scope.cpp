@@ -131,4 +131,60 @@ namespace lac::an
 		return m_children;
 	}
 
+	std::map<std::string, Element> Scope::getElements(bool localOnly) const
+	{
+		std::map<std::string, Element> elements;
+		auto addScope = [&elements](const Scope& scope, bool local) {
+			for (const auto& var : scope.m_variables)
+			{
+				if (elements.count(var.name))
+					continue;
+
+				Element elt;
+				elt.local = local;
+				elt.name = var.name;
+				elt.elementType = ElementType::variable;
+				elt.typeInfo = var.type;
+				elements[var.name] = std::move(elt);
+			}
+
+			for (const auto& func : scope.m_functions)
+			{
+				if (elements.count(func.name))
+					continue;
+
+				Element elt;
+				elt.local = local;
+				elt.name = func.name;
+				elt.elementType = ElementType::label;
+				elt.typeInfo = func.type;
+				elements[func.name] = std::move(elt);
+			}
+
+			for (const auto& label : scope.m_labels)
+			{
+				if (elements.count(label.name))
+					continue;
+
+				Element elt;
+				elt.local = local;
+				elt.name = label.name;
+				elt.elementType = ElementType::label;
+				elements[label.name] = std::move(elt);
+			}
+		};
+
+		addScope(*this, true);
+		if (!localOnly)
+		{
+			auto parent = m_parent;
+			while (parent)
+			{
+				addScope(*parent, false);
+				parent = parent->m_parent;
+			}
+		}
+		return elements;
+	}
+
 } // namespace lac::an

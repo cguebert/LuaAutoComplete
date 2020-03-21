@@ -100,6 +100,42 @@ end
 			CHECK(extractText(*ptr->block()) == R"~(return firstNum + secondNum)~");
 		}
 
+		TEST_CASE("Scope elements")
+		{
+			ast::Block block;
+			REQUIRE(test_phrase_parser(program, chunkRule(), block));
+			const auto scope = an::analyseBlock(block);
+
+			auto ptr = pos::getScopeAtPos(scope, 30);
+			REQUIRE(ptr);
+			auto elements = ptr->getElements();
+			CHECK(elements.size() == 1);
+			CHECK(elements.count("str"));
+
+			ptr = pos::getScopeAtPos(scope, 310);
+			REQUIRE(ptr);
+			elements = ptr->getElements();
+			CHECK(elements.size() == 2);
+			CHECK(elements.count("firstNum"));
+			CHECK(elements.count("secondNum"));
+
+			ptr = pos::getScopeAtPos(scope, 350);
+			REQUIRE(ptr);
+			elements = ptr->getElements();
+			CHECK(elements.size() == 4);
+			CHECK(elements.count("testValue"));
+			CHECK(elements.count("x"));
+			CHECK(elements.count("y"));
+			REQUIRE(elements.count("t"));
+
+			const auto& t = elements.at("t");
+			CHECK(t.elementType == an::ElementType::variable);
+			CHECK(t.typeInfo.type == an::Type::table);
+			CHECK(t.typeInfo.member("f").type == an::Type::function);
+			CHECK(t.typeInfo.member("m").type != an::Type::nil);
+			CHECK(t.typeInfo.member("n").type == an::Type::nil);
+		}
+
 		TEST_SUITE_END();
 	} // namespace comp
 } // namespace lac
