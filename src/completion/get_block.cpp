@@ -6,108 +6,249 @@ namespace lac::pos
 {
 	using namespace ast;
 
-	void append(Blocks& container, const Blocks& elements)
-	{
-		container.insert(container.end(), elements.begin(), elements.end());
-	}
-
-	class GetChildrenBlocks : public boost::static_visitor<Blocks>
+	class GetChildrenBlocks : public boost::static_visitor<void>
 	{
 	public:
-		Blocks operator()(const ast::EmptyStatement&) const
+		GetChildrenBlocks(Blocks& blocks)
+			: m_blocks(blocks)
 		{
-			return {};
 		}
 
-		Blocks operator()(const ast::AssignmentStatement&) const
+		void operator()(ast::ExpressionConstant ec) const
 		{
-			return {};
+			// Nothing to do here
 		}
 
-		Blocks operator()(const ast::FunctionCall&) const
+		void operator()(const ast::Numeral&) const
 		{
-			return {};
+			// Nothing to do here
 		}
 
-		Blocks operator()(const ast::LabelStatement&) const
+		void operator()(const ast::LiteralString& str) const
 		{
-			return {};
+			// Nothing to do here
 		}
 
-		Blocks operator()(const ast::GotoStatement&) const
+		void operator()(const std::string& str) const
 		{
-			return {};
+			// Nothing to do here
 		}
 
-		Blocks operator()(const ast::BreakStatement&) const
+		void operator()(const ast::UnaryOperation& uo) const
 		{
-			return {};
+			(*this)(uo.expression);
 		}
 
-		Blocks operator()(const ast::DoStatement& ds) const
+		void operator()(const ast::BinaryOperation& bo) const
 		{
-			return (*this)(ds.block);
+			(*this)(bo.expression);
 		}
 
-		Blocks operator()(const ast::WhileStatement& ws) const
+		void operator()(const ast::FieldByExpression& f) const
 		{
-			return (*this)(ws.block);
+			(*this)(f.key);
+			(*this)(f.value);
 		}
 
-		Blocks operator()(const ast::RepeatStatement& rs) const
+		void operator()(const ast::FieldByAssignment& f) const
 		{
-			return (*this)(rs.block);
+			(*this)(f.value);
 		}
 
-		Blocks operator()(const ast::IfThenElseStatement& s) const
+		void operator()(const ast::Field& f) const
 		{
-			Blocks blocks;
-			append(blocks, (*this)(s.first.block));
+			boost::apply_visitor(*this, f);
+		}
+
+		void operator()(const ast::TableConstructor& tc) const
+		{
+			if (tc.fields)
+			{
+				for (const auto& f : *tc.fields)
+					(*this)(f);
+			}
+		}
+
+		void operator()(const ast::Operand& op) const
+		{
+			boost::apply_visitor(*this, op);
+		}
+
+		void operator()(const ast::BracketedExpression be) const
+		{
+			(*this)(be.expression);
+		}
+
+		void operator()(const ast::TableIndexExpression tie) const
+		{
+			(*this)(tie.expression);
+		}
+
+		void operator()(const ast::TableIndexName& tin) const
+		{
+			// Nothing to do here
+		}
+
+		void operator()(const ast::EmptyArguments& arg) const
+		{
+			// Nothing to do here
+		}
+
+		void operator()(const ast::FunctionCallEnd& fce) const
+		{
+			boost::apply_visitor(*this, fce.arguments);
+		}
+
+		void operator()(const ast::PrefixExpression& pe) const
+		{
+			boost::apply_visitor(*this, pe.start);
+			for (const auto& pp : pe.rest)
+				boost::apply_visitor(*this, pp);
+		}
+
+		void operator()(const ast::VariableFunctionCall& vfc) const
+		{
+			(*this)(vfc.functionCall);
+			boost::apply_visitor(*this, vfc.postVariable);
+		}
+
+		void operator()(const ast::Variable& v) const
+		{
+			boost::apply_visitor(*this, v.start);
+			for (const auto& vp : v.rest)
+				boost::apply_visitor(*this, vp);
+		}
+
+		void operator()(const ast::Expression& e) const
+		{
+			(*this)(e.operand);
+			if (e.binaryOperation)
+				(*this)(*e.binaryOperation);
+		}
+
+		void operator()(const ast::ExpressionsList& el) const
+		{
+			for (const auto& ex : el)
+				(*this)(ex);
+		}
+
+		void operator()(const ast::ReturnStatement& rs) const
+		{
+			for (const auto& ex : rs.expressions)
+				(*this)(ex);
+		}
+
+		void operator()(const ast::FunctionBody& fb) const
+		{
+			(*this)(fb.block);
+		}
+
+		void operator()(const ast::EmptyStatement&) const
+		{
+		}
+
+		void operator()(const ast::AssignmentStatement& as) const
+		{
+			(*this)(as.expressions);
+		}
+
+		void operator()(const ast::FunctionCall&) const
+		{
+		}
+
+		void operator()(const ast::LabelStatement&) const
+		{
+		}
+
+		void operator()(const ast::GotoStatement&) const
+		{
+		}
+
+		void operator()(const ast::BreakStatement&) const
+		{
+		}
+
+		void operator()(const ast::DoStatement& ds) const
+		{
+			(*this)(ds.block);
+		}
+
+		void operator()(const ast::WhileStatement& ws) const
+		{
+			(*this)(ws.condition);
+			(*this)(ws.block);
+		}
+
+		void operator()(const ast::RepeatStatement& rs) const
+		{
+			(*this)(rs.block);
+			(*this)(rs.condition);
+		}
+
+		void operator()(const ast::IfStatement& s) const
+		{
+			(*this)(s.condition);
+			(*this)(s.block);
+		}
+
+		void operator()(const ast::IfThenElseStatement& s) const
+		{
+			(*this)(s.first);
 			for (const auto& es : s.rest)
-				append(blocks, (*this)(es.block));
+				(*this)(es);
 			if (s.elseBlock)
-				append(blocks, (*this)(*s.elseBlock));
-			return blocks;
+				(*this)(*s.elseBlock);
 		}
 
-		Blocks operator()(const ast::NumericalForStatement& s) const
+		void operator()(const ast::NumericalForStatement& s) const
 		{
-			return (*this)(s.block);
+			(*this)(s.first);
+			(*this)(s.last);
+			if (s.step)
+				(*this)(*s.step);
+			(*this)(s.block);
 		}
 
-		Blocks operator()(const ast::GenericForStatement& s) const
+		void operator()(const ast::GenericForStatement& s) const
 		{
-			return (*this)(s.block);
+			(*this)(s.expressions);
+			(*this)(s.block);
 		}
 
-		Blocks operator()(const ast::FunctionDeclarationStatement& s) const
+		void operator()(const ast::FunctionDeclarationStatement& s) const
 		{
-			return (*this)(s.body.block);
+			(*this)(s.body);
 		}
 
-		Blocks operator()(const ast::LocalFunctionDeclarationStatement& s) const
+		void operator()(const ast::LocalFunctionDeclarationStatement& s) const
 		{
-			return (*this)(s.body.block);
+			(*this)(s.body);
 		}
 
-		Blocks operator()(const ast::LocalAssignmentStatement&) const
+		void operator()(const ast::LocalAssignmentStatement& s) const
 		{
-			return {};
+			if (s.expressions)
+				(*this)(*s.expressions);
 		}
 
-		Blocks operator()(const Block& b) const
+		void operator()(const Block& b) const
 		{
-			Blocks blocks;
-			blocks.push_back(&b);
+			m_blocks.push_back(&b);
 			for (const auto& s : b.statements)
-				append(blocks, boost::apply_visitor(*this, s));
-			return blocks;
+				boost::apply_visitor(*this, s);
+			if (b.returnStatement)
+				(*this)(*b.returnStatement);
 		}
+
+	private:
+		Blocks& m_blocks;
 	};
 
 	Blocks getChildren(const ast::Block& block)
 	{
-		return GetChildrenBlocks{}(block);
+		Blocks blocks;
+		GetChildrenBlocks{blocks}(block);
+		return blocks;
 	}
 
 	const ast::Block* getBlockAtPos(const ast::Block& root, size_t pos)

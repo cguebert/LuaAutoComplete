@@ -66,9 +66,9 @@ end
 			REQUIRE(ptr);
 			CHECK(extractText(*ptr) == R"~(print('odd'))~");
 
-		//	ptr = pos::getBlockAtPos(block, 310);
-		//	REQUIRE(ptr);
-		//	CHECK(extractText(*ptr) == R"~(return firstNum + secondNum)~");
+			ptr = pos::getBlockAtPos(block, 310);
+			REQUIRE(ptr);
+			CHECK(extractText(*ptr) == R"~(return firstNum + secondNum)~");
 		}
 
 		TEST_SUITE_END();
