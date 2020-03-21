@@ -97,7 +97,7 @@ namespace lac
 			void annotate(ast::PositionAnnotated& ast, Iterator begin, Iterator end)
 			{
 				ast.begin = begin - m_begin;
-				ast.end = end - m_begin;
+				ast.end = end - m_begin - 1;
 			}
 
 			template <ast::ElementType E>

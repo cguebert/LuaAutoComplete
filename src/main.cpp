@@ -72,8 +72,6 @@ namespace
 			return;
 
 		const auto view = std::string_view{data};
-		auto f = view.begin();
-		const auto l = view.end();
 		lac::ast::Block block;
 
 		if (lac::parseString(view, block))

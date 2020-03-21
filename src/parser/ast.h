@@ -293,7 +293,7 @@ namespace lac
 
 		struct Statement;
 
-		struct Block
+		struct Block : public PositionAnnotated
 		{
 			std::list<Statement> statements;
 			boost::optional<ReturnStatement> returnStatement;
