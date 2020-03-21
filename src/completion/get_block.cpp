@@ -258,7 +258,12 @@ namespace lac::pos
 			return nullptr;
 
 		const auto children = getChildren(root);
-		helper::reverse reversed{children};
+		return getBlockAtPos(children, pos);
+	}
+
+	const ast::Block* getBlockAtPos(const Blocks& blocks, size_t pos)
+	{
+		helper::reverse reversed{blocks};
 		const auto it = helper::find_if(reversed, [pos](const ast::Block* block) {
 			return block->begin <= pos && block->end >= pos;
 		});

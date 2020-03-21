@@ -54,20 +54,21 @@ end
 		{
 			ast::Block block;
 			REQUIRE(test_phrase_parser(program, chunkRule(), block));
+			const auto blocks = pos::getChildren(block);
 
-			auto ptr = pos::getBlockAtPos(block, 30);
+			auto ptr = pos::getBlockAtPos(blocks, 30);
 			REQUIRE(ptr);
 			CHECK(extractText(*ptr) == R"~(return split(str,'[\\/]+'))~");
 
-			ptr = pos::getBlockAtPos(block, 180);
+			ptr = pos::getBlockAtPos(blocks, 180);
 			REQUIRE(ptr);
 			CHECK(extractText(*ptr) == R"~(print('even'))~");
 
-			ptr = pos::getBlockAtPos(block, 202);
+			ptr = pos::getBlockAtPos(blocks, 202);
 			REQUIRE(ptr);
 			CHECK(extractText(*ptr) == R"~(print('odd'))~");
 
-			ptr = pos::getBlockAtPos(block, 310);
+			ptr = pos::getBlockAtPos(blocks, 310);
 			REQUIRE(ptr);
 			CHECK(extractText(*ptr) == R"~(return firstNum + secondNum)~");
 		}
