@@ -5,8 +5,9 @@
 
 namespace lac::an
 {
-	Scope::Scope(Scope* parent)
-		: m_parent(parent)
+	Scope::Scope(const ast::Block& block, Scope* parent)
+		: m_block(&block)
+		, m_parent(parent)
 	{
 	}
 
@@ -93,7 +94,7 @@ namespace lac::an
 
 	void Scope::addChildScope(Scope&& scope)
 	{
-		m_childs.push_back(std::move(scope));
+		m_children.push_back(std::move(scope));
 	}
 
 	void Scope::setUserDefined(UserDefined* userDefined)
@@ -106,6 +107,16 @@ namespace lac::an
 		return m_parent
 				   ? m_parent->getUserDefined()
 				   : m_userDefined;
+	}
+
+	const ast::Block* Scope::block() const
+	{
+		return m_block;
+	}
+
+	const std::vector<Scope>& Scope::children() const
+	{
+		return m_children;
 	}
 
 } // namespace lac::an

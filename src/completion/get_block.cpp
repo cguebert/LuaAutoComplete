@@ -1,4 +1,5 @@
 #include <completion/get_block.h>
+#include <analysis/scope.h>
 
 #include <helper/algorithm.h>
 
@@ -265,5 +266,21 @@ namespace lac::pos
 		return it != reversed.end()
 				   ? *it
 				   : nullptr;
+	}
+
+	const an::Scope* getScopeAtPos(const an::Scope& scope, size_t pos)
+	{
+		const auto block = scope.block();
+		if (!block || block->begin > pos || block->end < pos)
+			return nullptr;
+
+		for (const auto& child : scope.children())
+		{
+			const auto ptr = getScopeAtPos(child, pos);
+			if (ptr)
+				return ptr;
+		}
+
+		return &scope;
 	}
 } // namespace lac::pos

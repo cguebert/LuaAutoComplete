@@ -71,7 +71,7 @@ namespace lac::an
 
 		void operator()(const ast::FunctionBody& fb) const
 		{
-			Scope scope{&m_scope};
+			Scope scope{fb.block, &m_scope};
 			if (fb.parameters)
 			{
 				for (const auto& p : fb.parameters->parameters)
@@ -228,7 +228,7 @@ namespace lac::an
 
 		void operator()(const ast::NumericalForStatement& s) const
 		{
-			Scope scope{&m_scope};
+			Scope scope{s.block, &m_scope};
 			scope.addVariable(s.variable, Type::number);
 			analyseBlock(scope, s.block);
 			m_scope.addChildScope(std::move(scope));
@@ -236,7 +236,7 @@ namespace lac::an
 
 		void operator()(const ast::GenericForStatement& s) const
 		{
-			Scope scope{&m_scope};
+			Scope scope{s.block, &m_scope};
 			size_t nbV = s.variables.size(), nbE = s.expressions.size();
 			for (size_t i = 0; i < nbV; ++i)
 			{
@@ -255,12 +255,14 @@ namespace lac::an
 		{
 			// TODO: it can be global function declaration
 			// or the declaration of a table method
+			(*this)(s.body);
 		}
 
 		void operator()(const ast::LocalFunctionDeclarationStatement& s) const
 		{
 			auto funcType = getType(m_scope, s.body);
 			m_scope.addFunction(s.name, std::move(funcType));
+			(*this)(s.body);
 		}
 
 		void operator()(const ast::LocalAssignmentStatement& s) const
@@ -308,7 +310,7 @@ namespace lac::an
 
 	Scope analyseBlock(const ast::Block& block, Scope* parentScope)
 	{
-		Scope scope(parentScope);
+		Scope scope(block, parentScope);
 		analyseBlock(scope, block);
 		return scope;
 	}

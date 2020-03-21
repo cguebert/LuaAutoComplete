@@ -5,6 +5,11 @@
 #include <string>
 #include <vector>
 
+namespace lac::ast
+{
+	struct Block;
+}
+
 namespace lac::an
 {
 	class UserDefined;
@@ -12,7 +17,8 @@ namespace lac::an
 	class Scope
 	{
 	public:
-		Scope(Scope* parent = nullptr);
+		Scope() = default;
+		Scope(const ast::Block& block, Scope* parent = nullptr);
 
 		// This class cannot be copied
 		Scope(const Scope&) = delete;
@@ -38,9 +44,13 @@ namespace lac::an
 
 		void setUserDefined(UserDefined* userDefined);
 
+		const ast::Block* block() const;
+		const std::vector<Scope>& children() const;
+
 	private:
 		UserDefined* getUserDefined() const;
 
+		const ast::Block* m_block = nullptr;
 		Scope* m_parent = nullptr;
 		UserDefined* m_userDefined = nullptr;
 
@@ -61,7 +71,7 @@ namespace lac::an
 			TypeInfo type;
 		};
 
-		std::vector<Scope> m_childs;
+		std::vector<Scope> m_children;
 		std::vector<VariableInfo> m_variables;
 		std::vector<LabelInfo> m_labels;
 		std::vector<FunctionInfo> m_functions;
