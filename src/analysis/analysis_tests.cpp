@@ -11,6 +11,11 @@ namespace lac
 
 	namespace an
 	{
+		doctest::String toString(const Type& value)
+		{
+			return std::to_string(static_cast<int>(value)).c_str();
+		}
+
 		void test_expression_type(const std::string& input, Type type)
 		{
 			ast::Block block;
@@ -98,6 +103,21 @@ namespace lac
 			CHECK(fd.parameters[0].type().type == Type::unknown);
 			CHECK(fd.parameters[1].name() == "y");
 			CHECK(fd.parameters[2].name() == "z");
+		}
+
+		TEST_CASE("Function definition")
+		{
+			ast::Block block;
+			REQUIRE(test_phrase_parser("function func(x, y) end", chunkRule(), block));
+
+			auto scope = analyseBlock(block);
+			const auto info = scope.getFunctionType("func");
+			REQUIRE(info.type == Type::function);
+			const auto& fd = info.function;
+			REQUIRE(fd.parameters.size() == 2);
+			CHECK(fd.parameters[0].name() == "x");
+			CHECK(fd.parameters[0].type().type == Type::unknown);
+			CHECK(fd.parameters[1].name() == "y");
 		}
 
 		TEST_CASE("Local function definition")

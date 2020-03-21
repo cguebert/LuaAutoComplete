@@ -253,8 +253,14 @@ namespace lac::an
 
 		void operator()(const ast::FunctionDeclarationStatement& s) const
 		{
-			// TODO: it can be global function declaration
-			// or the declaration of a table method
+			auto funcType = getType(m_scope, s.body);
+
+			// Global function
+			if (s.name.rest.empty() && !s.name.member)
+				m_scope.addFunction(s.name.start, std::move(funcType));
+
+			// TODO: support declaration of a table method
+
 			(*this)(s.body);
 		}
 
