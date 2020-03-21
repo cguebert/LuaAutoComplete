@@ -31,6 +31,8 @@ namespace lac::an
 		void addVariable(const std::string& name, TypeInfo type);
 		TypeInfo getVariableType(const std::string& name) const;
 
+		TypeInfo& modifyTable(const std::string& name);
+
 		void addLabel(const std::string& name);
 		bool hasLabel(const std::string& name) const;
 

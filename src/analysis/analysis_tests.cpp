@@ -197,6 +197,42 @@ namespace lac
 			CHECK_FALSE(info.members.count("3"));
 		}
 
+		TEST_CASE("Table member assignment")
+		{
+			ast::Block block;
+			REQUIRE(test_phrase_parser("t = {}; t.x=42; t.str='foo'; t.test=true", chunkRule(), block));
+
+			auto scope = analyseBlock(block);
+			const auto info = scope.getVariableType("t");
+			REQUIRE(info.type == Type::table);
+			REQUIRE(info.members.size() == 3);
+
+			REQUIRE(info.members.count("x"));
+			CHECK(info.members.at("x").type == Type::number);
+
+			REQUIRE(info.members.count("str"));
+			CHECK(info.members.at("str").type == Type::string);
+
+			REQUIRE(info.members.count("test"));
+			CHECK(info.members.at("test").type == Type::boolean);
+		}
+
+		TEST_CASE("Table member hierarchy")
+		{
+			ast::Block block;
+			REQUIRE(test_phrase_parser("a={}; a.b={}; a.b.v=42; a.b.c={}; a.b.c.t=true", chunkRule(), block));
+
+			auto scope = analyseBlock(block);
+			const auto info = scope.getVariableType("a");
+			REQUIRE(info.type == Type::table);
+			REQUIRE(info.members.size() == 1);
+
+			CHECK(info.member("b").type == Type::table);
+			CHECK(info.member("b").member("v").type == Type::number);
+			CHECK(info.member("b").member("c").type == Type::table);
+			CHECK(info.member("b").member("c").member("t").type == Type::boolean);
+		}
+
 		TEST_SUITE_BEGIN("User defined");
 
 		TEST_CASE("Variables")

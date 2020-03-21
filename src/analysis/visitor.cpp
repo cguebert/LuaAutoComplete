@@ -178,12 +178,38 @@ namespace lac::an
 
 				if (var.start.get().type() == typeid(std::string))
 				{
+					const auto& varName = boost::get<std::string>(var.start.get());
 					// Named variables
 					if (var.rest.empty())
-						m_scope.addVariable(boost::get<std::string>(var.start.get()), type);
+						m_scope.addVariable(varName, type);
+					else
+					{
+						auto& tableType = m_scope.modifyTable(varName);
+						auto* memberType = &tableType;
+
+						// Table member
+						for (auto restIt = var.rest.begin(); restIt != var.rest.end(); ++restIt)
+						{
+							const auto& memberExp = restIt->get();
+							const auto& memberExpType = memberExp.type();
+							if (memberExpType == typeid(ast::TableIndexName))
+							{
+								const auto& memberName = boost::get<ast::TableIndexName>(memberExp).name;
+								memberType = &memberType->members[memberName];
+							}
+							else // TODO: TableIndexExpression & VariableFunctionCall
+							{
+								memberType = nullptr;
+								break;
+							}
+						}
+
+						if (memberType)
+							*memberType = type;
+					}
 				}
 
-				// TODO: support table members and other possibilities
+				// TODO: BracketedExpression
 			}
 
 			// Visit expressions, add child scopes

@@ -77,6 +77,7 @@ namespace lac::an
 
 		// For tables
 		std::map<std::string, TypeInfo> members;
+		TypeInfo member(const std::string& name) const;
 
 		// For functions
 		FunctionInfo function;

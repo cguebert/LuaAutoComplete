@@ -111,4 +111,11 @@ namespace lac::an
 		return type != Type::error;
 	}
 
+	TypeInfo TypeInfo::member(const std::string& name) const
+	{
+		return members.count(name)
+				   ? members.at(name)
+				   : TypeInfo{};
+	}
+
 } // namespace lac::an

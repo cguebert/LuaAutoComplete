@@ -33,6 +33,18 @@ namespace lac::an
 		return Type::nil;
 	}
 
+	TypeInfo& Scope::modifyTable(const std::string& name)
+	{
+		const auto it = std::find_if(m_variables.begin(), m_variables.end(), [name](const VariableInfo& v) {
+			return v.name == name;
+		});
+		if (it != m_variables.end())
+			return it->type;
+
+		m_variables.push_back(VariableInfo{name, Type::table});
+		return m_variables.back().type;
+	}
+
 	void Scope::addLabel(const std::string& name)
 	{
 		m_labels.push_back(LabelInfo{name});
