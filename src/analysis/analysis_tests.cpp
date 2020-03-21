@@ -135,6 +135,68 @@ namespace lac
 			CHECK(fd.parameters[1].name() == "y");
 		}
 
+		TEST_CASE("Table constructor by assignement")
+		{
+			ast::Block block;
+			REQUIRE(test_phrase_parser("t = {x=42, name='foo', test=false}", chunkRule(), block));
+
+			auto scope = analyseBlock(block);
+			const auto info = scope.getVariableType("t");
+			REQUIRE(info.type == Type::table);
+			REQUIRE(info.members.size() == 3);
+
+			REQUIRE(info.members.count("x"));
+			CHECK(info.members.at("x").type == Type::number);
+
+			REQUIRE(info.members.count("name"));
+			CHECK(info.members.at("name").type == Type::string);
+
+			REQUIRE(info.members.count("test"));
+			CHECK(info.members.at("test").type == Type::boolean);
+		}
+
+		TEST_CASE("Table constructor expression only")
+		{
+			ast::Block block;
+			REQUIRE(test_phrase_parser("t = {42, 'test', false}", chunkRule(), block));
+
+			auto scope = analyseBlock(block);
+			const auto info = scope.getVariableType("t");
+			REQUIRE(info.type == Type::table);
+			REQUIRE(info.members.size() == 3);
+
+			REQUIRE(info.members.count("1"));
+			CHECK(info.members.at("1").type == Type::number);
+
+			REQUIRE(info.members.count("2"));
+			CHECK(info.members.at("2").type == Type::string);
+
+			REQUIRE(info.members.count("3"));
+			CHECK(info.members.at("3").type == Type::boolean);
+		}
+
+		TEST_CASE("Table constructor varied")
+		{
+			ast::Block block;
+			REQUIRE(test_phrase_parser("t = {1, text='foo', false}", chunkRule(), block));
+
+			auto scope = analyseBlock(block);
+			const auto info = scope.getVariableType("t");
+			REQUIRE(info.type == Type::table);
+			REQUIRE(info.members.size() == 3);
+
+			REQUIRE(info.members.count("1"));
+			CHECK(info.members.at("1").type == Type::number);
+
+			REQUIRE(info.members.count("2"));
+			CHECK(info.members.at("2").type == Type::boolean);
+
+			REQUIRE(info.members.count("text"));
+			CHECK(info.members.at("text").type == Type::string);
+
+			CHECK_FALSE(info.members.count("3"));
+		}
+
 		TEST_SUITE_BEGIN("User defined");
 
 		TEST_CASE("Variables")

@@ -1,5 +1,6 @@
 #include <analysis/get_sub_type.h>
 #include <analysis/scope.h>
+#include <parser/ast.h>
 
 namespace lac::an
 {

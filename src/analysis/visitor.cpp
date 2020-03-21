@@ -176,9 +176,12 @@ namespace lac::an
 
 				auto& var = *varIt++;
 
-				// This only support named variables
-				if (var.start.get().type() == typeid(std::string) && var.rest.empty())
-					m_scope.addVariable(boost::get<std::string>(var.start.get()), type);
+				if (var.start.get().type() == typeid(std::string))
+				{
+					// Named variables
+					if (var.rest.empty())
+						m_scope.addVariable(boost::get<std::string>(var.start.get()), type);
+				}
 
 				// TODO: support table members and other possibilities
 			}

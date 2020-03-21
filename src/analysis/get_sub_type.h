@@ -1,7 +1,13 @@
 #pragma once
 
 #include <analysis/type_info.h>
-#include <parser/ast.h>
+
+namespace lac::ast
+{
+	struct PostPrefix;
+	struct VariablePostfix;
+	struct FunctionCallEnd;
+}
 
 namespace lac::an
 {

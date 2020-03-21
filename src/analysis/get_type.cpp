@@ -1,5 +1,6 @@
 #include <analysis/get_type.h>
 #include <analysis/get_sub_type.h>
+#include <parser/ast.h>
 
 namespace lac::an
 {
@@ -72,8 +73,29 @@ namespace lac::an
 
 		TypeInfo operator()(const ast::TableConstructor& tc) const
 		{
-			// TODO: fill the table members
-			return Type::table;
+			TypeInfo info{Type::table};
+			if (!tc.fields)
+				return info;
+
+			int fieldIndex = 1;
+			for (const ast::Field& field : *tc.fields)
+			{
+				const auto& fieldType = field.get().type();
+				if (fieldType == typeid(ast::FieldByAssignment))
+				{
+					const auto& assignment = boost::get<ast::FieldByAssignment>(field.get());
+					info.members[assignment.name] = getType(m_scope, assignment.value);
+				}
+				else if (fieldType == typeid(ast::Expression))
+				{
+					const auto& expression = boost::get<ast::Expression>(field.get());
+					const auto fieldName = std::to_string(fieldIndex++);
+					info.members[fieldName] = getType(m_scope, expression);
+				}
+				// TODO support field by expression
+			}
+
+			return info;
 		}
 
 		TypeInfo operator()(const ast::FunctionBody& fb) const
