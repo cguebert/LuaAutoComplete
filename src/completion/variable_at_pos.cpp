@@ -1,4 +1,4 @@
-#include <completion/parse_current_line.h>
+#include <completion/variable_at_pos.h>
 #include <parser/chunk.h>
 
 #include <doctest/doctest.h>
@@ -59,6 +59,8 @@ namespace lac::comp
 			else
 				break;
 		}
+
+		// TODO: support brackets, table indexes, expressions
 
 		return view.substr(pos, pe - pos);
 	}
