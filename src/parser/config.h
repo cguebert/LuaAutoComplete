@@ -10,6 +10,9 @@ namespace lac::parser
 	using iterator_type = std::string_view::const_iterator;
 	using positions_type = pos::Positions<iterator_type>;
 
+	using pos_context_type = x3::context<pos::position_tag,
+										 std::reference_wrapper<positions_type>>;
+
 	using no_skip_context_type = x3::phrase_parse_context<x3::ascii::space_type>::type;
 	using no_skip_pos_context_type = x3::context<pos::position_tag,
 												 std::reference_wrapper<positions_type>,
@@ -25,6 +28,6 @@ namespace lac::parser
 											   std::reference_wrapper<positions_type>,
 											   x3::context<x3::skipper_tag,
 														   const x3::with_directive<skipper_type,
-																			  pos::position_tag,
-																			  std::reference_wrapper<positions_type>>>>;
+																					pos::position_tag,
+																					std::reference_wrapper<positions_type>>>>;
 } // namespace lac::parser

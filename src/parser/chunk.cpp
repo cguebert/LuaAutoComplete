@@ -20,6 +20,8 @@ namespace lac::parser
 	BOOST_SPIRIT_INSTANTIATE(chunk_type, iterator_type, chunk_pos_context_type);
 	//	BOOST_SPIRIT_INSTANTIATE(chunk_type, iterator_type, skipper_pos_context_type); // Not used
 	BOOST_SPIRIT_INSTANTIATE(variable_or_function_type, iterator_type, skipper_context_type);
+	BOOST_SPIRIT_INSTANTIATE(skipper_type, iterator_type, x3::unused_type);
+	BOOST_SPIRIT_INSTANTIATE(skipper_type, iterator_type, pos_context_type);
 
 	using helper::test_parser;
 	using helper::test_parser_simple;
