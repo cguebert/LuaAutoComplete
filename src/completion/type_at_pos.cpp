@@ -58,7 +58,8 @@ namespace lac::comp
 		CHECK(getTypeAtPos("local x", 6).type == an::Type::unknown);
 		CHECK(getTypeAtPos("local x = 42", 6).type == an::Type::number);
 
-	//	CHECK(getTypeAtPos("x = 42; function test() print(x) end", 30).type == an::Type::number);
+		CHECK(getTypeAtPos("x = 42; function test() print(x) end", 30).type == an::Type::number);
+		CHECK(getTypeAtPos("x = 'foo'; function test() print(x) end", 33).type == an::Type::string);
 	}
 
 	TEST_SUITE_END();

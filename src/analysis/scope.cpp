@@ -128,6 +128,12 @@ namespace lac::an
 
 	const std::vector<Scope>& Scope::children() const
 	{
+		// This is a sort of a hack, but we have to ensure that the parent pointer is valid
+		// as it can have been invalidated by other scopes being added to a vector
+		auto mutThis = const_cast<Scope*>(this);
+		for (auto& child : mutThis->m_children)
+			child.m_parent = mutThis;
+
 		return m_children;
 	}
 
