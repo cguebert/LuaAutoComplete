@@ -793,10 +793,10 @@ namespace lac::parser
 			REQUIRE(test_phrase_parser("x = 42", assignmentStatement, as));
 			REQUIRE(as.variables.size() == 1);
 			REQUIRE(as.expressions.size() == 1);
-			const auto& var = as.variables.front();
+			const auto& var = as.variables[0];
 			REQUIRE(var.start.get().type() == typeid(std::string));
 			CHECK(boost::get<std::string>(var.start) == "x");
-			const auto& exp = as.expressions.front();
+			const auto& exp = as.expressions[0];
 			REQUIRE(exp.operand.isNumeral());
 			REQUIRE(exp.operand.asNumeral().isInt());
 			REQUIRE(exp.operand.asNumeral().asInt() == 42);
@@ -809,22 +809,20 @@ namespace lac::parser
 			REQUIRE(as.variables.size() == 2);
 			REQUIRE(as.expressions.size() == 2);
 
-			auto itVar = as.variables.begin();
-			const auto& x = *itVar;
+			const auto& x = as.variables[0];
 			REQUIRE(x.start.get().type() == typeid(std::string));
 			CHECK(boost::get<std::string>(x.start) == "x");
 
-			const auto& y = *(++itVar);
+			const auto& y = as.variables[1];
 			REQUIRE(y.start.get().type() == typeid(std::string));
 			CHECK(boost::get<std::string>(y.start) == "y");
 
-			auto itExp = as.expressions.begin();
-			const auto& exp1 = *itExp;
+			const auto& exp1 = as.expressions[0];
 			REQUIRE(exp1.operand.isNumeral());
 			REQUIRE(exp1.operand.asNumeral().isInt());
 			REQUIRE(exp1.operand.asNumeral().asInt() == 42);
 
-			const auto& exp2 = *(++itExp);
+			const auto& exp2 = as.expressions[1];
 			REQUIRE(exp2.operand.isLiteral());
 			CHECK(exp2.operand.asLiteral().value == "hello");
 		}
@@ -843,7 +841,7 @@ namespace lac::parser
 			ast::LocalAssignmentStatement las;
 			REQUIRE(test_phrase_parser("local x", localAssignmentStatement, las));
 			REQUIRE(las.variables.size() == 1);
-			CHECK(las.variables.front() == "x");
+			CHECK(las.variables[0] == "x");
 			CHECK(las.expressions.is_initialized() == false);
 		}
 
@@ -867,13 +865,12 @@ namespace lac::parser
 
 			REQUIRE(las.expressions.is_initialized());
 			REQUIRE(las.expressions->size() == 2);
-			auto itExp = las.expressions->begin();
-			const auto& exp1 = *itExp;
+			const auto& exp1 = (*las.expressions)[0];
 			REQUIRE(exp1.operand.isNumeral());
 			REQUIRE(exp1.operand.asNumeral().isInt());
 			REQUIRE(exp1.operand.asNumeral().asInt() == 42);
 
-			const auto& exp2 = *(++itExp);
+			const auto& exp2 = (*las.expressions)[1];
 			REQUIRE(exp2.operand.isLiteral());
 			CHECK(exp2.operand.asLiteral().value == "hello");
 		}
@@ -1017,9 +1014,9 @@ namespace lac::parser
 			ast::GenericForStatement s;
 			REQUIRE(test_phrase_parser("for x in iter() do print(x) end", genericForStatement, s));
 			REQUIRE(s.variables.size() == 1);
-			CHECK(s.variables.front() == "x");
+			CHECK(s.variables[0] == "x");
 			CHECK(s.expressions.size() == 1);
-			REQUIRE(s.expressions.front().operand.get().type() == typeid(ast::f_PrefixExpression));
+			REQUIRE(s.expressions[0].operand.get().type() == typeid(ast::f_PrefixExpression));
 		}
 
 		SUBCASE("two names")
@@ -1030,7 +1027,7 @@ namespace lac::parser
 			CHECK(s.variables[0] == "x");
 			CHECK(s.variables[1] == "y");
 			CHECK(s.expressions.size() == 1);
-			REQUIRE(s.expressions.front().operand.get().type() == typeid(ast::f_PrefixExpression));
+			REQUIRE(s.expressions[0].operand.get().type() == typeid(ast::f_PrefixExpression));
 		}
 	}
 
@@ -1094,7 +1091,7 @@ namespace lac::parser
 			ast::ReturnStatement rs;
 			CHECK(test_phrase_parser("return 42", returnStatement, rs));
 			REQUIRE(rs.expressions.size() == 1);
-			const auto& exp = rs.expressions.front();
+			const auto& exp = rs.expressions[0];
 			REQUIRE(exp.operand.isNumeral());
 			REQUIRE(exp.operand.asNumeral().isInt());
 			REQUIRE(exp.operand.asNumeral().asInt() == 42);
@@ -1105,12 +1102,11 @@ namespace lac::parser
 			ast::ReturnStatement rs;
 			CHECK(test_phrase_parser("return 42, 'hello'", returnStatement, rs));
 			REQUIRE(rs.expressions.size() == 2);
-			auto it = rs.expressions.begin();
-			const auto& exp1 = *it;
+			const auto& exp1 = rs.expressions[0];
 			REQUIRE(exp1.operand.isNumeral());
 			REQUIRE(exp1.operand.asNumeral().isInt());
 			REQUIRE(exp1.operand.asNumeral().asInt() == 42);
-			const auto& exp2 = *(++it);
+			const auto& exp2 = rs.expressions[1];
 			REQUIRE(exp2.operand.isLiteral());
 			CHECK(exp2.operand.asLiteral().value == "hello");
 		}

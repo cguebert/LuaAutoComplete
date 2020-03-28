@@ -80,7 +80,7 @@ namespace lac
 		using f_UnaryOperation = boost::spirit::x3::forward_ast<UnaryOperation>;
 
 		struct Field;
-		using FieldsList = std::list<Field>;
+		using FieldsList = std::vector<Field>;
 
 		struct TableConstructor
 		{
@@ -239,7 +239,7 @@ namespace lac
 		struct PrefixExpression
 		{
 			boost::spirit::x3::variant<BracketedExpression, std::string> start;
-			std::list<PostPrefix> rest;
+			std::vector<PostPrefix> rest;
 		};
 
 		struct VariableFunctionCall;
@@ -263,10 +263,10 @@ namespace lac
 		struct Variable : ElementAnnotated<ElementType::variable>
 		{
 			boost::spirit::x3::variant<BracketedExpression, std::string> start;
-			std::list<VariablePostfix> rest;
+			std::vector<VariablePostfix> rest;
 		};
 
-		using VariablesList = std::list<Variable>;
+		using VariablesList = std::vector<Variable>;
 
 		struct FunctionNameMember
 		{
@@ -288,14 +288,14 @@ namespace lac
 
 		struct ReturnStatement
 		{
-			std::list<Expression> expressions;
+			std::vector<Expression> expressions;
 		};
 
 		struct Statement;
 
 		struct Block : public PositionAnnotated
 		{
-			std::list<Statement> statements;
+			std::vector<Statement> statements;
 			boost::optional<ReturnStatement> returnStatement;
 		};
 

@@ -32,10 +32,11 @@ namespace lac
 		ast::Block block;
 		REQUIRE(test_phrase_parser("testVar = 'hello' .. 42", chunk, block));
 		REQUIRE(block.statements.size() == 1);
-		REQUIRE(block.statements.front().get().type() == typeid(ast::AssignmentStatement));
-		auto assignment = boost::get<ast::AssignmentStatement>(block.statements.front());
+		const auto& statement = block.statements[0];
+		REQUIRE(statement.get().type() == typeid(ast::AssignmentStatement));
+		const auto& assignment = boost::get<ast::AssignmentStatement>(statement);
 		REQUIRE(assignment.variables.size() == 1);
-		auto var = assignment.variables.front();
+		const auto& var = assignment.variables[0];
 		CHECK(var.begin == 0);
 		CHECK(var.end == 7);
 	}
