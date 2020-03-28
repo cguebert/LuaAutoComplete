@@ -15,11 +15,11 @@ namespace lac::ast
 
 namespace lac::parser
 {
-	BOOST_SPIRIT_INSTANTIATE(skipper_type, iterator_type, phrase_context_type);
-	BOOST_SPIRIT_INSTANTIATE(skipper_type, iterator_type, context_type);
-	BOOST_SPIRIT_INSTANTIATE(chunk_type, iterator_type, phrase_context_type);
-	BOOST_SPIRIT_INSTANTIATE(chunk_type, iterator_type, context_type);
-	BOOST_SPIRIT_INSTANTIATE(variable_type, iterator_type, phrase_context_type);
+	BOOST_SPIRIT_INSTANTIATE(chunk_type, iterator_type, no_skip_pos_context_type);
+	BOOST_SPIRIT_INSTANTIATE(chunk_type, iterator_type, skipper_context_type);
+	BOOST_SPIRIT_INSTANTIATE(chunk_type, iterator_type, chunk_pos_context_type);
+	//	BOOST_SPIRIT_INSTANTIATE(chunk_type, iterator_type, skipper_pos_context_type); // Not used
+	BOOST_SPIRIT_INSTANTIATE(variable_or_function_type, iterator_type, skipper_context_type);
 
 	using helper::test_parser;
 	using helper::test_parser_simple;
@@ -1193,30 +1193,5 @@ namespace lac::parser
 			CHECK(b.statements.size() == 2);
 			CHECK(b.returnStatement.is_initialized() == true);
 		}
-	}
-
-	bool parseString(std::string_view view, pos::Positions<std::string_view::const_iterator>& positions, ast::Block& block)
-	{
-		auto chunk = chunkRule();
-		const auto parser = boost::spirit::x3::with<lac::pos::position_tag>(std::ref(positions))[chunk];
-		const auto skipper = boost::spirit::x3::with<lac::pos::position_tag>(std::ref(positions))[skipperRule()];
-
-		auto f = view.begin();
-		const auto l = view.end();
-		return boost::spirit::x3::phrase_parse(f, l, parser, skipper, block) && f == l;
-	}
-
-	bool parseString(std::string_view view, ast::Block& block)
-	{
-		auto f = view.begin();
-		const auto l = view.end();
-		return boost::spirit::x3::phrase_parse(f, l, chunkRule(), skipperRule(), block) && f == l;
-	}
-
-	bool parseString(std::string_view view, ast::VariableOrFunction& variable)
-	{
-		auto f = view.begin();
-		const auto l = view.end();
-		return boost::spirit::x3::phrase_parse(f, l, variableRule(), skipperRule(), variable) && f == l;
 	}
 } // namespace lac::parser

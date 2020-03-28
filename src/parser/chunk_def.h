@@ -491,7 +491,7 @@ namespace lac::parser
 		return chunk;
 	}
 
-	variable_type variableRule()
+	variable_or_function_type variableOrFunctionRule()
 	{
 		return variableOrFunction;
 	}

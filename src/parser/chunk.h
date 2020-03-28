@@ -14,10 +14,10 @@ namespace lac::parser
 	using chunk_type = boost::spirit::x3::rule<struct chunk, ast::Block>;
 	BOOST_SPIRIT_DECLARE(chunk_type);
 
-	using variable_type = boost::spirit::x3::rule<struct variableOrFunction, ast::VariableOrFunction>;
-	BOOST_SPIRIT_DECLARE(variable_type);
+	using variable_or_function_type = boost::spirit::x3::rule<struct variableOrFunction, ast::VariableOrFunction>;
+	BOOST_SPIRIT_DECLARE(variable_or_function_type);
 
 	skipper_type skipperRule();
 	chunk_type chunkRule();
-	variable_type variableRule();
+	variable_or_function_type variableOrFunctionRule();
 } // namespace lac::parser
