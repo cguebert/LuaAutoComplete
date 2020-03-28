@@ -1,5 +1,6 @@
 #include <completion/completion.h>
 #include <completion/get_block.h>
+#include <parser/parser.h>
 
 namespace lac::comp
 {
@@ -9,7 +10,7 @@ namespace lac::comp
 		auto f = view.begin();
 		const auto l = view.end();
 		lac::pos::Positions positions{f, l};
-		auto ret = lac::parseString(view, positions, block);
+		auto ret = lac::parser::parseString(view, positions, block);
 
 		if (ret)
 		{

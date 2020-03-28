@@ -6,24 +6,18 @@
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/home/x3.hpp>
 
-namespace lac
+namespace lac::parser
 {
-	namespace parser
-	{
-		namespace x3 = boost::spirit::x3;
-		using chunk_type = x3::rule<struct chunk, ast::Block>;
-		BOOST_SPIRIT_DECLARE(chunk_type);
+	using skipper_type = boost::spirit::x3::rule<struct skipper>;
+	BOOST_SPIRIT_DECLARE(skipper_type);
 
-		using variable_type = x3::rule<struct variableOrFunction, ast::VariableOrFunction>;
-		BOOST_SPIRIT_DECLARE(variable_type);
-	} // namespace parser
+	using chunk_type = boost::spirit::x3::rule<struct chunk, ast::Block>;
+	BOOST_SPIRIT_DECLARE(chunk_type);
 
-	parser::chunk_type chunkRule();
-	parser::variable_type variableRule();
+	using variable_type = boost::spirit::x3::rule<struct variableOrFunction, ast::VariableOrFunction>;
+	BOOST_SPIRIT_DECLARE(variable_type);
 
-	// These skip comments and spaces
-	bool parseString(std::string_view view, pos::Positions<std::string_view::const_iterator>& positions, ast::Block& block);
-	bool parseString(std::string_view view, ast::Block& block);
-
-	bool parseString(std::string_view view, ast::VariableOrFunction& variable);
-} // namespace lac
+	skipper_type skipperRule();
+	chunk_type chunkRule();
+	variable_type variableRule();
+} // namespace lac::parser

@@ -27,7 +27,7 @@ namespace lac
 
 	TEST_CASE("Positions")
 	{
-		auto chunk = chunkRule();
+		auto chunk = parser::chunkRule();
 
 		ast::Block block;
 		REQUIRE(test_phrase_parser("testVar = 'hello' .. 42", chunk, block));
@@ -43,7 +43,7 @@ namespace lac
 
 	TEST_CASE("Elements")
 	{
-		auto chunk = chunkRule();
+		auto chunk = parser::chunkRule();
 
 		ast::Block block;
 		pos::Elements elements;
@@ -68,7 +68,7 @@ namespace lac
 
 	TEST_CASE("Elements 2")
 	{
-		auto chunk = chunkRule();
+		auto chunk = parser::chunkRule();
 
 		ast::Block block;
 		pos::Elements elements;

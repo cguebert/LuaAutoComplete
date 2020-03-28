@@ -3,8 +3,7 @@
 
 #include <coloration/coloration_test.h>
 #include <parser/ast_adapted.h>
-#include <parser/chunk.h>
-#include <parser/config.h>
+#include <parser/parser.h>
 #include <parser/positions.h>
 #include <parser/printer.h>
 
@@ -61,7 +60,7 @@ namespace
 		lac::pos::Positions positions{f, l};
 		lac::ast::Block block;
 
-		if (lac::parseString(view, positions, block))
+		if (lac::parser::parseString(view, positions, block))
 			lac::printProgram(data, positions.elements());
 	}
 
@@ -74,7 +73,7 @@ namespace
 		const auto view = std::string_view{data};
 		lac::ast::Block block;
 
-		if (lac::parseString(view, block))
+		if (lac::parser::parseString(view, block))
 			std::cout << lac::toJson(block).dump(2, ' ');
 	}
 } // namespace

@@ -52,7 +52,7 @@ end
 		TEST_CASE("Get block")
 		{
 			ast::Block block;
-			REQUIRE(test_phrase_parser(program, chunkRule(), block));
+			REQUIRE(test_phrase_parser(program, parser::chunkRule(), block));
 			const auto blocks = pos::getChildren(block);
 
 			auto ptr = pos::getBlockAtPos(blocks, 30);
@@ -75,7 +75,7 @@ end
 		TEST_CASE("Get scope")
 		{
 			ast::Block block;
-			REQUIRE(test_phrase_parser(program, chunkRule(), block));
+			REQUIRE(test_phrase_parser(program, parser::chunkRule(), block));
 			const auto scope = an::analyseBlock(block);
 
 			auto ptr = pos::getScopeAtPos(scope, 30);
@@ -102,7 +102,7 @@ end
 		TEST_CASE("Scope elements")
 		{
 			ast::Block block;
-			REQUIRE(test_phrase_parser(program, chunkRule(), block));
+			REQUIRE(test_phrase_parser(program, parser::chunkRule(), block));
 			const auto scope = an::analyseBlock(block);
 
 			auto ptr = pos::getScopeAtPos(scope, 30);

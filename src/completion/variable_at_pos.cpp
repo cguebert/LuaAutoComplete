@@ -1,5 +1,5 @@
 #include <completion/variable_at_pos.h>
-#include <parser/chunk.h>
+#include <parser/parser.h>
 
 #include <doctest/doctest.h>
 #include <cctype>
@@ -72,7 +72,7 @@ namespace lac::comp
 			return {};
 
 		ast::VariableOrFunction var;
-		if (parseString(extracted, var))
+		if (parser::parseString(extracted, var))
 			return var;
 		return {};
 	}

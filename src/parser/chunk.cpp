@@ -15,7 +15,11 @@ namespace lac::ast
 
 namespace lac::parser
 {
+	BOOST_SPIRIT_INSTANTIATE(skipper_type, iterator_type, phrase_context_type);
+	BOOST_SPIRIT_INSTANTIATE(skipper_type, iterator_type, context_type);
+	BOOST_SPIRIT_INSTANTIATE(chunk_type, iterator_type, phrase_context_type);
 	BOOST_SPIRIT_INSTANTIATE(chunk_type, iterator_type, context_type);
+	BOOST_SPIRIT_INSTANTIATE(variable_type, iterator_type, phrase_context_type);
 
 	using helper::test_parser;
 	using helper::test_parser_simple;
@@ -794,6 +798,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("a:b", variableOrFunction));
 		CHECK(test_phrase_parser("a(b)[c]:d", variableOrFunction));
 
+		CHECK_FALSE(test_phrase_parser("a(b)", variableOrFunction));
 		CHECK_FALSE(test_phrase_parser("a(b):c", variableOrFunction));
 	}
 
@@ -1189,15 +1194,12 @@ namespace lac::parser
 			CHECK(b.returnStatement.is_initialized() == true);
 		}
 	}
-} // namespace lac::parser
 
-namespace lac
-{
 	bool parseString(std::string_view view, pos::Positions<std::string_view::const_iterator>& positions, ast::Block& block)
 	{
-		auto chunk = lac::chunkRule();
+		auto chunk = chunkRule();
 		const auto parser = boost::spirit::x3::with<lac::pos::position_tag>(std::ref(positions))[chunk];
-		const auto skipper = boost::spirit::x3::with<lac::pos::position_tag>(std::ref(positions))[parser::skipper];
+		const auto skipper = boost::spirit::x3::with<lac::pos::position_tag>(std::ref(positions))[skipperRule()];
 
 		auto f = view.begin();
 		const auto l = view.end();
@@ -1208,13 +1210,13 @@ namespace lac
 	{
 		auto f = view.begin();
 		const auto l = view.end();
-		return boost::spirit::x3::phrase_parse(f, l, lac::chunkRule(), parser::skipper, block) && f == l;
+		return boost::spirit::x3::phrase_parse(f, l, chunkRule(), skipperRule(), block) && f == l;
 	}
 
 	bool parseString(std::string_view view, ast::VariableOrFunction& variable)
 	{
 		auto f = view.begin();
 		const auto l = view.end();
-		return boost::spirit::x3::phrase_parse(f, l, lac::variableRule(), parser::skipper, variable) && f == l;
+		return boost::spirit::x3::phrase_parse(f, l, variableRule(), skipperRule(), variable) && f == l;
 	}
-} // namespace lac
+} // namespace lac::parser

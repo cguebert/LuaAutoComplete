@@ -2,7 +2,7 @@
 #include <completion/type_at_pos.h>
 #include <completion/variable_at_pos.h>
 #include <completion/get_block.h>
-#include <parser/chunk.h>
+#include <parser/parser.h>
 
 #include <doctest/doctest.h>
 
@@ -24,8 +24,8 @@ namespace lac::comp
 	{
 		// Parse the program
 		ast::Block block;
-		lac::pos::Positions positions{view.begin(), view.end()};
-		if (!lac::parseString(view, positions, block))
+		pos::Positions positions{view.begin(), view.end()};
+		if (!parser::parseString(view, positions, block))
 			return {};
 		
 		// Analyse the program
@@ -97,8 +97,8 @@ myTabel.child.text = 'meow'
 		// Parse the program
 		std::string_view view = program;
 		ast::Block block;
-		lac::pos::Positions positions{view.begin(), view.end()};
-		REQUIRE(lac::parseString(view, positions, block));
+		pos::Positions positions{view.begin(), view.end()};
+		REQUIRE(parser::parseString(view, positions, block));
 
 		// Analyse the program
 		auto scope = an::analyseBlock(block);

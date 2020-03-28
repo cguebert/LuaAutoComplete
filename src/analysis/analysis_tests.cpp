@@ -20,7 +20,7 @@ namespace lac
 		{
 			ast::Block block;
 			auto statement = "local x = " + input;
-			REQUIRE(test_phrase_parser(statement, chunkRule(), block));
+			REQUIRE(test_phrase_parser(statement, parser::chunkRule(), block));
 
 			auto scope = analyseBlock(block);
 			CHECK(scope.getVariableType("x").type == type);
@@ -71,7 +71,7 @@ namespace lac
 		TEST_CASE("Simple assignment")
 		{
 			ast::Block block;
-			REQUIRE(test_phrase_parser("x = 42", chunkRule(), block));
+			REQUIRE(test_phrase_parser("x = 42", parser::chunkRule(), block));
 
 			auto scope = analyseBlock(block);
 			const auto info = scope.getVariableType("x");
@@ -81,7 +81,7 @@ namespace lac
 		TEST_CASE("Multiple assignments")
 		{
 			ast::Block block;
-			REQUIRE(test_phrase_parser("x, y, z = 42, true, 'test'", chunkRule(), block));
+			REQUIRE(test_phrase_parser("x, y, z = 42, true, 'test'", parser::chunkRule(), block));
 
 			auto scope = analyseBlock(block);
 			CHECK(scope.getVariableType("x").type == Type::number);
@@ -92,7 +92,7 @@ namespace lac
 		TEST_CASE("Function assignment")
 		{
 			ast::Block block;
-			REQUIRE(test_phrase_parser("local x = function(x, y, z) end", chunkRule(), block));
+			REQUIRE(test_phrase_parser("local x = function(x, y, z) end", parser::chunkRule(), block));
 
 			auto scope = analyseBlock(block);
 			const auto info = scope.getVariableType("x");
@@ -108,7 +108,7 @@ namespace lac
 		TEST_CASE("Function definition")
 		{
 			ast::Block block;
-			REQUIRE(test_phrase_parser("function func(x, y) end", chunkRule(), block));
+			REQUIRE(test_phrase_parser("function func(x, y) end", parser::chunkRule(), block));
 
 			auto scope = analyseBlock(block);
 			const auto info = scope.getFunctionType("func");
@@ -123,7 +123,7 @@ namespace lac
 		TEST_CASE("Local function definition")
 		{
 			ast::Block block;
-			REQUIRE(test_phrase_parser("local function func(x, y) end", chunkRule(), block));
+			REQUIRE(test_phrase_parser("local function func(x, y) end", parser::chunkRule(), block));
 
 			auto scope = analyseBlock(block);
 			const auto info = scope.getFunctionType("func");
@@ -138,7 +138,7 @@ namespace lac
 		TEST_CASE("Table constructor by assignement")
 		{
 			ast::Block block;
-			REQUIRE(test_phrase_parser("t = {x=42, name='foo', test=false}", chunkRule(), block));
+			REQUIRE(test_phrase_parser("t = {x=42, name='foo', test=false}", parser::chunkRule(), block));
 
 			auto scope = analyseBlock(block);
 			const auto info = scope.getVariableType("t");
@@ -158,7 +158,7 @@ namespace lac
 		TEST_CASE("Table constructor expression only")
 		{
 			ast::Block block;
-			REQUIRE(test_phrase_parser("t = {42, 'test', false}", chunkRule(), block));
+			REQUIRE(test_phrase_parser("t = {42, 'test', false}", parser::chunkRule(), block));
 
 			auto scope = analyseBlock(block);
 			const auto info = scope.getVariableType("t");
@@ -178,7 +178,7 @@ namespace lac
 		TEST_CASE("Table constructor varied")
 		{
 			ast::Block block;
-			REQUIRE(test_phrase_parser("t = {1, text='foo', false}", chunkRule(), block));
+			REQUIRE(test_phrase_parser("t = {1, text='foo', false}", parser::chunkRule(), block));
 
 			auto scope = analyseBlock(block);
 			const auto info = scope.getVariableType("t");
@@ -200,7 +200,7 @@ namespace lac
 		TEST_CASE("Table member assignment")
 		{
 			ast::Block block;
-			REQUIRE(test_phrase_parser("t = {}; t.x=42; t.str='foo'; t.test=true", chunkRule(), block));
+			REQUIRE(test_phrase_parser("t = {}; t.x=42; t.str='foo'; t.test=true", parser::chunkRule(), block));
 
 			auto scope = analyseBlock(block);
 			const auto info = scope.getVariableType("t");
@@ -220,7 +220,7 @@ namespace lac
 		TEST_CASE("Table member hierarchy")
 		{
 			ast::Block block;
-			REQUIRE(test_phrase_parser("a={}; a.b={}; a.b.v=42; a.b.c={}; a.b.c.t=true", chunkRule(), block));
+			REQUIRE(test_phrase_parser("a={}; a.b={}; a.b.v=42; a.b.c={}; a.b.c.t=true", parser::chunkRule(), block));
 
 			auto scope = analyseBlock(block);
 			const auto info = scope.getVariableType("a");
@@ -290,7 +290,7 @@ namespace lac
 
 			{
 				ast::Block block;
-				REQUIRE(test_phrase_parser("local x = createComplex(0.7, 1.0)", chunkRule(), block));
+				REQUIRE(test_phrase_parser("local x = createComplex(0.7, 1.0)", parser::chunkRule(), block));
 				const auto scope = analyseBlock(block, &parentScope);
 				const auto info = scope.getVariableType("x");
 				CHECK(info.type == Type::userdata);
@@ -299,7 +299,7 @@ namespace lac
 
 			{
 				ast::Block block;
-				REQUIRE(test_phrase_parser("local x = createComplex(0.7, 1.0).real", chunkRule(), block));
+				REQUIRE(test_phrase_parser("local x = createComplex(0.7, 1.0).real", parser::chunkRule(), block));
 				const auto scope = analyseBlock(block, &parentScope);
 				const auto info = scope.getVariableType("x");
 				CHECK(info.type == Type::number);
@@ -307,7 +307,7 @@ namespace lac
 
 			{
 				ast::Block block;
-				REQUIRE(test_phrase_parser("local x = createComplex(0.7, 1.0); local y = x.imag", chunkRule(), block));
+				REQUIRE(test_phrase_parser("local x = createComplex(0.7, 1.0); local y = x.imag", parser::chunkRule(), block));
 				const auto scope = analyseBlock(block, &parentScope);
 				const auto infoX = scope.getVariableType("x");
 				CHECK(infoX.type == Type::userdata);
