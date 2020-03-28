@@ -1,4 +1,3 @@
-#include <analysis/scope.h>
 #include <analysis/visitor.h>
 #include <completion/get_block.h>
 #include <helper/test_utils.h>
