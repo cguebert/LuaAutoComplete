@@ -483,4 +483,9 @@ namespace lac
 	{
 		return parser::chunk;
 	}
+
+	parser::variable_type variableRule()
+	{
+		return parser::variable;
+	}
 } // namespace lac

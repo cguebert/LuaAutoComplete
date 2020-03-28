@@ -1,4 +1,5 @@
 #include <completion/parse_current_line.h>
+#include <parser/chunk.h>
 
 #include <doctest/doctest.h>
 #include <cctype>
@@ -37,6 +38,9 @@ namespace lac::pos
 		if (extracted.empty())
 			return {};
 
+		ast::Variable var;
+		if (parseString(extracted, var))
+			return var;
 		return {};
 	}
 
@@ -52,6 +56,14 @@ namespace lac::pos
 		CHECK(extractVariableAtPos("foobar test", 7) == "test");
 		CHECK(extractVariableAtPos("foobar test", 10) == "test");
 		CHECK(extractVariableAtPos("foobar test", 11) == "");
+	}
+
+	TEST_CASE("Parse name")
+	{
+		auto var = parseVariableAtPos("foobar test", 5);
+		REQUIRE(var.has_value());
+		REQUIRE(var->start.get().type() == typeid(std::string));
+		CHECK(boost::get<std::string>(var->start) == "foobar");
 	}
 
 	TEST_SUITE_END();
