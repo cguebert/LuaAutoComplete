@@ -2,8 +2,8 @@
 
 #include <parser/ast.h>
 
-namespace lac::pos
+namespace lac::comp
 {
 	std::string_view extractVariableAtPos(std::string_view view, size_t pos);
 	boost::optional<ast::Variable> parseVariableAtPos(std::string_view view, size_t pos);
-} // namespace lac::pos
+} // namespace lac::comp

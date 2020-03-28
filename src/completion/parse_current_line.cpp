@@ -12,7 +12,7 @@ namespace
 	}
 } // namespace
 
-namespace lac::pos
+namespace lac::comp
 {
 	std::string_view extractVariableAtPos(std::string_view view, size_t pos)
 	{
@@ -43,15 +43,21 @@ namespace lac::pos
 			return view.substr(ps, pe - ps);
 
 		// Test the next character to the left and see if we must continue
-		pos = ps;
-		ignoreWhiteSpace();
-		auto c = view[ps-1];
-		if (c == '.' || c == ':')
+		while (pos > 1)
 		{
-			ps -= 2;
-			ignoreWhiteSpace();
-			goToNameStart();
 			pos = ps;
+			ignoreWhiteSpace();
+
+			auto c = view[ps - 1];
+			if (c == '.' || c == ':')
+			{
+				ps -= 2;
+				ignoreWhiteSpace();
+				goToNameStart();
+				pos = ps;
+			}
+			else
+				break;
 		}
 
 		return view.substr(pos, pe - pos);
@@ -76,6 +82,8 @@ namespace lac::pos
 		CHECK(extractVariableAtPos("foobar", 0) == "foobar");
 		CHECK(extractVariableAtPos("foobar", 3) == "foobar");
 		CHECK(extractVariableAtPos("foobar", 5) == "foobar");
+		CHECK(extractVariableAtPos("(foobar)", 3) == "foobar");
+		CHECK(extractVariableAtPos("test[\"foobar\"]", 8) == "foobar");
 		CHECK(extractVariableAtPos("foobar test", 5) == "foobar");
 		CHECK(extractVariableAtPos("foobar test", 6) == "");
 		CHECK(extractVariableAtPos("foobar test", 7) == "test");
@@ -83,6 +91,7 @@ namespace lac::pos
 		CHECK(extractVariableAtPos("foobar test", 11) == "");
 		CHECK(extractVariableAtPos("foo.bar", 2) == "foo");
 		CHECK(extractVariableAtPos("foo.bar test", 10) == "test");
+		CHECK(extractVariableAtPos("first.second.third", 4) == "first");
 	}
 
 	TEST_CASE("Parse name")
@@ -99,6 +108,18 @@ namespace lac::pos
 		CHECK(extractVariableAtPos("foo.bar test", 5) == "foo.bar");
 		CHECK(extractVariableAtPos("foo . bar test", 7) == "foo . bar");
 		CHECK(extractVariableAtPos("test foo.bar", 10) == "foo.bar");
+		CHECK(extractVariableAtPos("first.second.third", 8) == "first.second");
+		CHECK(extractVariableAtPos("first.second.third", 15) == "first.second.third");
+	}
+
+	TEST_CASE("Parse member variable")
+	{
+		auto var = parseVariableAtPos("first.second.third", 15);
+		REQUIRE(var.has_value());
+		REQUIRE(var->start.get().type() == typeid(std::string));
+		CHECK(boost::get<std::string>(var->start) == "first");
+		REQUIRE(var->rest.size() == 2);
+		//	REQUIRE(var->rest[0].)
 	}
 
 	TEST_CASE("Member function")
@@ -107,7 +128,8 @@ namespace lac::pos
 		CHECK(extractVariableAtPos("foo:bar test", 5) == "foo:bar");
 		CHECK(extractVariableAtPos("foo : bar test", 7) == "foo : bar");
 		CHECK(extractVariableAtPos("test foo:bar", 10) == "foo:bar");
+		CHECK(extractVariableAtPos("first.second:third", 15) == "first.second:third");
 	}
 
 	TEST_SUITE_END();
-} // namespace lac::pos
+} // namespace lac::comp
