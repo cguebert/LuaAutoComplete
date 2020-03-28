@@ -776,6 +776,27 @@ namespace lac::parser
 		}
 	}
 
+	// This is used for the completion, not part of the Lua parser
+	TEST_CASE("variable or function")
+	{
+		CHECK(test_phrase_parser("test", variableOrFunction));
+		CHECK(test_phrase_parser("a", variableOrFunction));
+		CHECK(test_phrase_parser("a[2]", variableOrFunction));
+		CHECK(test_phrase_parser("a[2].b", variableOrFunction));
+		CHECK(test_phrase_parser("a.b", variableOrFunction));
+		CHECK(test_phrase_parser("a.b().c", variableOrFunction));
+		CHECK(test_phrase_parser("(a).b", variableOrFunction));
+		CHECK(test_phrase_parser("a(b)[c]", variableOrFunction));
+		CHECK(test_phrase_parser("a(b):d().e", variableOrFunction));
+		CHECK(test_phrase_parser("a(b)[c]:d().e", variableOrFunction));
+		CHECK(test_phrase_parser("a(b)[c]:d()[e]", variableOrFunction));
+
+		CHECK(test_phrase_parser("a:b", variableOrFunction));
+		CHECK(test_phrase_parser("a(b)[c]:d", variableOrFunction));
+
+		CHECK_FALSE(test_phrase_parser("a(b):c", variableOrFunction));
+	}
+
 	TEST_CASE("empty statement")
 	{
 		CHECK(test_phrase_parser_simple(";", emptyStatement));
@@ -1190,7 +1211,7 @@ namespace lac
 		return boost::spirit::x3::phrase_parse(f, l, lac::chunkRule(), parser::skipper, block) && f == l;
 	}
 
-	bool parseString(std::string_view view, ast::Variable& variable)
+	bool parseString(std::string_view view, ast::VariableOrFunction& variable)
 	{
 		auto f = view.begin();
 		const auto l = view.end();

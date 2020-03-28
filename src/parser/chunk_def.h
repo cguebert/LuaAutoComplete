@@ -211,6 +211,8 @@ namespace lac
 		RULE(variablePostfix, ast::VariablePostfix);
 		RULE(variablesList, ast::VariablesList);
 
+		RULE(variableOrFunction, ast::VariableOrFunction);
+
 		RULE(unaryOperation, ast::UnaryOperation);
 		RULE(binaryOperation, ast::BinaryOperation);
 		RULE(simpleExpression, ast::Operand);
@@ -393,6 +395,8 @@ namespace lac
 
 		const auto variablesList_def = variable % ',';
 
+		const auto variableOrFunction_def = variable >> -functionNameMember;
+
 		// Expressions
 		const auto simpleExpression_def = expressionConstant
 										  | unaryOperation
@@ -467,6 +471,7 @@ namespace lac
 							bracketedExpression, tableIndexExpression, tableIndexName,
 							prefixExpression, postPrefix,
 							variable, variableFunctionCall, variablePostfix, variablesList,
+							variableOrFunction,
 							unaryOperation, binaryOperation,
 							simpleExpression, expression, expressionsList,
 							assignmentStatement, localAssignmentStatement,
@@ -486,6 +491,6 @@ namespace lac
 
 	parser::variable_type variableRule()
 	{
-		return parser::variable;
+		return parser::variableOrFunction;
 	}
 } // namespace lac

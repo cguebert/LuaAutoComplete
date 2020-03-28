@@ -23,6 +23,7 @@ BOOST_FUSION_ADAPT_STRUCT(lac::ast::FunctionCallEnd, member, arguments);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::PrefixExpression, start, rest);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::VariableFunctionCall, functionCall, postVariable);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::Variable, start, rest);
+BOOST_FUSION_ADAPT_STRUCT(lac::ast::VariableOrFunction, variable, member);
 
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::FunctionNameMember, name);
 BOOST_FUSION_ADAPT_STRUCT(lac::ast::FunctionName, start, rest, member);

@@ -14,7 +14,7 @@ namespace lac
 		using chunk_type = x3::rule<struct chunk, ast::Block>;
 		BOOST_SPIRIT_DECLARE(chunk_type);
 
-		using variable_type = x3::rule<struct variable, ast::Variable>;
+		using variable_type = x3::rule<struct variableOrFunction, ast::VariableOrFunction>;
 		BOOST_SPIRIT_DECLARE(variable_type);
 	} // namespace parser
 
@@ -25,5 +25,5 @@ namespace lac
 	bool parseString(std::string_view view, pos::Positions<std::string_view::const_iterator>& positions, ast::Block& block);
 	bool parseString(std::string_view view, ast::Block& block);
 
-	bool parseString(std::string_view view, ast::Variable& variable);
+	bool parseString(std::string_view view, ast::VariableOrFunction& variable);
 } // namespace lac

@@ -286,6 +286,13 @@ namespace lac
 			FunctionCallEnd functionCall;
 		};
 
+		// This is not part of the Lua language, but we use it for completion
+		struct VariableOrFunction
+		{
+			Variable variable;
+			boost::optional<FunctionNameMember> member;
+		};
+
 		struct ReturnStatement
 		{
 			std::vector<Expression> expressions;

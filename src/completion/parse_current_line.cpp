@@ -63,13 +63,13 @@ namespace lac::comp
 		return view.substr(pos, pe - pos);
 	}
 
-	boost::optional<ast::Variable> parseVariableAtPos(std::string_view view, size_t pos)
+	boost::optional<ast::VariableOrFunction> parseVariableAtPos(std::string_view view, size_t pos)
 	{
 		auto extracted = extractVariableAtPos(view, pos);
 		if (extracted.empty())
 			return {};
 
-		ast::Variable var;
+		ast::VariableOrFunction var;
 		if (parseString(extracted, var))
 			return var;
 		return {};
@@ -98,8 +98,8 @@ namespace lac::comp
 	{
 		auto var = parseVariableAtPos("foobar test", 5);
 		REQUIRE(var.has_value());
-		REQUIRE(var->start.get().type() == typeid(std::string));
-		CHECK(boost::get<std::string>(var->start) == "foobar");
+		REQUIRE(var->variable.start.get().type() == typeid(std::string));
+		CHECK(boost::get<std::string>(var->variable.start) == "foobar");
 	}
 
 	TEST_CASE("Member variable")
@@ -116,10 +116,13 @@ namespace lac::comp
 	{
 		auto var = parseVariableAtPos("first.second.third", 15);
 		REQUIRE(var.has_value());
-		REQUIRE(var->start.get().type() == typeid(std::string));
-		CHECK(boost::get<std::string>(var->start) == "first");
-		REQUIRE(var->rest.size() == 2);
-		//	REQUIRE(var->rest[0].)
+		REQUIRE(var->variable.start.get().type() == typeid(std::string));
+		CHECK(boost::get<std::string>(var->variable.start) == "first");
+		REQUIRE(var->variable.rest.size() == 2);
+		REQUIRE(var->variable.rest[0].get().type() == typeid(ast::TableIndexName));
+		CHECK(boost::get<ast::TableIndexName>(var->variable.rest[0]).name == "second");
+		REQUIRE(var->variable.rest[1].get().type() == typeid(ast::TableIndexName));
+		CHECK(boost::get<ast::TableIndexName>(var->variable.rest[1]).name == "third");
 	}
 
 	TEST_CASE("Member function")
@@ -129,6 +132,19 @@ namespace lac::comp
 		CHECK(extractVariableAtPos("foo : bar test", 7) == "foo : bar");
 		CHECK(extractVariableAtPos("test foo:bar", 10) == "foo:bar");
 		CHECK(extractVariableAtPos("first.second:third", 15) == "first.second:third");
+	}
+
+	TEST_CASE("Parse member function")
+	{
+		auto var = parseVariableAtPos("first.second:third", 15);
+		REQUIRE(var.has_value());
+		REQUIRE(var->variable.start.get().type() == typeid(std::string));
+		CHECK(boost::get<std::string>(var->variable.start) == "first");
+		REQUIRE(var->variable.rest.size() == 1);
+		REQUIRE(var->variable.rest[0].get().type() == typeid(ast::TableIndexName));
+		CHECK(boost::get<ast::TableIndexName>(var->variable.rest[0]).name == "second");
+		REQUIRE(var->member.has_value());
+		CHECK(var->member->name == "third");
 	}
 
 	TEST_SUITE_END();
