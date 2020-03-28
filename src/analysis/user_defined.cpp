@@ -2,29 +2,29 @@
 
 namespace lac::an
 {
-	void UserDefined::addVariable(const std::string& name, TypeInfo type)
+	void UserDefined::addVariable(std::string_view name, TypeInfo type)
 	{
-		m_variables[name] = type;
+		m_variables[std::string{name}] = type;
 	}
 
-	const TypeInfo* UserDefined::getVariable(const std::string& name) const
+	const TypeInfo* UserDefined::getVariable(std::string_view name) const
 	{
-		const auto it = m_variables.find(name);
+		const auto it = m_variables.find(std::string{name});
 		if (it != m_variables.end())
 			return &it->second;
 		return nullptr;
 	}
 
-	void UserDefined::addFreeFunction(const std::string& name, FunctionInfo func)
+	void UserDefined::addFreeFunction(std::string_view name, FunctionInfo func)
 	{
 		TypeInfo info = Type::function;
 		info.function = std::move(func);
-		m_functions[name] = std::move(info);
+		m_functions[std::string{name}] = std::move(info);
 	}
 
-	const TypeInfo* UserDefined::getFunction(const std::string& name) const
+	const TypeInfo* UserDefined::getFunction(std::string_view name) const
 	{
-		const auto it = m_functions.find(name);
+		const auto it = m_functions.find(std::string{name});
 		if (it != m_functions.end())
 			return &it->second;
 		return nullptr;
@@ -35,9 +35,9 @@ namespace lac::an
 		m_types[type.name] = std::move(type);
 	}
 
-	const UserType* UserDefined::getType(const std::string& name) const
+	const UserType* UserDefined::getType(std::string_view name) const
 	{
-		const auto it = m_types.find(name);
+		const auto it = m_types.find(std::string{name});
 		if (it != m_types.end())
 			return &it->second;
 		return nullptr;

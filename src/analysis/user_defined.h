@@ -10,14 +10,14 @@ namespace lac::an
 	class UserDefined
 	{
 	public:
-		void addVariable(const std::string& name, TypeInfo type);
-		const TypeInfo* getVariable(const std::string& name) const;
+		void addVariable(std::string_view name, TypeInfo type);
+		const TypeInfo* getVariable(std::string_view name) const;
 
-		void addFreeFunction(const std::string& name, FunctionInfo func);
-		const TypeInfo* getFunction(const std::string& name) const;
+		void addFreeFunction(std::string_view name, FunctionInfo func);
+		const TypeInfo* getFunction(std::string_view name) const;
 
 		void addType(UserType type);
-		const UserType* getType(const std::string& name) const;
+		const UserType* getType(std::string_view name) const;
 
 	private:
 		std::map<std::string, TypeInfo> m_variables;

@@ -3,6 +3,7 @@
 #include <analysis/type_info.h>
 
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace lac::ast
@@ -43,18 +44,18 @@ namespace lac::an
 		Scope(Scope&&) noexcept = default;
 		Scope& operator=(Scope&&) noexcept = default;
 
-		void addVariable(const std::string& name, TypeInfo type);
-		TypeInfo getVariableType(const std::string& name) const;
+		void addVariable(std::string_view name, TypeInfo type);
+		TypeInfo getVariableType(std::string_view name) const;
 
-		TypeInfo& modifyTable(const std::string& name);
+		TypeInfo& modifyTable(std::string_view name);
 
-		void addLabel(const std::string& name);
-		bool hasLabel(const std::string& name) const;
+		void addLabel(std::string_view name);
+		bool hasLabel(std::string_view name) const;
 
-		void addFunction(const std::string& name, TypeInfo type);
-		TypeInfo getFunctionType(const std::string& name) const;
+		void addFunction(std::string_view name, TypeInfo type);
+		TypeInfo getFunctionType(std::string_view name) const;
 
-		UserType getUserType(const std::string& name) const;
+		UserType getUserType(std::string_view name) const;
 
 		Scope& getGlobalScope();
 		void addChildScope(Scope&& scope);

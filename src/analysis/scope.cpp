@@ -11,12 +11,12 @@ namespace lac::an
 	{
 	}
 
-	void Scope::addVariable(const std::string& name, TypeInfo type)
+	void Scope::addVariable(std::string_view name, TypeInfo type)
 	{
-		m_variables.push_back(VariableInfo{name, std::move(type)});
+		m_variables.push_back(VariableInfo{std::string{name}, std::move(type)});
 	}
 
-	TypeInfo Scope::getVariableType(const std::string& name) const
+	TypeInfo Scope::getVariableType(std::string_view name) const
 	{
 		const auto it = std::find_if(m_variables.begin(), m_variables.end(), [name](const VariableInfo& v) {
 			return v.name == name;
@@ -33,7 +33,7 @@ namespace lac::an
 		return Type::nil;
 	}
 
-	TypeInfo& Scope::modifyTable(const std::string& name)
+	TypeInfo& Scope::modifyTable(std::string_view name)
 	{
 		const auto it = std::find_if(m_variables.begin(), m_variables.end(), [name](const VariableInfo& v) {
 			return v.name == name;
@@ -41,16 +41,16 @@ namespace lac::an
 		if (it != m_variables.end())
 			return it->type;
 
-		m_variables.push_back(VariableInfo{name, Type::table});
+		m_variables.push_back(VariableInfo{std::string{name}, Type::table});
 		return m_variables.back().type;
 	}
 
-	void Scope::addLabel(const std::string& name)
+	void Scope::addLabel(std::string_view name)
 	{
-		m_labels.push_back(LabelInfo{name});
+		m_labels.push_back(LabelInfo{std::string{name}});
 	}
 
-	bool Scope::hasLabel(const std::string& name) const
+	bool Scope::hasLabel(std::string_view name) const
 	{
 		const auto it = std::find_if(m_labels.begin(), m_labels.end(), [name](const LabelInfo& l) {
 			return l.name == name;
@@ -62,12 +62,12 @@ namespace lac::an
 		return false;
 	}
 
-	void Scope::addFunction(const std::string& name, TypeInfo type)
+	void Scope::addFunction(std::string_view name, TypeInfo type)
 	{
-		m_functions.push_back(FunctionInfo{name, std::move(type)});
+		m_functions.push_back(FunctionInfo{std::string{name}, std::move(type)});
 	}
 
-	TypeInfo Scope::getFunctionType(const std::string& name) const
+	TypeInfo Scope::getFunctionType(std::string_view name) const
 	{
 		const auto it = std::find_if(m_functions.begin(), m_functions.end(), [name](const FunctionInfo& f) {
 			return f.name == name;
@@ -84,7 +84,7 @@ namespace lac::an
 		return Type::nil;
 	}
 
-	UserType Scope::getUserType(const std::string& name) const
+	UserType Scope::getUserType(std::string_view name) const
 	{
 		if (m_userDefined)
 		{
