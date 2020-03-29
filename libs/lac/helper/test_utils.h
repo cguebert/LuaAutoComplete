@@ -3,7 +3,9 @@
 #include <lac/parser/positions.h>
 
 #include <boost/spirit/home/x3.hpp>
+
 #include <doctest/doctest.h>
+
 #include <string_view>
 
 namespace lac

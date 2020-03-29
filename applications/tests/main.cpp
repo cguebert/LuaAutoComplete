@@ -1,4 +1,4 @@
-#define DOCTEST_CONFIG_IMPLEMENT
+#define DOCTEST_CONFIG_IMPLEMENTATION_IN_DLL
 #include <doctest/doctest.h>
 
 #include <lac/coloration/coloration_test.h>

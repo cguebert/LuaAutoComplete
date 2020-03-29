@@ -2,6 +2,10 @@
 #include <lac/parser/parser.h>
 #include <lac/parser/positions.h>
 
+#define DOCTEST_CONFIG_IMPLEMENTATION_IN_DLL
+#define DOCTEST_CONFIG_IMPLEMENT
+#include <doctest/doctest.h>
+
 namespace lac::parser
 {
 	ParseBlockResults::ParseBlockResults(std::string_view view)

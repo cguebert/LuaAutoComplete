@@ -11,6 +11,7 @@ namespace lac
 
 	namespace comp
 	{
+#ifndef DOCTEST_CONFIG_DISABLE
 		const std::string program = R"~~(
 function split_path(str)
 	return split(str,'[\\/]+')
@@ -35,6 +36,7 @@ local function myFunc(testValue)
     y = t.f(5, t.m)
 end
 )~~";
+#endif
 
 		std::string_view extractText(const ast::PositionAnnotated& pa)
 		{
