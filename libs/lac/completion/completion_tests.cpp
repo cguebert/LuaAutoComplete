@@ -36,7 +36,6 @@ local function myFunc(testValue)
     y = t.f(5, t.m)
 end
 )~~";
-#endif
 
 		std::string_view extractText(const ast::PositionAnnotated& pa)
 		{
@@ -48,7 +47,7 @@ end
 			std::string_view view = program; 
 			return view.substr(ps, pe - ps + 1);
 		}
-
+#endif
 		TEST_SUITE_BEGIN("Completion");
 
 		TEST_CASE("Get block")

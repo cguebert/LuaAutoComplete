@@ -19,8 +19,9 @@ set(META_PROJECT_NAME "LuaAutoComplete")
 project(${META_PROJECT_NAME})
 
 # Options to build some projects
-option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
-option(BUILD_TESTS "Build the tests." OFF)
+option(BUILD_SHARED_LIBS "Build shared libraries." ON)
+option(BUILD_UNIT_TESTS "Build the unit tests." OFF)
+option(BUILD_TEST_APPLICATION "Build the test application." ON)
 
 # Generate folders for IDE targets (e.g., VisualStudio solutions)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -65,7 +66,7 @@ endif()
 
 add_subdirectory("libs/lac")
 
-if(BUILD_TESTS)
+if(BUILD_TEST_APPLICATION)
 	add_subdirectory("applications/tests")
 endif()
 

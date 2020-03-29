@@ -63,6 +63,10 @@ set_target_properties(${target} PROPERTIES ${DEFAULT_PROJECT_OPTIONS})
 # Compile options
 target_compile_options(${target} PRIVATE ${DEFAULT_COMPILE_OPTIONS})
 
+if(NOT BUILD_UNIT_TESTS)
+	target_compile_options(${target} PRIVATE "-DDOCTEST_CONFIG_DISABLE")
+endif()
+
 # Linker options
 target_link_libraries(${target} PRIVATE ${DEFAULT_LINKER_OPTIONS})
 
