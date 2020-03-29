@@ -1,7 +1,8 @@
+#include "coloration_test.h"
+
 #define DOCTEST_CONFIG_IMPLEMENTATION_IN_DLL
 #include <doctest/doctest.h>
 
-#include <lac/coloration/coloration_test.h>
 #include <lac/parser/ast_adapted.h>
 #include <lac/parser/parser.h>
 #include <lac/parser/positions.h>
@@ -56,7 +57,7 @@ namespace
 
 		const auto ret = lac::parser::parseBlock(data);
 		if (ret.parsed)
-			lac::printProgram(data, ret.positions.elements());
+			color::printProgram(data, ret.positions.elements());
 	}
 
 	void printAst(std::string_view path)

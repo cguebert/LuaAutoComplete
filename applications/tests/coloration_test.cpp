@@ -1,10 +1,10 @@
-#include <lac/coloration/coloration_test.h>
+#include "coloration_test.h"
 
 #include <array>
 #include <iostream>
 #include <vector>
 
-namespace lac
+namespace color
 {
 	using Color = std::array<uint8_t, 3>;
 
@@ -29,7 +29,7 @@ namespace lac
 		return colors;
 	}
 
-	void setColor(ast::ElementType type)
+	void setColor(lac::ast::ElementType type)
 	{
 		const auto& c = getColors()[static_cast<size_t>(type)];
 		std::cout << "\x1b[38;2;" << (int)c[0]
@@ -54,7 +54,7 @@ namespace lac
 			setColor(elt.type);
 			std::cout << text.substr(elt.begin, elt.end - elt.begin);
 			pos = elt.end;
-			setColor(ast::ElementType::not_defined);
+			setColor(lac::ast::ElementType::not_defined);
 		}
 
 		std::cout << text.substr(pos);
