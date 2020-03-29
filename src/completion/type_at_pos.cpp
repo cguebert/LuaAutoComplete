@@ -23,13 +23,12 @@ namespace lac::comp
 	an::TypeInfo getTypeAtPos(std::string_view view, size_t pos)
 	{
 		// Parse the program
-		ast::Block block;
-		pos::Positions positions{view.begin(), view.end()};
-		if (!parser::parseString(view, positions, block))
+		const auto ret = parser::parseBlock(view);
+		if (!ret.parsed)
 			return {};
 		
 		// Analyse the program
-		auto scope = an::analyseBlock(block);
+		auto scope = an::analyseBlock(ret.block);
 		return getTypeAtPos(scope, view, pos);
 	}
 
@@ -95,13 +94,12 @@ myTable.child = {}
 myTabel.child.text = 'meow'
 )~~";
 		// Parse the program
-		std::string_view view = program;
-		ast::Block block;
-		pos::Positions positions{view.begin(), view.end()};
-		REQUIRE(parser::parseString(view, positions, block));
+		const auto ret = parser::parseBlock(program);
+		REQUIRE(ret.parsed);
 
 		// Analyse the program
-		auto scope = an::analyseBlock(block);
+		const auto view = program;
+		auto scope = an::analyseBlock(ret.block);
 		CHECK(getTypeAtPos(scope, view, 3).type == an::Type::table);
 		CHECK(getTypeAtPos(scope, view, 23).type == an::Type::number);
 		CHECK(getTypeAtPos(scope, view, 40).type == an::Type::string);

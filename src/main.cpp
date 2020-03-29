@@ -54,14 +54,9 @@ namespace
 		if (data.empty())
 			return;
 
-		const auto view = std::string_view{data};
-		auto f = view.begin();
-		const auto l = view.end();
-		lac::pos::Positions positions{f, l};
-		lac::ast::Block block;
-
-		if (lac::parser::parseString(view, positions, block))
-			lac::printProgram(data, positions.elements());
+		const auto ret = lac::parser::parseBlock(data);
+		if (ret.parsed)
+			lac::printProgram(data, ret.positions.elements());
 	}
 
 	void printAst(std::string_view path)
@@ -70,11 +65,9 @@ namespace
 		if (data.empty())
 			return;
 
-		const auto view = std::string_view{data};
-		lac::ast::Block block;
-
-		if (lac::parser::parseString(view, block))
-			std::cout << lac::toJson(block).dump(2, ' ');
+		const auto ret = lac::parser::parseBlock(data, false);
+		if (ret.parsed)
+			std::cout << lac::toJson(ret.block).dump(2, ' ');
 	}
 } // namespace
 

@@ -5,9 +5,23 @@
 
 namespace lac::parser
 {
-	// These skip comments and spaces
-	bool parseString(std::string_view view, pos::Positions<std::string_view::const_iterator>& positions, ast::Block& block);
-	bool parseString(std::string_view view, ast::Block& block);
+	struct ParseBlockResults
+	{
+		ParseBlockResults(std::string_view view);
 
-	bool parseString(std::string_view view, ast::VariableOrFunction& variable);
-} // namespace lac
+		bool parsed = false;
+		ast::Block block;
+		pos::Positions<std::string_view::const_iterator> positions;
+	};
+
+	// These skip comments and spaces
+	ParseBlockResults parseBlock(std::string_view view, bool registerPositions = true);
+
+	struct ParseVariableResults
+	{
+		bool parsed = false;
+		ast::VariableOrFunction variable;
+	};
+
+	ParseVariableResults parseVariable(std::string_view view);
+} // namespace lac::parser

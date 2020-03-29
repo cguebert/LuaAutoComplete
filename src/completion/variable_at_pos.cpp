@@ -71,9 +71,8 @@ namespace lac::comp
 		if (extracted.empty())
 			return {};
 
-		ast::VariableOrFunction var;
-		if (parser::parseString(extracted, var))
-			return var;
+		if (auto ret = parser::parseVariable(extracted); ret.parsed)
+			return ret.variable;
 		return {};
 	}
 

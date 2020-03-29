@@ -6,18 +6,14 @@ namespace lac::comp
 {
 	bool Completion::updateProgram(std::string_view view, size_t currentPosition)
 	{
-		lac::ast::Block block;
-		auto f = view.begin();
-		const auto l = view.end();
-		lac::pos::Positions positions{f, l};
-		auto ret = lac::parser::parseString(view, positions, block);
+		auto ret = lac::parser::parseBlock(view);
 
-		if (ret)
+		if (ret.parsed)
 		{
-			std::swap(m_rootBlock, block);
-			std::swap(m_positions, positions);
+			std::swap(m_rootBlock, ret.block);
+			std::swap(m_positions, ret.positions);
 		}
 
-		return ret;
+		return ret.parsed;
 	}
 } // namespace lac::comp
