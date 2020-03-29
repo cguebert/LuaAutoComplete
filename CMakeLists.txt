@@ -1,45 +1,73 @@
 cmake_minimum_required(VERSION 3.5)
 
+# Include cmake modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+# Include cmake modules
 include(cmake/Custom.cmake)
+
+include(GenerateExportHeader)
 
 if(DEFINED ENV{VCPKG_DEFAULT_TRIPLET} AND NOT DEFINED VCPKG_TARGET_TRIPLET)
 set(VCPKG_TARGET_TRIPLET "$ENV{VCPKG_DEFAULT_TRIPLET}" CACHE STRING "")
 endif()
 
-project("LuaAutoComplete")
+# Meta information about the project
+set(META_PROJECT_NAME "LuaAutoComplete")
 
+# Declare project
+project(${META_PROJECT_NAME})
+
+# Options to build some projects
+option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
+option(BUILD_TESTS "Build the tests." OFF)
+
+# Generate folders for IDE targets (e.g., VisualStudio solutions)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+# Compiler settings and options
 include(cmake/CompileOptions.cmake)
 
-find_package(Boost)
-find_package(doctest CONFIG REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
-
-set(target "LuaAutoComplete")
-
-file(GLOB_RECURSE Header_Files "src/*.h")
-file(GLOB_RECURSE Source_Files "src/*.cpp")
-
-GroupFiles(Header_Files "src/")
-GroupFiles(Source_Files "src/")
-
-add_executable(${target} ${Header_Files} ${Source_Files})
-
-target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src) 
-
-target_link_libraries(${target} 
-	Boost::boost
-	doctest::doctest
-	nlohmann_json)
-
-set_target_properties(${target} PROPERTIES ${DEFAULT_PROJECT_OPTIONS})
-target_compile_options(${target} PRIVATE ${DEFAULT_COMPILE_OPTIONS})
-target_link_libraries(${target} PRIVATE ${DEFAULT_LINKER_OPTIONS})
-
-if(MSVC)
-    set_source_files_properties(src/parser/chunk.cpp PROPERTIES COMPILE_FLAGS "/bigobj")
+# Installation paths
+if(UNIX AND SYSTEM_DIR_INSTALL)
+	# Install into the system (/usr/bin or /usr/local/bin)
+	set(INSTALL_ROOT      "share/${project}")       # /usr/[local]/share/<project>
+	set(INSTALL_CMAKE     "share/${project}/cmake") # /usr/[local]/share/<project>/cmake
+	set(INSTALL_EXAMPLES  "share/${project}")       # /usr/[local]/share/<project>
+	set(INSTALL_DATA      "share/${project}")       # /usr/[local]/share/<project>
+	set(INSTALL_BIN       "bin")                    # /usr/[local]/bin
+	set(INSTALL_SHARED    "lib")                    # /usr/[local]/lib
+	set(INSTALL_LIB       "lib")                    # /usr/[local]/lib
+	set(INSTALL_INCLUDE   "include")                # /usr/[local]/include
+	set(INSTALL_DOC       "share/doc/${project}")   # /usr/[local]/share/doc/<project>
+	set(INSTALL_SHORTCUTS "share/applications")     # /usr/[local]/share/applications
+	set(INSTALL_ICONS     "share/pixmaps")          # /usr/[local]/share/pixmaps
+	set(INSTALL_INIT      "/etc/init")              # /etc/init (upstart init scripts)
+else()
+	# Install into local directory
+	set(INSTALL_ROOT      ".")                      # ./
+	set(INSTALL_CMAKE     "cmake")                  # ./lib/cmake
+	set(INSTALL_EXAMPLES  ".")                      # ./
+	set(INSTALL_DATA      ".")                      # ./
+	set(INSTALL_BIN       "bin")                    # ./bin
+	set(INSTALL_SHARED    "lib")                    # ./lib
+	set(INSTALL_LIB       "lib")                    # ./lib
+	set(INSTALL_INCLUDE   "include")                # ./include
+	set(INSTALL_DOC       "doc")                    # ./doc
+	set(INSTALL_SHORTCUTS "misc")                   # ./misc
+	set(INSTALL_ICONS     "misc")                   # ./misc
+	set(INSTALL_INIT      "misc")                   # ./misc
 endif()
 
-install(TARGETS ${target} RUNTIME DESTINATION release CONFIGURATIONS Release)
-install(TARGETS ${target} RUNTIME DESTINATION release CONFIGURATIONS RelWithDebInfo)
-install(TARGETS ${target} RUNTIME DESTINATION debug CONFIGURATIONS Debug)
+# 
+# Project modules
+# 
+
+add_subdirectory("libs/lac")
+
+if(BUILD_TESTS)
+	add_subdirectory("applications/tests")
+endif()
+
+# Install cmake find script for the project
+install(FILES ${META_PROJECT_NAME}Config.cmake DESTINATION ${INSTALL_CMAKE} COMPONENT dev)
