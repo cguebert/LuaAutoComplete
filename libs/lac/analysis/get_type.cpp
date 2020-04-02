@@ -39,7 +39,7 @@ namespace lac::an
 
 		TypeInfo operator()(const ast::LiteralString& str) const
 		{
-			return TypeInfo::fromName(str.value);
+			return Type::string;
 		}
 
 		TypeInfo operator()(const std::string& str) const
