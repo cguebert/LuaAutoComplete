@@ -11,5 +11,8 @@ namespace lac::editor
 		Q_OBJECT
 	public:
 		LuaEditor(QWidget* parent = nullptr);
+
+	protected:
+		bool event(QEvent* evt) override;
 	};
 } // namespace lac::editor

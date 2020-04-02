@@ -1,5 +1,7 @@
 #pragma once
 
+#include <lac/lac_api.h>
+
 #include <map>
 #include <memory>
 #include <string>
@@ -58,7 +60,7 @@ namespace lac::an
 		FunctionInfo getMethodType(const std::string& name) const;
 	};
 
-	class TypeInfo
+	class LAC_API TypeInfo
 	{
 	public:
 		TypeInfo();
@@ -84,5 +86,7 @@ namespace lac::an
 
 		// For variable name, function name, or user-defined type
 		std::string name;
+
+		std::string typeName() const; // Return the type name, and convert basic types to string
 	};
 } // namespace lac::an

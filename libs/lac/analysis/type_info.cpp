@@ -118,4 +118,35 @@ namespace lac::an
 				   : TypeInfo{};
 	}
 
+	std::string TypeInfo::typeName() const
+	{
+		if (!name.empty())
+			return name;
+
+		switch (type)
+		{
+		case Type::nil:
+			return "nil";
+		case Type::boolean:
+			return "boolean";
+		case Type::number:
+			return "number";
+		case Type::string:
+			return "string";
+		case Type::table:
+			return "table";
+		case Type::function:
+			return "function";
+		case Type::userdata:
+			return "userdata";
+		case Type::thread:
+			return "thread";
+		default:
+		case Type::unknown:
+			return "unknown";
+		case Type::error:
+			return "error";
+		}
+	}
+
 } // namespace lac::an
