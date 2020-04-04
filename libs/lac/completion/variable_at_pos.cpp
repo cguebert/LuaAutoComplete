@@ -16,6 +16,9 @@ namespace lac::comp
 {
 	std::string_view extractVariableAtPos(std::string_view view, size_t pos)
 	{
+		if (pos == std::string_view::npos)
+			pos = view.size() - 1;
+
 		if (pos >= view.size() || !isName(view[pos]))
 			return {};
 
@@ -83,12 +86,13 @@ namespace lac::comp
 		CHECK(extractVariableAtPos("foobar", 0) == "foobar");
 		CHECK(extractVariableAtPos("foobar", 3) == "foobar");
 		CHECK(extractVariableAtPos("foobar", 5) == "foobar");
+		CHECK(extractVariableAtPos("foobar") == "foobar");
 		CHECK(extractVariableAtPos("(foobar)", 3) == "foobar");
 		CHECK(extractVariableAtPos("test[\"foobar\"]", 8) == "foobar");
 		CHECK(extractVariableAtPos("foobar test", 5) == "foobar");
 		CHECK(extractVariableAtPos("foobar test", 6) == "");
 		CHECK(extractVariableAtPos("foobar test", 7) == "test");
-		CHECK(extractVariableAtPos("foobar test", 10) == "test");
+		CHECK(extractVariableAtPos("foobar test") == "test");
 		CHECK(extractVariableAtPos("foobar test", 11) == "");
 		CHECK(extractVariableAtPos("foo.bar", 2) == "foo");
 		CHECK(extractVariableAtPos("foo.bar test", 10) == "test");
@@ -106,11 +110,13 @@ namespace lac::comp
 	TEST_CASE("Member variable")
 	{
 		CHECK(extractVariableAtPos("foo.bar", 5) == "foo.bar");
+		CHECK(extractVariableAtPos("foo.bar") == "foo.bar");
 		CHECK(extractVariableAtPos("foo.bar test", 5) == "foo.bar");
 		CHECK(extractVariableAtPos("foo . bar test", 7) == "foo . bar");
 		CHECK(extractVariableAtPos("test foo.bar", 10) == "foo.bar");
 		CHECK(extractVariableAtPos("first.second.third", 8) == "first.second");
 		CHECK(extractVariableAtPos("first.second.third", 15) == "first.second.third");
+		CHECK(extractVariableAtPos("first.second.third") == "first.second.third");
 	}
 
 	TEST_CASE("Parse member variable")
