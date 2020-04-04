@@ -99,4 +99,5 @@ namespace lac::an
 	};
 
 	ElementsMap getElements(const TypeInfo& type);
+	ElementsMap getElements(const TypeInfo& type, ElementType filter);
 } // namespace lac::an

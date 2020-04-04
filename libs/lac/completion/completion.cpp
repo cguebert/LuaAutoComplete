@@ -127,16 +127,59 @@ namespace lac::comp
 		return var.variable;
 	}
 
-	an::ElementsMap getAutoCompletionList(const an::Scope& localScope, const boost::optional<ast::Variable>& var)
+	an::ElementsMap getAutoCompletionList(const an::Scope& rootScope, std::string_view str, size_t pos)
+	{
+		if (pos == std::string_view::npos)
+			pos = str.size() - 1;
+		if (pos >= str.size())
+			return rootScope.getElements();
+
+		// Get the scope under the cursor
+		auto scope = pos::getScopeAtPos(rootScope, pos);
+		if (!scope)
+			return rootScope.getElements();
+
+		CompletionFilter filter = CompletionFilter::none;
+		if (str[pos] == '.')
+			filter = CompletionFilter::variables;
+		else if (str[pos] == ':')
+			filter = CompletionFilter::functions;
+
+		if (filter != CompletionFilter::none)
+		{
+			if (!pos)
+				return rootScope.getElements();
+
+			auto var = parseVariableAtPos(str, pos - 1); // Do not remove the last part, as it does not exist
+			return getAutoCompletionList(*scope, var->variable, filter);
+		}
+
+		auto var = parseVariableAtPos(str, pos);
+		if (!var)
+			return scope->getElements(false);
+
+		filter = var->member
+					 ? CompletionFilter::functions
+					 : CompletionFilter::variables;
+		return getAutoCompletionList(*scope, removeLastPart(*var), filter);
+	}
+
+	an::ElementsMap getAutoCompletionList(const an::Scope& localScope, const boost::optional<ast::Variable>& var, CompletionFilter filter)
 	{
 		if (!var)
-			return localScope.getElements();
+			return localScope.getElements(false);
 
 		const auto info = getVariableType(localScope, *var);
 		if (info.type == an::Type::nil)
-			return localScope.getElements();
+			return localScope.getElements(false);
 
-		return getElements(info);
+		if (filter == CompletionFilter::none)
+			return getElements(info);
+
+		return getElements(info,
+						   filter == CompletionFilter::variables
+							   ? an::ElementType::variable
+							   : an::ElementType::function);
 	}
 
 	boost::optional<ast::Variable> getContext(std::string_view str, size_t pos)
@@ -186,7 +229,11 @@ namespace lac::comp
 
 	TEST_CASE("getAutoCompletionList")
 	{
-		an::Scope scope;
+		ast::Block block;
+		block.begin = 0;
+		block.end = 42;
+
+		an::Scope scope{block};
 		scope.addVariable("num", an::Type::number);
 		scope.addVariable("text", an::Type::string);
 		scope.addVariable("bool", an::Type::boolean);
@@ -196,20 +243,21 @@ namespace lac::comp
 		myTable.members["memberNum"] = an::Type::number;
 		myTable.members["memberText"] = an::Type::string;
 		myTable.members["memberBool"] = an::Type::boolean;
-		myTable.members["memberFunc"] = an::Type::function;
+		myTable.members["method1"] = an::Type::function;
+		myTable.members["method2"] = an::Type::function;
 		scope.addVariable("myTable", myTable);
 
-		auto getList = [&scope](std::string_view str) {
-			return getAutoCompletionList(scope, getContext(str));
-		};
+		CHECK(getAutoCompletionList(scope, "").size() == 5);
+		CHECK(getAutoCompletionList(scope, "none").size() == 5);
+		CHECK(getAutoCompletionList(scope, "num").size() == 5);
 
-		CHECK(getList("").size() == 5);
-		CHECK(getList("none").size() == 5);
-		CHECK(getList("num").size() == 5);
+		CHECK(getAutoCompletionList(scope, "myTable.").size() == 3);
+		CHECK(getAutoCompletionList(scope, "myTable.memberNum").size() == 3);
+		CHECK(getAutoCompletionList(scope, "myTable.dummy").size() == 3);
 
-		CHECK(getList("myTable.").size() == 4);
-		CHECK(getList("myTable:").size() == 4);
-		CHECK(getList("myTable.memberNum").size() == 4);
+		CHECK(getAutoCompletionList(scope, "myTable:").size() == 2);
+		CHECK(getAutoCompletionList(scope, "myTable:method1").size() == 2);
+		CHECK(getAutoCompletionList(scope, "myTable:dummy").size() == 2);
 	}
 
 	TEST_SUITE_END();

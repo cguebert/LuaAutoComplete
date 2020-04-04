@@ -196,14 +196,35 @@ namespace lac::an
 	ElementsMap getElements(const TypeInfo& type)
 	{
 		ElementsMap elements;
-		for (const auto& member : type.members)
+		for (const auto& it : type.members)
 		{
 			Element elt;
-			elt.name = member.first;
-			elt.typeInfo = member.second;
-			if (member.second.type == Type::function)
+			elt.name = it.first;
+			elt.typeInfo = it.second;
+			if (it.second.type == Type::function)
 				elt.elementType = ElementType::function;
-			elements[member.first] = std::move(elt);
+			elements[it.first] = std::move(elt);
+		}
+
+		return elements;
+	}
+
+	ElementsMap getElements(const TypeInfo& type, ElementType filter)
+	{
+		ElementsMap elements;
+		for (const auto& it : type.members)
+		{
+			if (it.second.type == Type::function && filter == ElementType::variable)
+				continue;
+			if (it.second.type != Type::function && filter == ElementType::function)
+				continue;
+
+			Element elt;
+			elt.name = it.first;
+			elt.typeInfo = it.second;
+			if (it.second.type == Type::function)
+				elt.elementType = ElementType::function;
+			elements[it.first] = std::move(elt);
 		}
 
 		return elements;

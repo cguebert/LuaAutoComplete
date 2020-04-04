@@ -8,6 +8,13 @@ namespace lac
 {
 	namespace comp
 	{
+		enum class CompletionFilter
+		{
+			none,
+			variables,
+			functions
+		};
+
 		class Completion
 		{
 		public:
@@ -25,7 +32,8 @@ namespace lac
 		boost::optional<ast::Variable> getContext(std::string_view str, size_t pos = std::string_view::npos);
 
 		// Return a list of possibilities for auto-completion
-		an::ElementsMap getAutoCompletionList(const an::Scope& localScope, const boost::optional<ast::Variable>& var);
+		an::ElementsMap getAutoCompletionList(const an::Scope& rootScope, std::string_view str, size_t pos = std::string_view::npos);
+		an::ElementsMap getAutoCompletionList(const an::Scope& localScope, const boost::optional<ast::Variable>& var, CompletionFilter filter = CompletionFilter::none);
 
 	} // namespace comp
 } // namespace lac
