@@ -44,14 +44,19 @@ namespace lac::comp
 		if (!ptr)
 			return {};
 
-		// Iterate over the expression
-		if (var->variable.start.get().type() != typeid(std::string))
-			return {};
-		auto type = getType(*ptr, boost::get<std::string>(var->variable.start));
+		return getTypeAtPos(*ptr, *var);
+	}
 
-		if (!var->variable.rest.empty())
+	an::TypeInfo getTypeAtPos(const an::Scope& scope, const ast::VariableOrFunction& var)
+	{
+		// Iterate over the expression
+		if (var.variable.start.get().type() != typeid(std::string))
+			return {};
+		auto type = getType(scope, boost::get<std::string>(var.variable.start));
+
+		if (!var.variable.rest.empty())
 		{
-			for (const auto& r : var->variable.rest)
+			for (const auto& r : var.variable.rest)
 			{
 				if (r.get().type() != typeid(ast::TableIndexName))
 					return an::Type::unknown;
@@ -60,13 +65,51 @@ namespace lac::comp
 			}
 		}
 
-		if (var->member)
-			type = type.member(var->member->name);
+		if (var.member)
+			type = type.member(var.member->name);
 
 		return type;
 	}
 
 	TEST_SUITE_BEGIN("Type at position");
+
+	TEST_CASE("Raw structs")
+	{
+		an::Scope scope;
+		scope.addVariable("num", an::Type::number);
+		scope.addVariable("text", an::Type::string);
+		scope.addVariable("bool", an::Type::boolean);
+
+		an::TypeInfo myTable{an::Type::table};
+		myTable.members["memberNum"] = an::Type::number;
+		myTable.members["memberText"] = an::Type::string;
+		myTable.members["memberBool"] = an::Type::boolean;
+		scope.addVariable("myTable", myTable);
+
+		auto var = [](std::string name) {
+			ast::VariableOrFunction v;
+			v.variable.start = std::move(name);
+			return v;
+		};
+
+		auto var2 = [](std::string name, std::string member) {
+			ast::VariableOrFunction v;
+			v.variable.start = std::move(name);
+			v.variable.rest.push_back(ast::VariablePostfix{ast::TableIndexName{std::move(member)}});
+			return v;
+		};
+		
+		CHECK(getTypeAtPos(scope, var("num")).type == an::Type::number);
+		CHECK(getTypeAtPos(scope, var("text")).type == an::Type::string);
+		CHECK(getTypeAtPos(scope, var("bool")).type == an::Type::boolean);
+		CHECK(getTypeAtPos(scope, var("myTable")).type == an::Type::table);
+		CHECK(getTypeAtPos(scope, var("none")).type == an::Type::nil);
+
+		CHECK(getTypeAtPos(scope, var2("myTable", "memberNum")).type == an::Type::number);
+		CHECK(getTypeAtPos(scope, var2("myTable", "memberText")).type == an::Type::string);
+		CHECK(getTypeAtPos(scope, var2("myTable", "memberBool")).type == an::Type::boolean);
+		CHECK(getTypeAtPos(scope, var2("myTable", "none")).type == an::Type::nil);
+	}
 
 	TEST_CASE("Name only")
 	{
