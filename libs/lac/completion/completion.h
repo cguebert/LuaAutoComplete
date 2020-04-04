@@ -19,13 +19,13 @@ namespace lac
 		};
 
 		// Remove the last member of the variable. If not possible, return empty.
-		boost::optional<ast::VariableOrFunction> removeLastPart(ast::VariableOrFunction var);
+		boost::optional<ast::Variable> removeLastPart(ast::VariableOrFunction var);
 
 		// Return the "parent" variable at the current position
-		boost::optional<ast::VariableOrFunction> getContext(std::string_view str, size_t pos = std::string_view::npos);
+		boost::optional<ast::Variable> getContext(std::string_view str, size_t pos = std::string_view::npos);
 
 		// Return a list of possibilities for auto-completion
-		an::ElementsMap getAutoCompletionList(const an::Scope& localScope, const boost::optional<ast::VariableOrFunction>& var);
+		an::ElementsMap getAutoCompletionList(const an::Scope& localScope, const boost::optional<ast::Variable>& var);
 
 	} // namespace comp
 } // namespace lac

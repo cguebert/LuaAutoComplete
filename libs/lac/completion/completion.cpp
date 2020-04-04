@@ -9,7 +9,40 @@
 
 namespace lac::ast
 {
-	// The next 2 functions are incomplete and must only be used for the tests in this file
+	// The next functions are incomplete and must only be used for the tests in this file
+	bool operator==(const ast::Variable& lhs, const ast::Variable& rhs)
+	{
+		if (boost::get<std::string>(lhs.start) != boost::get<std::string>(rhs.start))
+			return false;
+
+		if (lhs.rest.size() != rhs.rest.size())
+			return false;
+
+		for (auto lIt = lhs.rest.begin(), rIt = rhs.rest.begin();
+			 lIt != lhs.rest.end();
+			 ++lIt, ++rIt)
+		{
+			if (boost::get<TableIndexName>(*lIt).name != boost::get<TableIndexName>(*rIt).name)
+				return false;
+		}
+
+		return true;
+	}
+
+	bool operator==(const boost::optional<ast::Variable>& lhs, const boost::optional<ast::VariableOrFunction>& rhs)
+	{
+		if (!lhs && !rhs)
+			return true;
+
+		if (lhs.has_value() != rhs.has_value())
+			return false;
+
+		if (rhs->member)
+			return false;
+
+		return *lhs == rhs->variable;
+	}
+
 	bool operator==(const boost::optional<ast::VariableOrFunction>& lhs, const boost::optional<ast::VariableOrFunction>& rhs)
 	{
 		if (!lhs && !rhs)
@@ -18,19 +51,8 @@ namespace lac::ast
 		if (lhs.has_value() != rhs.has_value())
 			return false;
 
-		if (boost::get<std::string>(lhs->variable.start) != boost::get<std::string>(rhs->variable.start))
+		if (!(lhs->variable == rhs->variable))
 			return false;
-
-		if (lhs->variable.rest.size() != rhs->variable.rest.size())
-			return false;
-
-		for (auto lIt = lhs->variable.rest.begin(), rIt = rhs->variable.rest.begin();
-			 lIt != lhs->variable.rest.end();
-			 ++lIt, ++rIt)
-		{
-			if (boost::get<TableIndexName>(*lIt).name != boost::get<TableIndexName>(*rIt).name)
-				return false;
-		}
 
 		if (!lhs->member && !rhs->member)
 			return true;
@@ -42,6 +64,18 @@ namespace lac::ast
 			return false;
 
 		return true;
+	}
+
+	doctest::String toString(const boost::optional<ast::Variable>& var)
+	{
+		if (!var)
+			return "{}";
+
+		std::string str = boost::get<std::string>(var->start);
+		for (const auto& r : var->rest)
+			str += '.' + boost::get<TableIndexName>(r).name;
+
+		return str.c_str();
 	}
 
 	doctest::String toString(const boost::optional<ast::VariableOrFunction>& var)
@@ -75,7 +109,7 @@ namespace lac::comp
 		return ret.parsed;
 	}
 
-	boost::optional<ast::VariableOrFunction> removeLastPart(ast::VariableOrFunction var)
+	boost::optional<ast::Variable> removeLastPart(ast::VariableOrFunction var)
 	{
 		// TODO: what can we do if the start is a bracketed expression?
 		if (var.variable.start.get().type() != typeid(std::string))
@@ -83,39 +117,41 @@ namespace lac::comp
 
 		// If there is a member function, remove it and return the rest as is
 		if (var.member)
-		{
-			var.member.reset();
-			return var;
-		}
+			return var.variable;
 
 		// Else we must remove the last part of the variable
 		if (var.variable.rest.empty())
 			return {}; // There is nothing left
 
 		var.variable.rest.pop_back();
-		return var;
+		return var.variable;
 	}
 
-	an::ElementsMap getAutoCompletionList(const an::Scope& localScope, const boost::optional<ast::VariableOrFunction>& var)
+	an::ElementsMap getAutoCompletionList(const an::Scope& localScope, const boost::optional<ast::Variable>& var)
 	{
 		if (!var)
 			return localScope.getElements();
 
-		const auto info = getTypeAtPos(localScope, *var);
+		const auto info = getVariableType(localScope, *var);
 		if (info.type == an::Type::nil)
 			return localScope.getElements();
 
 		return getElements(info);
 	}
 
-	boost::optional<ast::VariableOrFunction> getContext(std::string_view str, size_t pos)
+	boost::optional<ast::Variable> getContext(std::string_view str, size_t pos)
 	{
 		if (pos == std::string_view::npos)
 			pos = str.size() - 1;
 		if (pos >= str.size())
 			return {};
 		if (str[pos] == '.' || str[pos] == ':')
-			return parseVariableAtPos(str, pos - 1); // Do not remove the last part, as it does not exist
+		{
+			auto var = parseVariableAtPos(str, pos - 1); // Do not remove the last part, as it does not exist
+			if (var)
+				return var->variable;
+			return {};
+		}
 
 		auto var = parseVariableAtPos(str, pos);
 		if (!var)
