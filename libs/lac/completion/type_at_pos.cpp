@@ -32,7 +32,7 @@ namespace lac::comp
 		return getTypeAtPos(scope, view, pos);
 	}
 
-	an::TypeInfo getTypeAtPos(const an::Scope& scope, std::string_view view, size_t pos)
+	an::TypeInfo getTypeAtPos(const an::Scope& rootScope, std::string_view view, size_t pos)
 	{
 		// Parse what is under the cursor
 		const auto var = parseVariableAtPos(view, pos);
@@ -40,19 +40,19 @@ namespace lac::comp
 			return {};
 
 		// Get the scope under the cursor
-		auto ptr = pos::getScopeAtPos(scope, pos);
-		if (!ptr)
+		auto scope = pos::getScopeAtPos(rootScope, pos);
+		if (!scope)
 			return {};
 
-		return getTypeAtPos(*ptr, *var);
+		return getTypeAtPos(*scope, *var);
 	}
 
-	an::TypeInfo getTypeAtPos(const an::Scope& scope, const ast::VariableOrFunction& var)
+	an::TypeInfo getTypeAtPos(const an::Scope& localScope, const ast::VariableOrFunction& var)
 	{
 		// Iterate over the expression
 		if (var.variable.start.get().type() != typeid(std::string))
 			return {};
-		auto type = getType(scope, boost::get<std::string>(var.variable.start));
+		auto type = getType(localScope, boost::get<std::string>(var.variable.start));
 
 		if (!var.variable.rest.empty())
 		{

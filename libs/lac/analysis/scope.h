@@ -29,6 +29,7 @@ namespace lac::an
 		TypeInfo typeInfo;
 		bool local = true;
 	};
+	using ElementsMap = std::map<std::string, Element>;
 
 	class Scope
 	{
@@ -65,7 +66,7 @@ namespace lac::an
 		const ast::Block* block() const;
 		const std::vector<Scope>& children() const;
 
-		std::map<std::string, Element> getElements(bool localOnly = true) const;
+		ElementsMap getElements(bool localOnly = true) const;
 
 	private:
 		UserDefined* getUserDefined() const;
@@ -96,4 +97,6 @@ namespace lac::an
 		std::vector<LabelInfo> m_labels;
 		std::vector<FunctionInfo> m_functions;
 	};
+
+	ElementsMap getElements(const TypeInfo& type);
 } // namespace lac::an

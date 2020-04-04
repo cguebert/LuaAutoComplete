@@ -193,4 +193,20 @@ namespace lac::an
 		return elements;
 	}
 
+	ElementsMap getElements(const TypeInfo& type)
+	{
+		ElementsMap elements;
+		for (const auto& member : type.members)
+		{
+			Element elt;
+			elt.name = member.first;
+			elt.typeInfo = member.second;
+			if (member.second.type == Type::function)
+				elt.elementType = ElementType::function;
+			elements[member.first] = std::move(elt);
+		}
+
+		return elements;
+	}
+
 } // namespace lac::an

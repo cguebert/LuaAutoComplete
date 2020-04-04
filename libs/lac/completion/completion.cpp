@@ -1,6 +1,8 @@
 #include <lac/completion/completion.h>
 #include <lac/completion/get_block.h>
+#include <lac/completion/type_at_pos.h>
 #include <lac/completion/variable_at_pos.h>
+#include <lac/parser/chunk.h>
 #include <lac/parser/parser.h>
 
 #include <doctest/doctest.h>
@@ -94,6 +96,33 @@ namespace lac::comp
 		return var;
 	}
 
+	an::ElementsMap getAutoCompletionList(const an::Scope& localScope, const boost::optional<ast::VariableOrFunction>& var)
+	{
+		if (!var)
+			return localScope.getElements();
+
+		const auto info = getTypeAtPos(localScope, *var);
+		if (info.type == an::Type::nil)
+			return localScope.getElements();
+
+		return getElements(info);
+	}
+
+	boost::optional<ast::VariableOrFunction> getContext(std::string_view str, size_t pos)
+	{
+		if (pos == std::string_view::npos)
+			pos = str.size() - 1;
+		if (pos >= str.size())
+			return {};
+		if (str[pos] == '.' || str[pos] == ':')
+			return parseVariableAtPos(str, pos - 1); // Do not remove the last part, as it does not exist
+
+		auto var = parseVariableAtPos(str, pos);
+		if (!var)
+			return {};
+		return removeLastPart(*var);
+	};
+
 	TEST_SUITE_BEGIN("Completion");
 
 	TEST_CASE("VariableOrFunction comparison")
@@ -112,18 +141,39 @@ namespace lac::comp
 
 	TEST_CASE("removeLastPart")
 	{
-		auto getContext = [](std::string_view str) -> boost::optional<ast::VariableOrFunction> {
-			auto var = parseVariableAtPos(str);
-			if (!var)
-				return {};
-			return removeLastPart(*var);
-		};
-
 		CHECK_FALSE(getContext("").has_value());
 		CHECK_FALSE(getContext("var").has_value());
 		CHECK(getContext("myTable.var") == parseVariableAtPos("myTable"));
 		CHECK(getContext("myTable.var.another") == parseVariableAtPos("myTable.var"));
 		CHECK(getContext("myTable.var:func") == parseVariableAtPos("myTable.var"));
+	}
+
+	TEST_CASE("getAutoCompletionList")
+	{
+		an::Scope scope;
+		scope.addVariable("num", an::Type::number);
+		scope.addVariable("text", an::Type::string);
+		scope.addVariable("bool", an::Type::boolean);
+		scope.addVariable("func", an::Type::function);
+
+		an::TypeInfo myTable{an::Type::table};
+		myTable.members["memberNum"] = an::Type::number;
+		myTable.members["memberText"] = an::Type::string;
+		myTable.members["memberBool"] = an::Type::boolean;
+		myTable.members["memberFunc"] = an::Type::function;
+		scope.addVariable("myTable", myTable);
+
+		auto getList = [&scope](std::string_view str) {
+			return getAutoCompletionList(scope, getContext(str));
+		};
+
+		CHECK(getList("").size() == 5);
+		CHECK(getList("none").size() == 5);
+		CHECK(getList("num").size() == 5);
+
+		CHECK(getList("myTable.").size() == 4);
+		CHECK(getList("myTable:").size() == 4);
+		CHECK(getList("myTable.memberNum").size() == 4);
 	}
 
 	TEST_SUITE_END();
