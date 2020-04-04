@@ -82,6 +82,8 @@ namespace lac
 		class Positions
 		{
 		public:
+			Positions() {}
+
 			Positions(Iterator begin, Iterator end)
 				: m_begin(begin)
 				, m_end(end)

@@ -16,6 +16,8 @@ namespace lac::parser
 	ParseBlockResults parseBlock(std::string_view view, bool registerPositions)
 	{
 		ParseBlockResults res{view};
+		if (view.empty())
+			return res;
 
 		auto f = view.begin();
 		const auto l = view.end();
@@ -35,9 +37,12 @@ namespace lac::parser
 
 	ParseVariableResults parseVariable(std::string_view view)
 	{
+		ParseVariableResults res;
+		if (view.empty())
+			return res;
+
 		auto f = view.begin();
 		const auto l = view.end();
-		ParseVariableResults res;
 		res.parsed = boost::spirit::x3::phrase_parse(f, l, variableOrFunctionRule(), skipperRule(), res.variable) && f == l;
 		return res;
 	}
