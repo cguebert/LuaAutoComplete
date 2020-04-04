@@ -281,6 +281,40 @@ end
 			CHECK(getAutoCompletionList(scope, "myTable:dummy").size() == 2);
 		}
 
+		TEST_CASE("Completion class")
+		{
+			std::string program = R"~~(
+num = 42
+text = 'foo'
+test = true
+func = function(a, b)
+	return a + b
+end
+
+myTable = {}
+myTable.m_num = 69
+myTable.m_text = 'bar'
+myTable.m_bool = false
+myTable.m_func1 = function(a) return -a end
+myTable.m_func2 = function(a) return a * 2 end
+)~~";
+
+			Completion completion;
+			REQUIRE(completion.updateProgram(program));
+
+			CHECK(completion.getAutoCompletionList("").size() == 5);
+			CHECK(completion.getAutoCompletionList("none").size() == 5);
+			CHECK(completion.getAutoCompletionList("num").size() == 5);
+
+			CHECK(completion.getAutoCompletionList("myTable.").size() == 3);
+			CHECK(completion.getAutoCompletionList("myTable.memberNum").size() == 3);
+			CHECK(completion.getAutoCompletionList("myTable.dummy").size() == 3);
+
+			CHECK(completion.getAutoCompletionList("myTable:").size() == 2);
+			CHECK(completion.getAutoCompletionList("myTable:method1").size() == 2);
+			CHECK(completion.getAutoCompletionList("myTable:dummy").size() == 2);
+		}
+
 		TEST_SUITE_END();
 	} // namespace comp
 } // namespace lac

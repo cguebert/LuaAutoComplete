@@ -24,9 +24,16 @@ namespace lac::comp
 		{
 			std::swap(m_rootBlock, ret.block);
 			std::swap(m_positions, ret.positions);
+
+			m_rootScope = an::analyseBlock(m_rootBlock);
 		}
 
 		return ret.parsed;
+	}
+
+	an::ElementsMap Completion::getAutoCompletionList(std::string_view str, size_t pos)
+	{
+		return comp::getAutoCompletionList(m_rootScope, str, pos);
 	}
 
 	boost::optional<ast::Variable> removeLastPart(ast::VariableOrFunction var)

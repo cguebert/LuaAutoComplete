@@ -15,13 +15,15 @@ namespace lac
 			functions
 		};
 
-		class Completion
+		class LAC_API Completion
 		{
 		public:
-			bool updateProgram(std::string_view str, size_t currentPosition);
+			bool updateProgram(std::string_view str, size_t currentPosition = std::string_view::npos);
+			an::ElementsMap getAutoCompletionList(std::string_view str, size_t pos = std::string_view::npos);
 
 		private:
 			ast::Block m_rootBlock;
+			an::Scope m_rootScope;
 			pos::Positions<std::string_view::const_iterator> m_positions;
 		};
 
