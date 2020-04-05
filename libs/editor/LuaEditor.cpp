@@ -1,4 +1,5 @@
 #include <editor/CompletionModel.h>
+#include <editor/EditorHighlighter.h>
 #include <editor/LuaEditor.h>
 
 #include <lac/completion/type_at_pos.h>
@@ -16,6 +17,7 @@ namespace lac::editor
 		: QPlainTextEdit(parent)
 		, m_completer(new QCompleter)
 		, m_completionModel(new CompletionModel)
+		, m_highlighter(new EditorHighlighter(document()))
 	{
 		m_completer->setWidget(this);
 		m_completer->setCompletionMode(QCompleter::PopupCompletion);
@@ -101,6 +103,11 @@ namespace lac::editor
 								 .arg(design.completion_selection_border_color.name())
 								 .arg(design.completion_selection_back_color.name())
 								 .arg(design.completion_selection_text_color.name()));
+	}
+
+	EditorHighlighter* LuaEditor::highlighter()
+	{
+		return m_highlighter;
 	}
 
 	bool LuaEditor::event(QEvent* evt)

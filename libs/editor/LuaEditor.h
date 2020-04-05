@@ -10,6 +10,7 @@ class QCompleter;
 namespace lac::editor
 {
 	class CompletionModel;
+	class EditorHighlighter;
 
 	struct EditorDesign
 	{
@@ -37,6 +38,8 @@ namespace lac::editor
 
 		void setDesign(const EditorDesign& design);
 
+		EditorHighlighter* highlighter();
+
 	protected:
 		bool event(QEvent* evt) override;
 		void keyPressEvent(QKeyEvent* event) override;
@@ -51,6 +54,7 @@ namespace lac::editor
 		CompletionModel* m_completionModel = nullptr;
 		lac::comp::Completion m_programCompletion;
 
+		EditorHighlighter* m_highlighter = nullptr;
 		bool m_textChanged = true;
 	};
 } // namespace lac::editor
