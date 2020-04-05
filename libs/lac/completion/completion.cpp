@@ -47,6 +47,11 @@ namespace lac::comp
 		return comp::getAutoCompletionList(m_rootScope, str, pos);
 	}
 
+	an::TypeInfo Completion::getTypeAtPos(std::string_view str, size_t pos)
+	{
+		return comp::getTypeAtPos(m_rootScope, str, pos);
+	}
+
 	boost::optional<ast::Variable> removeLastPart(ast::VariableOrFunction var)
 	{
 		// TODO: what can we do if the start is a bracketed expression?

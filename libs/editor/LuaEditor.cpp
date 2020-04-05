@@ -138,7 +138,7 @@ namespace lac::editor
 			auto text = document()->toPlainText().toStdString();
 			removeNonASCII(text);
 
-			const auto typeInfo = lac::comp::getTypeAtPos(text, pos);
+			const auto typeInfo = m_programCompletion.getTypeAtPos(text, pos);
 			if (typeInfo.type != lac::an::Type::nil)
 				QToolTip::showText(helpEvent->globalPos(), QString::fromStdString(typeInfo.typeName()));
 			else
