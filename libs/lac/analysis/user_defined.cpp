@@ -15,6 +15,11 @@ namespace lac::an
 		return nullptr;
 	}
 
+	const UserDefined::Variables& UserDefined::variables() const
+	{
+		return m_variables;
+	}
+
 	void UserDefined::addFreeFunction(std::string_view name, FunctionInfo func)
 	{
 		TypeInfo info = Type::function;
@@ -30,6 +35,11 @@ namespace lac::an
 		return nullptr;
 	}
 
+	const UserDefined::Functions& UserDefined::functions() const
+	{
+		return m_functions;
+	}
+
 	void UserDefined::addType(UserType type)
 	{
 		m_types[type.name] = std::move(type);
@@ -41,5 +51,10 @@ namespace lac::an
 		if (it != m_types.end())
 			return &it->second;
 		return nullptr;
+	}
+
+	const UserDefined::Types& UserDefined::types() const
+	{
+		return m_types;
 	}
 } // namespace lac::an

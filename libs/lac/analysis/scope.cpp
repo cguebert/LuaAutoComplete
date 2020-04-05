@@ -140,32 +140,36 @@ namespace lac::an
 	std::map<std::string, Element> Scope::getElements(bool localOnly) const
 	{
 		std::map<std::string, Element> elements;
-		auto addScope = [&elements](const Scope& scope, bool local) {
-			for (const auto& var : scope.m_variables)
-			{
-				if (elements.count(var.name))
-					continue;
+		auto addVariable = [&elements](const std::string& name, const TypeInfo& type, bool local) {
+			if (elements.count(name))
+				return;
 
-				Element elt;
-				elt.local = local;
-				elt.name = var.name;
-				elt.elementType = ElementType::variable;
-				elt.typeInfo = var.type;
-				elements[var.name] = std::move(elt);
-			}
+			Element elt;
+			elt.local = local;
+			elt.name = name;
+			elt.elementType = ElementType::variable;
+			elt.typeInfo = type;
+			elements[name] = std::move(elt);
+		};
+
+		auto addFunction = [&elements](const std::string& name, const TypeInfo& type, bool local) {
+			if (elements.count(name))
+				return;
+
+			Element elt;
+			elt.local = local;
+			elt.name = name;
+			elt.elementType = ElementType::label;
+			elt.typeInfo = type;
+			elements[name] = std::move(elt);
+		};
+
+		auto addScope = [&](const Scope& scope, bool local) {
+			for (const auto& var : scope.m_variables)
+				addVariable(var.name, var.type, local);
 
 			for (const auto& func : scope.m_functions)
-			{
-				if (elements.count(func.name))
-					continue;
-
-				Element elt;
-				elt.local = local;
-				elt.name = func.name;
-				elt.elementType = ElementType::label;
-				elt.typeInfo = func.type;
-				elements[func.name] = std::move(elt);
-			}
+				addFunction(func.name, func.type, local);
 
 			for (const auto& label : scope.m_labels)
 			{
@@ -177,6 +181,15 @@ namespace lac::an
 				elt.name = label.name;
 				elt.elementType = ElementType::label;
 				elements[label.name] = std::move(elt);
+			}
+
+			if (scope.m_userDefined)
+			{
+				for (const auto& it : scope.m_userDefined->variables())
+					addVariable(it.first, it.second, false);
+
+				for (const auto& it : scope.m_userDefined->functions())
+					addFunction(it.first, it.second, false);
 			}
 		};
 
