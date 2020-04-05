@@ -11,6 +11,20 @@
 #include <QTimer>
 #include <QToolTip>
 
+namespace
+{
+	void removeNonASCII(std::string& str)
+	{
+		// Remove utf-8 characters as we use ASCII for now 
+		// TODO: support UTF-8
+		for (auto& c : str)
+		{
+			if (c < 0)
+				c = ' ';
+		}
+	}
+}
+
 namespace lac::editor
 {
 	LuaEditor::LuaEditor(QWidget* parent)
@@ -116,7 +130,8 @@ namespace lac::editor
 		{
 			QHelpEvent* helpEvent = static_cast<QHelpEvent*>(evt);
 			const auto pos = cursorForPosition(helpEvent->pos()).position();
-			const auto text = document()->toPlainText().toStdString();
+			auto text = document()->toPlainText().toStdString();
+			removeNonASCII(text);
 
 			const auto typeInfo = lac::comp::getTypeAtPos(text, pos);
 			if (typeInfo.type != lac::an::Type::nil)
@@ -436,7 +451,9 @@ namespace lac::editor
 		if (!m_textChanged)
 			return;
 
-		const auto text = document()->toPlainText().toStdString();
+		auto text = document()->toPlainText().toStdString();
+		removeNonASCII(text);
+
 		const auto pos = textCursor().position() - 1;
 		m_programCompletion.updateProgram(text, pos);
 		m_textChanged = false;
