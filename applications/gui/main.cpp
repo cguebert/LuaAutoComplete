@@ -17,11 +17,11 @@ func = function(a, b)
 end
 
 myTable = {}
-myTable.m_num = 69
-myTable.m_text = 'bar'
-myTable.m_bool = false
-myTable.m_func1 = function(a) return -a end
-myTable.m_func2 = function(a) return a * 2 end
+myTable.num = 69
+myTable.text = 'bar'
+myTable.bool = false
+myTable.neg = function(a) return -a end
+myTable.mult = function(a) return a * 2 end
 )~~");
 	editor.show();
 
