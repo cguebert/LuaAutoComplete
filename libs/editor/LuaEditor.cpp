@@ -110,11 +110,23 @@ namespace lac::editor
 
 		//	m_completer->popup()->setCurrentIndex(m_completer->completionModel()->index(0, 0));
 
+		// When using Ctrl + space, try to complete the word without showing the popup
+		bool ctrlSpace = event->key() == Qt::Key_Space
+						 && event->modifiers() & Qt::ControlModifier;
+		if (ctrlSpace && m_completer->completionCount() == 1)
+		{
+			completeWord(m_completer->currentCompletion());
+			return;
+		}
+
+		auto askPopup = [ctrlSpace](QKeyEvent* event) {
+			return event->key() == Qt::Key_Colon     // ':' -> member method
+				   || event->key() == Qt::Key_Period // '.' -> member variable
+				   || (ctrlSpace);                   // Ctrl + space
+		};
+
 		// Show the completion popup
-		if (!m_completer->popup()->isVisible()
-			&& (event->key() == Qt::Key_Colon      // ':' -> member method
-				|| event->key() == Qt::Key_Period) // '.' -> member variable
-		)
+		if (!m_completer->popup()->isVisible() && askPopup(event))
 		{
 			m_textChanged = true;
 			updateProgram();
