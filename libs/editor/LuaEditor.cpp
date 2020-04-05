@@ -99,24 +99,40 @@ namespace lac::editor
 		if ((event->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier)) && event->text().isEmpty())
 			return;
 
-		m_completer->setCompletionPrefix(prefix);
-
-		// No completion
-		if (!m_completer->completionCount())
+		if (m_completer->popup()->isVisible())
 		{
-			m_completer->popup()->hide();
+			m_completer->setCompletionPrefix(prefix);
+
+			// No completion
+			if (!m_completer->completionCount())
+				m_completer->popup()->hide();
+
+		//	m_completer->setCurrentRow(m_completer->completionModel()->index(0, 0).row());
 			return;
 		}
 
-		//	m_completer->popup()->setCurrentIndex(m_completer->completionModel()->index(0, 0));
+		bool refreshed = false;
+		auto refreshCompletion = [this, prefix, &refreshed] {
+			if (refreshed) // Ensure we only do it once in this function
+				return;
+
+			m_textChanged = true;
+			updateProgram();
+			m_completer->setCompletionPrefix(prefix);
+			refreshed = true;
+		};
 
 		// When using Ctrl + space, try to complete the word without showing the popup
 		bool ctrlSpace = event->key() == Qt::Key_Space
 						 && event->modifiers() & Qt::ControlModifier;
-		if (ctrlSpace && m_completer->completionCount() == 1)
+		if (ctrlSpace)
 		{
-			completeWord(m_completer->currentCompletion());
-			return;
+			refreshCompletion();
+			if (m_completer->completionCount() == 1)
+			{
+				completeWord(m_completer->currentCompletion());
+				return;
+			}
 		}
 
 		auto askPopup = [ctrlSpace](QKeyEvent* event) {
@@ -128,8 +144,7 @@ namespace lac::editor
 		// Show the completion popup
 		if (!m_completer->popup()->isVisible() && askPopup(event))
 		{
-			m_textChanged = true;
-			updateProgram();
+			refreshCompletion();
 
 			QRect rect = cursorRect();
 			rect.moveTo(rect.x() - fontMetrics().horizontalAdvance(prefix), rect.y() + 4);
@@ -167,11 +182,11 @@ namespace lac::editor
 		const auto text = document()->toPlainText().toStdString();
 		const auto pos = textCursor().position() - 1;
 		m_programCompletion.updateProgram(text, pos);
-		const auto elements = m_programCompletion.getAutoCompletionList(text, pos);
 		m_textChanged = false;
 
 		if (!m_completer->popup()->isVisible())
 		{
+			const auto elements = m_programCompletion.getAutoCompletionList(text, pos);
 			QStringList list;
 			for (const auto it : elements)
 				list.push_back(QString::fromStdString(it.first));
