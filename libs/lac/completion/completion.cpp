@@ -83,12 +83,15 @@ namespace lac::comp
 			return rootScope.getElements();
 
 		CompletionFilter filter = CompletionFilter::none;
+		/*	
 		if (str[pos] == '.')
 			filter = CompletionFilter::variables;
-		else if (str[pos] == ':')
+		else */
+		if (str[pos] == ':')
 			filter = CompletionFilter::functions;
 
-		if (filter != CompletionFilter::none)
+		bool membersOnly = (str[pos] == '.' || str[pos] == ':');
+		if (membersOnly)
 		{
 			if (!pos)
 				return rootScope.getElements();
