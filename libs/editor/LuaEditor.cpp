@@ -17,19 +17,19 @@ namespace lac::editor
 		, m_completer(new QCompleter)
 		, m_completionModel(new CompletionModel)
 	{
-		// Specifies the default font for the code editor
-		QFont editorFont("Monospace");
-		editorFont.setPointSize(10);
-		editorFont.setKerning(true);
-		editorFont.setStyleHint(QFont::TypeWriter);
-		editorFont.setStyleStrategy(QFont::PreferAntialias);
-		setFont(editorFont);
-
 		m_completer->setWidget(this);
 		m_completer->setCompletionMode(QCompleter::PopupCompletion);
 		m_completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
 		m_completer->setFilterMode(Qt::MatchFlag::MatchContains);
 		m_completer->setModel(m_completionModel);
+
+		auto popup = m_completer->popup();
+		popup->setFrameShape(QFrame::NoFrame);
+		popup->setSelectionMode(QAbstractItemView::SingleSelection);
+		popup->setSelectionBehavior(QAbstractItemView::SelectItems);
+		popup->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+		setDesign({});
 
 		// This is an ugly way to test the completion
 		auto timer = new QTimer(this);
@@ -41,6 +41,66 @@ namespace lac::editor
 		});
 
 		connect(m_completer, QOverload<const QString&>::of(&QCompleter::activated), this, &LuaEditor::completeWord);
+	}
+
+	void LuaEditor::setDesign(const EditorDesign& design)
+	{
+		auto popup = m_completer->popup();
+
+		// Fonts
+		auto editorFont = design.editor_font;
+		editorFont.setStyleHint(QFont::TypeWriter, QFont::PreferAntialias);
+		setFont(editorFont);
+
+		auto popupFont = design.completion_font;
+		popupFont.setStyleHint(QFont::TypeWriter, QFont::PreferAntialias);
+		popup->setFont(popupFont);
+
+		// For everything else, use stylesheets
+		setStyleSheet(QString("QPlainTextEdit {"
+							  "   border-top: %2px solid %1;"
+							  "   border-right: %3px solid %1;"
+							  "   border-bottom: %4px solid %1;"
+							  "   border-left: %5px solid %1;"
+							  "   background-color: %6;"
+							  "   color: %7;"
+							  "}")
+						  .arg(design.editor_border_color.name())
+						  .arg(design.editor_border.top())
+						  .arg(design.editor_border.right())
+						  .arg(design.editor_border.bottom())
+						  .arg(design.editor_border.left())
+						  .arg(design.editor_back_color.name())
+						  .arg(design.editor_text_color.name()));
+
+		popup->setStyleSheet(QString("QListView {"
+									 "   border-top: %2px solid %1;"
+									 "   border-left: %3px solid %1;"
+									 "   border-right: %4px solid %1;"
+									 "   border-bottom: %5px solid %1;"
+									 "   background-color: %6;"
+									 "   color: %7;"
+									 "   outline: none;"
+									 "}"
+									 "QListView::item:selected {"
+									 "   padding: -1px;"
+									 "   border: 1px solid %8;"
+									 "   background-color: %9;"
+									 "   color: %10;"
+									 "}"
+									 "QListView::item:!selected:hover {"
+									 "   background: transparent;"
+									 "}")
+								 .arg(design.completion_border_color.name())
+								 .arg(design.completion_border.top())
+								 .arg(design.completion_border.right())
+								 .arg(design.completion_border.bottom())
+								 .arg(design.completion_border.left())
+								 .arg(design.completion_back_color.name())
+								 .arg(design.completion_text_color.name())
+								 .arg(design.completion_selection_border_color.name())
+								 .arg(design.completion_selection_back_color.name())
+								 .arg(design.completion_selection_text_color.name()));
 	}
 
 	bool LuaEditor::event(QEvent* evt)
