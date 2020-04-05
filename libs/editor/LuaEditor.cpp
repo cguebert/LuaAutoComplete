@@ -6,6 +6,7 @@
 #include <QAbstractItemView>
 #include <QCompleter>
 #include <QScrollBar>
+#include <QTextBlock>
 #include <QTimer>
 #include <QToolTip>
 
@@ -81,8 +82,183 @@ namespace lac::editor
 			}
 		}
 
+		if (handleTabs(event))
+			return;
+
 		QPlainTextEdit::keyPressEvent(event);
 
+		handleCompletion(event);
+	}
+
+	bool LuaEditor::handleTabs(QKeyEvent* event)
+	{
+		static QChar par(0x2029); // Qt uses paragraph separators
+
+		// Adds tabs in front of the selected block(s)
+		if (event->key() == Qt::Key_Tab && !textCursor().selectedText().isEmpty())
+		{
+			// Retrieves the amount of lines within the selected text
+			QTextCursor cursor = textCursor();
+			QString selected = cursor.selectedText();
+			qint32 nbLines = selected.count(par) + 1;
+
+			// If only one line is selected, replace the selection by a tab
+			if (nbLines == 1)
+			{
+				cursor.beginEditBlock();
+				cursor.removeSelectedText();
+				cursor.insertText("\t");
+				cursor.endEditBlock();
+				return true;
+			}
+
+			// Retrieves the selection and the cursor positions
+			int start = cursor.selectionStart(), end = cursor.selectionEnd();
+			int pos = cursor.position();
+			cursor.clearSelection();
+			cursor.setPosition(start);
+			cursor.beginEditBlock();
+
+			// Inserts tabs for each selected line
+			for (int i = 0; i < nbLines; ++i)
+			{
+				cursor.movePosition(QTextCursor::StartOfLine);
+				cursor.insertText("\t");
+				cursor.movePosition(QTextCursor::Down);
+			}
+
+			// Selects all the text
+			if (pos == start)
+			{
+				cursor.setPosition(end + nbLines);
+				cursor.setPosition(start + 1, QTextCursor::KeepAnchor);
+			}
+			else
+			{
+				cursor.setPosition(start + 1);
+				cursor.setPosition(end + nbLines, QTextCursor::KeepAnchor);
+			}
+
+			cursor.endEditBlock();
+			setTextCursor(cursor);
+			return true;
+		}
+
+		// Removes tabs in front of selected block(s)
+		if (event->key() == Qt::Key_Backtab && !textCursor().selectedText().isEmpty())
+		{
+			// Retrieves the amount of lines within the selected text
+			QTextCursor cursor = textCursor();
+			QString selected = cursor.selectedText();
+			qint32 nbLines = selected.count(par) + 1;
+
+			// Does not do anything if only one line is selected
+			if (nbLines == 1)
+				return true;
+
+			// Retrieves the selection and the cursor positions
+			int start = cursor.selectionStart(), end = cursor.selectionEnd();
+			bool cursorAtStart = (cursor.position() == start);
+			cursor.clearSelection();
+			cursor.setPosition(start);
+			cursor.movePosition(QTextCursor::StartOfLine);
+			int minStart = cursor.position();
+			cursor.beginEditBlock();
+
+			// Removes a tab from each line
+			for (int i = 0; i < nbLines; ++i)
+			{
+				cursor.movePosition(QTextCursor::StartOfLine);
+				cursor.movePosition(QTextCursor::NextWord);
+				cursor.movePosition(QTextCursor::StartOfWord);
+
+				int prev = cursor.position();
+
+				QString text = cursor.block().text();
+				int pos = cursor.positionInBlock();
+				if (!pos)
+					continue;
+				--pos;
+
+				// The first character of the line is not a whitespace, so the cursor was set to the next word
+				if (pos && !text.at(pos - 1).isSpace())
+					continue;
+
+				if (text.at(pos) == '\t')
+					cursor.deletePreviousChar();
+				else if (text.at(pos) == ' ')
+				{
+					for (int i = 0; i < 4 && pos >= 0; ++i, --pos)
+					{
+						if (text.at(pos) != ' ')
+							break;
+						cursor.deletePreviousChar();
+					}
+				}
+
+				int delta = prev - cursor.position();
+				end -= delta;
+				if (!i)
+					start = std::max(minStart, start - delta);
+				cursor.movePosition(QTextCursor::Down);
+			}
+
+			// Selects all the text
+			if (cursorAtStart)
+			{
+				cursor.setPosition(end);
+				cursor.setPosition(start, QTextCursor::KeepAnchor);
+			}
+			else
+			{
+				cursor.setPosition(start);
+				cursor.setPosition(end, QTextCursor::KeepAnchor);
+			}
+
+			cursor.endEditBlock();
+			setTextCursor(cursor);
+			return true;
+		}
+
+		// Insert a tab
+		if (event->key() == Qt::Key_Tab)
+		{
+			QTextCursor cursor = textCursor();
+			cursor.insertText("\t");
+			setTextCursor(cursor);
+			return true;
+		}
+		// Remove whitespace before the cursor
+		else if (event->key() == Qt::Key_Backtab)
+		{
+			QTextCursor cursor = textCursor();
+			QString text = cursor.block().text();
+			int pos = cursor.positionInBlock();
+			if (!pos)
+				return true;
+			--pos;
+			if (text.at(pos) == '\t')
+				cursor.deletePreviousChar();
+			else if (text.at(pos) == ' ')
+			{
+				cursor.beginEditBlock();
+				for (int i = 0; i < 4 && pos; ++i, --pos)
+				{
+					if (text.at(pos) != ' ')
+						break;
+					cursor.deletePreviousChar();
+				}
+				cursor.endEditBlock();
+			}
+			setTextCursor(cursor);
+			return true;
+		}
+
+		return false;
+	}
+
+	void LuaEditor::handleCompletion(QKeyEvent* event)
+	{
 		// Current text under the cursor
 		auto cursor = textCursor();
 		cursor.select(QTextCursor::WordUnderCursor);
@@ -99,8 +275,8 @@ namespace lac::editor
 		};
 
 		// Close the popup if no text under the cursor and backspace was pressed
-		if (event->key() == Qt::Key_Backspace 
-			&& prefix.isEmpty() 
+		if (event->key() == Qt::Key_Backspace
+			&& prefix.isEmpty()
 			&& !isDot(leftText)) // But not if there is a dot on the left of the cursor
 		{
 			m_completer->popup()->hide();
@@ -117,7 +293,7 @@ namespace lac::editor
 		if (m_completer->popup()->isVisible())
 		{
 			m_completer->setCompletionPrefix(prefix);
-			
+
 			if (!m_completer->completionCount()) // No completion
 				m_completer->popup()->hide();
 			else // Always select the first one so we can press enter to use it

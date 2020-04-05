@@ -8,6 +8,7 @@ int main(int argc, char* argv[])
 
 	lac::editor::LuaEditor editor;
 	editor.setMinimumSize(600, 400);
+	editor.setTabStopDistance(30);
 	editor.setPlainText(R"~~(--Test program
 num = 42
 text = 'foo'

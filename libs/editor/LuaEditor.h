@@ -21,6 +21,8 @@ namespace lac::editor
 		bool event(QEvent* evt) override;
 		void keyPressEvent(QKeyEvent* event) override;
 
+		bool handleTabs(QKeyEvent* event);
+		void handleCompletion(QKeyEvent* event);
 		void updateProgram();
 		void completeWord(const QString& word);
 
