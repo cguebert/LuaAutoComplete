@@ -1,15 +1,35 @@
 #include <editor/LuaEditor.h>
 #include <editor/EditorHighlighter.h>
 
+#include <lac/analysis/user_defined.h>
+
 #include <QApplication>
+
+lac::an::UserDefined createUserDefined()
+{
+	using namespace lac::an;
+	UserDefined userDefined;
+	TypeInfo mathType = Type::table;
+	mathType.members["abs"] = TypeInfo::createFunction({{"x", Type::number}}, {Type::number});
+	mathType.members["ceil"] = TypeInfo::createFunction({{"x", Type::number}}, {Type::number});
+	mathType.members["floor"] = TypeInfo::createFunction({{"x", Type::number}}, {Type::number});
+	mathType.members["max"] = TypeInfo::createFunction({{"x", Type::number}, {"y", Type::number}}, {Type::number});
+	mathType.members["min"] = TypeInfo::createFunction({{"x", Type::number}, {"y", Type::number}}, {Type::number});
+	userDefined.addVariable("math", std::move(mathType));
+
+	return userDefined;
+}
 
 int main(int argc, char* argv[])
 {
 	QApplication app(argc, argv);
 
+	auto userDefined = createUserDefined();
+
 	lac::editor::LuaEditor editor;
 	editor.setMinimumSize(600, 400);
 	editor.setTabStopDistance(30);
+	editor.setUserDefined(&userDefined);
 	editor.highlighter()->useLuaRules();
 	editor.setPlainText(R"~~(--Test program
 num = 42
@@ -30,6 +50,9 @@ myTable.text = "bar"
 myTable.bool = false
 myTable.neg = function(a) return -a end
 myTable.mult = function(a) return a * 2 end
+
+-- Testing user defined types
+x = math.abs(-3.14)
 )~~");
 	editor.show();
 

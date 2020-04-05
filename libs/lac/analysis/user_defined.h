@@ -7,7 +7,7 @@
 
 namespace lac::an
 {
-	class UserDefined
+	class LAC_API UserDefined
 	{
 	public:
 		void addVariable(std::string_view name, TypeInfo type);

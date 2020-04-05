@@ -11,6 +11,11 @@
 
 namespace lac::comp
 {
+	void Completion::setUserDefined(lac::an::UserDefined* userDefined)
+	{
+		m_userDefined = userDefined;
+	}
+
 	bool Completion::updateProgram(std::string_view view, size_t currentPosition)
 	{
 		if (view.empty())
@@ -26,7 +31,9 @@ namespace lac::comp
 			std::swap(m_rootBlock, ret.block);
 			std::swap(m_positions, ret.positions);
 
-			m_rootScope = an::analyseBlock(m_rootBlock);
+			m_rootScope = an::Scope{m_rootBlock};
+			m_rootScope.setUserDefined(m_userDefined);
+			an::analyseBlock(m_rootScope, m_rootBlock);
 		}
 
 		// Always update the boundary of the root block

@@ -76,6 +76,14 @@ namespace lac::an
 		return type;
 	}
 
+	TypeInfo TypeInfo::createFunction(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results)
+	{
+		TypeInfo type{Type::function};
+		type.function.parameters = std::move(parameters);
+		type.function.results = std::move(results);
+		return type;
+	}
+
 	TypeInfo TypeInfo::convert(Type destination) const
 	{
 		if (type == destination)

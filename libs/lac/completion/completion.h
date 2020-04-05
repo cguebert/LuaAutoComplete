@@ -6,6 +6,11 @@
 
 namespace lac
 {
+	namespace an
+	{
+		class UserDefined;
+	}
+
 	namespace comp
 	{
 		enum class CompletionFilter
@@ -18,10 +23,12 @@ namespace lac
 		class LAC_API Completion
 		{
 		public:
+			void setUserDefined(lac::an::UserDefined* userDefined);
 			bool updateProgram(std::string_view str, size_t currentPosition = std::string_view::npos);
 			an::ElementsMap getAutoCompletionList(std::string_view str, size_t pos = std::string_view::npos);
 
 		private:
+			lac::an::UserDefined* m_userDefined = nullptr;
 			ast::Block m_rootBlock;
 			an::Scope m_rootScope;
 			pos::Positions<std::string_view::const_iterator> m_positions;

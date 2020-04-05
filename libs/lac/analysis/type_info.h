@@ -26,7 +26,7 @@ namespace lac::an
 	};
 
 	class TypeInfo;
-	class VariableInfo
+	class LAC_API VariableInfo
 	{
 	public:
 		VariableInfo(const VariableInfo& other);
@@ -50,7 +50,7 @@ namespace lac::an
 		std::vector<TypeInfo> results;
 	};
 
-	struct UserType
+	struct LAC_API UserType
 	{
 		std::string name;
 		std::map<std::string, TypeInfo> variables;
@@ -68,6 +68,7 @@ namespace lac::an
 
 		static TypeInfo fromTypeName(std::string_view name); // For used-defined types
 		static TypeInfo fromName(std::string_view name); // For either variable or function names (when we do not yet know) 
+		static TypeInfo createFunction(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results = {});
 
 		// Returns destination if possible, error otherwise
 		TypeInfo convert(Type destination) const;

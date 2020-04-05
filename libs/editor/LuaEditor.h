@@ -7,6 +7,11 @@
 
 class QCompleter;
 
+namespace lac::an
+{
+	class UserDefined;
+}
+
 namespace lac::editor
 {
 	class CompletionModel;
@@ -36,7 +41,8 @@ namespace lac::editor
 	public:
 		LuaEditor(QWidget* parent = nullptr);
 
-		void setDesign(const EditorDesign& design);
+		void setDesign(const EditorDesign& design); // Change the style of the editor
+		void setUserDefined(lac::an::UserDefined* userDefined); // Setup custom types & functions
 
 		EditorHighlighter* highlighter();
 

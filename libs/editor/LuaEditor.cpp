@@ -119,6 +119,11 @@ namespace lac::editor
 								 .arg(design.completion_selection_text_color.name()));
 	}
 
+	void LuaEditor::setUserDefined(lac::an::UserDefined* userDefined)
+	{
+		m_programCompletion.setUserDefined(userDefined);
+	}
+
 	EditorHighlighter* LuaEditor::highlighter()
 	{
 		return m_highlighter;
