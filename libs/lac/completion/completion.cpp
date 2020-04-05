@@ -7,6 +7,7 @@
 #include <lac/parser/parser.h>
 
 #include <doctest/doctest.h>
+#include <cctype>
 
 namespace lac::comp
 {
@@ -27,6 +28,9 @@ namespace lac::comp
 
 			m_rootScope = an::analyseBlock(m_rootBlock);
 		}
+
+		// Always update the boundary of the root block
+		m_rootBlock.end = view.size();
 
 		return ret.parsed;
 	}
@@ -77,7 +81,15 @@ namespace lac::comp
 			if (!pos)
 				return rootScope.getElements();
 
-			auto var = parseVariableAtPos(str, pos - 1); // Do not remove the last part, as it does not exist
+			--pos;
+			// Ignore the whitespace
+			while (pos != 0 && std::isspace(str[pos]))
+				--pos;
+
+			auto var = parseVariableAtPos(str, pos); // Do not remove the last part, as it does not exist
+			if (!var)
+				return {}; // Return an empty map here
+
 			return getAutoCompletionList(*scope, var->variable, filter);
 		}
 
@@ -85,6 +97,7 @@ namespace lac::comp
 		if (!var)
 			return scope->getElements(false);
 
+		// Deduct the filter from the syntax used
 		filter = var->member
 					 ? CompletionFilter::functions
 					 : CompletionFilter::variables;
