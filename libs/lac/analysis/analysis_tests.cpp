@@ -78,6 +78,18 @@ namespace lac
 			CHECK(info.type == Type::number);
 		}
 
+		TEST_CASE("Sequential assignments")
+		{
+			ast::Block block;
+			REQUIRE(test_phrase_parser("x = 42; y = x", parser::chunkRule(), block));
+
+			auto scope = analyseBlock(block);
+			const auto infoX = scope.getVariableType("x");
+			CHECK(infoX.type == Type::number);
+			const auto infoY = scope.getVariableType("y");
+			CHECK(infoY.type == Type::number);
+		}
+
 		TEST_CASE("Multiple assignments")
 		{
 			ast::Block block;

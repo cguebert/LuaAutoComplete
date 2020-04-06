@@ -1,5 +1,6 @@
 #include <lac/analysis/get_type.h>
 #include <lac/analysis/get_sub_type.h>
+#include <lac/analysis/scope.h>
 #include <lac/parser/ast.h>
 
 namespace lac::an
@@ -119,7 +120,7 @@ namespace lac::an
 		{
 			auto type = boost::apply_visitor(*this, pe.start);
 			if (pe.rest.empty())
-				return type;
+				return m_scope.getVariableType(type.name);
 
 			for (const auto& r : pe.rest)
 				type = getSubType(m_scope, type, r);
@@ -130,7 +131,7 @@ namespace lac::an
 		{
 			auto type = boost::apply_visitor(*this, v.start);
 			if (v.rest.empty())
-				return type;
+				return m_scope.getVariableType(type.name);
 
 			for (const auto& r : v.rest)
 				type = getSubType(m_scope, type, r);
