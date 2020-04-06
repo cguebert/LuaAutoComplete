@@ -39,22 +39,6 @@ namespace lac::an
 
 	/****************************************************************************/
 
-	TypeInfo UserType::getVariableType(const std::string& name) const
-	{
-		return variables.count(name)
-				   ? variables.at(name)
-				   : TypeInfo{};
-	}
-
-	FunctionInfo UserType::getMethodType(const std::string& name) const
-	{
-		return methods.count(name)
-				   ? methods.at(name)
-				   : FunctionInfo{};
-	}
-
-	/****************************************************************************/
-
 	TypeInfo::TypeInfo() = default;
 
 	TypeInfo::TypeInfo(Type type)
@@ -116,7 +100,15 @@ namespace lac::an
 
 	TypeInfo::operator bool() const
 	{
-		return type != Type::error;
+		switch (type)
+		{
+		case Type::nil:
+		case Type::unknown:
+		case Type::error:
+			return false;
+		}
+
+		return true;
 	}
 
 	TypeInfo TypeInfo::member(const std::string& name) const

@@ -60,12 +60,12 @@ namespace lac::an
 		return m_scriptEntries;
 	}
 
-	void UserDefined::addType(UserType type)
+	void UserDefined::addType(TypeInfo type)
 	{
 		m_types[type.name] = std::move(type);
 	}
 
-	const UserType* UserDefined::getType(std::string_view name) const
+	const TypeInfo* UserDefined::getType(std::string_view name) const
 	{
 		const auto it = m_types.find(std::string{name});
 		if (it != m_types.end())

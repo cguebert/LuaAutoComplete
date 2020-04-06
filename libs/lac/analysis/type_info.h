@@ -50,16 +50,6 @@ namespace lac::an
 		std::vector<TypeInfo> results;
 	};
 
-	struct LAC_API UserType
-	{
-		std::string name;
-		std::map<std::string, TypeInfo> variables;
-		std::map<std::string, FunctionInfo> methods;
-
-		TypeInfo getVariableType(const std::string& name) const;
-		FunctionInfo getMethodType(const std::string& name) const;
-	};
-
 	class LAC_API TypeInfo
 	{
 	public:
@@ -73,7 +63,7 @@ namespace lac::an
 		// Returns destination if possible, error otherwise
 		TypeInfo convert(Type destination) const;
 
-		// Returns false only if type is error
+		// Returns false if nil, unknown or error
 		operator bool() const;
 
 		Type type = Type::nil;

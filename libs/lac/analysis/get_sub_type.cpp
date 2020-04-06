@@ -35,10 +35,10 @@ namespace lac::an
 			else if (parent.type == Type::userdata)
 			{
 				const auto userType = m_scope.getUserType(parent.name);
-				if (userType.name.empty())
+				if (userType.type != Type::table)
 					return {};
 
-				return userType.getVariableType(tin.name);
+				return userType.member(tin.name);
 			}
 
 			return {};

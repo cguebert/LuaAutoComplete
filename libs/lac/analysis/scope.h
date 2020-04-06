@@ -56,7 +56,7 @@ namespace lac::an
 		void addFunction(std::string_view name, TypeInfo type);
 		TypeInfo getFunctionType(std::string_view name) const;
 
-		UserType getUserType(std::string_view name) const;
+		TypeInfo getUserType(std::string_view name) const;
 
 		Scope& getGlobalScope();
 		void addChildScope(Scope&& scope);

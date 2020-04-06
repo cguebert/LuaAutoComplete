@@ -12,7 +12,7 @@ namespace lac::an
 	public:
 		using Variables = std::map<std::string, TypeInfo>;
 		using Functions = std::map<std::string, TypeInfo>;
-		using Types = std::map<std::string, UserType>;
+		using Types = std::map<std::string, TypeInfo>;
 
 		void addVariable(std::string_view name, TypeInfo type);
 		const TypeInfo* getVariable(std::string_view name) const;
@@ -26,8 +26,8 @@ namespace lac::an
 		const TypeInfo* getScriptInput(std::string_view name) const;
 		const Functions& scriptInputs() const;
 
-		void addType(UserType type);
-		const UserType* getType(std::string_view name) const;
+		void addType(TypeInfo type);
+		const TypeInfo* getType(std::string_view name) const;
 		const Types& types() const;
 
 	private:

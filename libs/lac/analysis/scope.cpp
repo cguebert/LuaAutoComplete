@@ -94,7 +94,7 @@ namespace lac::an
 		return Type::nil;
 	}
 
-	UserType Scope::getUserType(std::string_view name) const
+	TypeInfo Scope::getUserType(std::string_view name) const
 	{
 		if (m_userDefined)
 		{

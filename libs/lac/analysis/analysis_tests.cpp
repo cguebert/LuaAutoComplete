@@ -273,10 +273,10 @@ namespace lac
 		{
 			UserDefined user;
 
-			UserType complexType;
+			TypeInfo complexType = Type::table;
 			complexType.name = "complex";
-			complexType.variables["real"] = Type::number;
-			complexType.variables["imag"] = Type::number;
+			complexType.members["real"] = Type::number;
+			complexType.members["imag"] = Type::number;
 			user.addType(complexType);
 
 			FunctionInfo createComplex;
@@ -313,10 +313,10 @@ namespace lac
 				CHECK(infoX.type == Type::userdata);
 				CHECK(infoX.name == "complex");
 				const auto type = scope.getUserType("complex");
-				CHECK(type.variables.size() == 2);
-				CHECK(type.getVariableType("real").type == Type::number);
-				CHECK(type.getVariableType("imag").type == Type::number);
-				CHECK(type.getVariableType("xxx").type == Type::nil);
+				CHECK(type.members.size() == 2);
+				CHECK(type.member("real").type == Type::number);
+				CHECK(type.member("imag").type == Type::number);
+				CHECK(type.member("xxx").type == Type::nil);
 				const auto infoY = scope.getVariableType("y");
 				CHECK(infoY.type == Type::number);
 			}

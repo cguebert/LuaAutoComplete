@@ -17,11 +17,11 @@ lac::an::UserDefined createUserDefined()
 	mathType.members["min"] = TypeInfo::createFunction({{"x", Type::number}, {"y", Type::number}}, {Type::number});
 	userDefined.addVariable("math", std::move(mathType));
 
-	UserType playerType;
+	TypeInfo playerType = Type::table;
 	playerType.name = "Player";
-	playerType.variables["x"] = Type::number;
-	playerType.variables["y"] = Type::number;
-	playerType.variables["name"] = Type::string;
+	playerType.members["x"] = Type::number;
+	playerType.members["y"] = Type::number;
+	playerType.members["name"] = Type::string;
 	userDefined.addType(playerType);
 	userDefined.addScriptInput("run", {{{"player", TypeInfo::fromTypeName("Player")}}, {}});
 
