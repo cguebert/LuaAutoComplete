@@ -19,8 +19,8 @@ lac::an::UserDefined createUserDefined()
 
 	TypeInfo playerType = Type::table;
 	playerType.name = "Player";
-	playerType.members["x"] = Type::number;
-	playerType.members["y"] = Type::number;
+	playerType.members["pos_x"] = Type::number;
+	playerType.members["pos_y"] = Type::number;
 	playerType.members["name"] = Type::string;
 	userDefined.addType(playerType);
 	userDefined.addScriptInput("run", {{{"player", TypeInfo::fromTypeName("Player")}}, {}});
@@ -60,7 +60,8 @@ myTable.neg = function(a) return -a end
 myTable.mult = function(a) return a * 2 end
 
 function run (player)
-	
+	player.pos_x = player.pos_x + 1
+	player.pos_y = player.pos_y - 0.5
 end
 
 -- Testing user defined types
