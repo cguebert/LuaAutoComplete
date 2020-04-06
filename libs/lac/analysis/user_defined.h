@@ -22,6 +22,10 @@ namespace lac::an
 		const TypeInfo* getFunction(std::string_view name) const;
 		const Functions& functions() const;
 
+		void addScriptInput(std::string_view name, FunctionInfo func); // Setup the signature of a function called by the application
+		const TypeInfo* getScriptInput(std::string_view name) const;
+		const Functions& scriptInputs() const;
+
 		void addType(UserType type);
 		const UserType* getType(std::string_view name) const;
 		const Types& types() const;
@@ -29,6 +33,7 @@ namespace lac::an
 	private:
 		Variables m_variables;
 		Functions m_functions;
+		Functions m_scriptEntries;
 		Types m_types;
 	};
 } // namespace lac::an

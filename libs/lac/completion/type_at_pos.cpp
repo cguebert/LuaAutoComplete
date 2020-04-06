@@ -11,6 +11,9 @@ namespace
 	lac::an::TypeInfo getType(const lac::an::Scope& scope, std::string_view name)
 	{
 		auto info = scope.getVariableType(name);
+		if (info.type == lac::an::Type::userdata)
+			return scope.getUserType(info.name);
+
 		if (info.type != lac::an::Type::nil)
 			return info;
 

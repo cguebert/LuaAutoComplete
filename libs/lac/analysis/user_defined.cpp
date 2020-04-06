@@ -40,6 +40,26 @@ namespace lac::an
 		return m_functions;
 	}
 
+	void UserDefined::addScriptInput(std::string_view name, FunctionInfo func)
+	{
+		TypeInfo info = Type::function;
+		info.function = std::move(func);
+		m_scriptEntries[std::string{name}] = std::move(info);
+	}
+	
+	const TypeInfo* UserDefined::getScriptInput(std::string_view name) const
+	{
+		const auto it = m_scriptEntries.find(std::string{name});
+		if (it != m_scriptEntries.end())
+			return &it->second;
+		return nullptr;
+	}
+	
+	const UserDefined::Functions& UserDefined::scriptInputs() const
+	{
+		return m_scriptEntries;
+	}
+
 	void UserDefined::addType(UserType type)
 	{
 		m_types[type.name] = std::move(type);

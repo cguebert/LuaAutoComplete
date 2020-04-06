@@ -17,6 +17,14 @@ lac::an::UserDefined createUserDefined()
 	mathType.members["min"] = TypeInfo::createFunction({{"x", Type::number}, {"y", Type::number}}, {Type::number});
 	userDefined.addVariable("math", std::move(mathType));
 
+	UserType playerType;
+	playerType.name = "Player";
+	playerType.variables["x"] = Type::number;
+	playerType.variables["y"] = Type::number;
+	playerType.variables["name"] = Type::string;
+	userDefined.addType(playerType);
+	userDefined.addScriptInput("run", {{{"player", TypeInfo::fromTypeName("Player")}}, {}});
+
 	return userDefined;
 }
 
@@ -27,7 +35,7 @@ int main(int argc, char* argv[])
 	auto userDefined = createUserDefined();
 
 	lac::editor::LuaEditor editor;
-	editor.setMinimumSize(600, 400);
+	editor.setMinimumSize(600, 600);
 	editor.setTabStopDistance(30);
 	editor.setUserDefined(&userDefined);
 	editor.highlighter()->useLuaRules();
@@ -50,6 +58,10 @@ myTable.text = "bar"
 myTable.bool = false
 myTable.neg = function(a) return -a end
 myTable.mult = function(a) return a * 2 end
+
+function run (player)
+	
+end
 
 -- Testing user defined types
 x = math.abs(-3.14)

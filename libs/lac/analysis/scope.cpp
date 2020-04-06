@@ -64,6 +64,16 @@ namespace lac::an
 
 	void Scope::addFunction(std::string_view name, TypeInfo type)
 	{
+		if (m_userDefined)
+		{
+			auto inputType = m_userDefined->getScriptInput(name);
+			if (inputType)
+			{
+				// This function is called by the application, and the signature is known
+				m_functions.push_back(FunctionInfo{std::string{name}, *inputType});
+				return;
+			}
+		}
 		m_functions.push_back(FunctionInfo{std::string{name}, std::move(type)});
 	}
 
@@ -114,7 +124,7 @@ namespace lac::an
 		getGlobalScope().m_userDefined = userDefined;
 	}
 
-	UserDefined* Scope::getUserDefined() const
+	const UserDefined* Scope::getUserDefined() const
 	{
 		return m_parent
 				   ? m_parent->getUserDefined()

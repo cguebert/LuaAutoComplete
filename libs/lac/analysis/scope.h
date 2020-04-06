@@ -62,6 +62,7 @@ namespace lac::an
 		void addChildScope(Scope&& scope);
 
 		void setUserDefined(UserDefined* userDefined);
+		const UserDefined* getUserDefined() const;
 
 		const ast::Block* block() const;
 		const std::vector<Scope>& children() const;
@@ -69,8 +70,6 @@ namespace lac::an
 		ElementsMap getElements(bool localOnly = true) const;
 
 	private:
-		UserDefined* getUserDefined() const;
-
 		const ast::Block* m_block = nullptr;
 		Scope* m_parent = nullptr;
 		UserDefined* m_userDefined = nullptr;

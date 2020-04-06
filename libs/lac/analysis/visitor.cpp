@@ -1,6 +1,7 @@
 #include <lac/analysis/visitor.h>
 #include <lac/analysis/scope.h>
 #include <lac/analysis/get_type.h>
+#include <lac/analysis/user_defined.h>
 
 #include <lac/parser/ast.h>
 
@@ -69,13 +70,45 @@ namespace lac::an
 			}
 		}
 
-		void operator()(const ast::FunctionBody& fb) const
+		void operator()(const ast::FunctionBody& fb, std::string_view functionName = {}) const
 		{
 			Scope scope{fb.block, &m_scope};
+			bool isScriptInput = false;
 			if (fb.parameters)
 			{
-				for (const auto& p : fb.parameters->parameters)
-					scope.addVariable(p, Type::unknown);
+				// Test if the function has a defined signature
+				if (!functionName.empty())
+				{
+					const auto userDefined = m_scope.getUserDefined();
+					if (userDefined)
+					{
+						const auto funcType = userDefined->getScriptInput(functionName);
+						if (funcType)
+						{
+							isScriptInput = true;
+
+							// We want to use the given parameter names with the types previously defined
+							const auto& inputParams = funcType->function.parameters;
+							const auto nbInParams = inputParams.size();
+							const auto& funcParams = fb.parameters->parameters;
+							const auto nbFuncParams = funcParams.size();
+							for (size_t i = 0; i < nbFuncParams; ++i)
+							{
+								scope.addVariable(funcParams[i],
+												  i >= nbInParams
+													  ? Type::unknown
+													  : inputParams[i].type());
+							}
+						}
+					}
+				}
+
+				// We do not know the parameter types
+				if (!isScriptInput)
+				{
+					for (const auto& p : fb.parameters->parameters)
+						scope.addVariable(p, Type::unknown);
+				}
 			}
 
 			analyseBlock(scope, fb.block);
@@ -290,14 +323,14 @@ namespace lac::an
 
 			// TODO: support declaration of a table method
 
-			(*this)(s.body);
+			(*this)(s.body, s.name.start); // TODO: also use the full function name here (or empty)
 		}
 
 		void operator()(const ast::LocalFunctionDeclarationStatement& s) const
 		{
 			auto funcType = getType(m_scope, s.body);
 			m_scope.addFunction(s.name, std::move(funcType));
-			(*this)(s.body);
+			(*this)(s.body, s.name);
 		}
 
 		void operator()(const ast::LocalAssignmentStatement& s) const
