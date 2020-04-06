@@ -115,7 +115,7 @@ namespace lac::comp
 		// Deduct the filter from the syntax used
 		filter = var->member
 					 ? CompletionFilter::functions
-					 : CompletionFilter::variables;
+					 : CompletionFilter::none; // Not only variables, but all members
 		return getAutoCompletionList(*scope, removeLastPart(*var), filter);
 	}
 

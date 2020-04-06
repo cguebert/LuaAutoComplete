@@ -272,10 +272,12 @@ end
 			CHECK(getAutoCompletionList(scope, "none").size() == 5);
 			CHECK(getAutoCompletionList(scope, "num").size() == 5);
 
-			CHECK(getAutoCompletionList(scope, "myTable.").size() == 3);
-			CHECK(getAutoCompletionList(scope, "myTable.memberNum").size() == 3);
-			CHECK(getAutoCompletionList(scope, "myTable.dummy").size() == 3);
+			// Return all members
+			CHECK(getAutoCompletionList(scope, "myTable.").size() == 5);
+			CHECK(getAutoCompletionList(scope, "myTable.memberNum").size() == 5);
+			CHECK(getAutoCompletionList(scope, "myTable.dummy").size() == 5);
 
+			// Return only methods
 			CHECK(getAutoCompletionList(scope, "myTable:").size() == 2);
 			CHECK(getAutoCompletionList(scope, "myTable:method1").size() == 2);
 			CHECK(getAutoCompletionList(scope, "myTable:dummy").size() == 2);
@@ -306,10 +308,12 @@ myTable.m_func2 = function(a) return a * 2 end
 			CHECK(completion.getAutoCompletionList("none").size() == 5);
 			CHECK(completion.getAutoCompletionList("num").size() == 5);
 
-			CHECK(completion.getAutoCompletionList("myTable.").size() == 3);
-			CHECK(completion.getAutoCompletionList("myTable.memberNum").size() == 3);
-			CHECK(completion.getAutoCompletionList("myTable.dummy").size() == 3);
+			// Return all members
+			CHECK(completion.getAutoCompletionList("myTable.").size() == 5);
+			CHECK(completion.getAutoCompletionList("myTable.memberNum").size() == 5);
+			CHECK(completion.getAutoCompletionList("myTable.dummy").size() == 5);
 
+			// Return only methods
 			CHECK(completion.getAutoCompletionList("myTable:").size() == 2);
 			CHECK(completion.getAutoCompletionList("myTable:method1").size() == 2);
 			CHECK(completion.getAutoCompletionList("myTable:dummy").size() == 2);
