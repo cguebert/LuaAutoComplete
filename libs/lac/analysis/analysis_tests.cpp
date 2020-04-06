@@ -279,11 +279,12 @@ namespace lac
 			complexType.members["imag"] = Type::number;
 			user.addType(complexType);
 
-			FunctionInfo createComplex;
-			createComplex.parameters = {{"real", Type::number},
-										{"imag", Type::number}};
-			createComplex.results.emplace_back(TypeInfo::fromTypeName("complex"));
-			user.addFreeFunction("createComplex", createComplex);
+			user.addFreeFunction("createComplex", {{{"real", Type::number},
+													{"imag", Type::number}},
+												   {TypeInfo::fromTypeName("complex")}});
+
+			user.addScriptInput("run", {{{"num", Type::number},
+										 {"name", Type::string}}});
 
 			Scope parentScope;
 			parentScope.setUserDefined(&user);
@@ -319,6 +320,18 @@ namespace lac
 				CHECK(type.member("xxx").type == Type::nil);
 				const auto infoY = scope.getVariableType("y");
 				CHECK(infoY.type == Type::number);
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("function run(i, n) print(n) end", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				REQUIRE(scope.children().size() == 1);
+				const auto& funcScope = scope.children().front();
+				const auto infoI = funcScope.getVariableType("i");
+				CHECK(infoI.type == Type::number);
+				const auto infoN = funcScope.getVariableType("n");
+				CHECK(infoN.type == Type::string);
 			}
 		}
 
