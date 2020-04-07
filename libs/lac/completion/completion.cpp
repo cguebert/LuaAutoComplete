@@ -25,6 +25,26 @@ namespace lac::comp
 			currentPosition = view.size() - 1;
 
 		auto ret = lac::parser::parseBlock(view);
+		if (!ret.parsed)
+		{
+			// Remove the current line and retry
+			std::string str{view};
+			auto start = str.find_last_of("\t\r\n;", currentPosition);
+			auto end = str.find_first_of("\t\r\n;", currentPosition);
+			if (start != std::string::npos || end != std::string::npos)
+			{
+				if (start == std::string::npos)
+					start = 0;
+				if (end == std::string::npos)
+					end = view.size() - 1;
+				++start;                                           // Start after the white space
+				if (start < end)
+					str.replace(start, end - start, end - start, ' '); // Replace the current line with spaces
+
+				// Retry
+				ret = lac::parser::parseBlock(str);
+			}
+		}
 
 		if (ret.parsed)
 		{
