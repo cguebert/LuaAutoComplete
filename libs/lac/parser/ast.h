@@ -68,8 +68,7 @@ namespace lac::ast
 	// Position of the item in the input stream
 	struct PositionAnnotated
 	{
-		size_t begin = 0;
-		mutable size_t end = 0; // We may have to move the end position after parsing
+		mutable size_t begin = 0, end = 0; // We may have to extend the positions after parsing
 	};
 
 	template <ElementType element>

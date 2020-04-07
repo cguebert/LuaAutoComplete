@@ -186,12 +186,29 @@ namespace lac::comp
 		auto block = scope.block();
 		if (!block)
 			return;
-		auto it = helper::upper_bound(elements, block->end, [](size_t pos, const pos::Element& elt) {
+
+		// Filter only the keyword in the list of elements
+		pos::Elements keywords;
+		std::copy_if(elements.begin(), elements.end(), std::back_inserter(keywords), [](const pos::Element& elt) {
+			return elt.type == ast::ElementType::keyword;
+		});
+
+		// Find the keyword just before the start of the block
+		auto reversed = helper::reverse{elements};
+		auto itStart = helper::upper_bound(reversed, block->begin, [](size_t pos, const pos::Element& elt) {
+			return pos > elt.end;
+		});
+		if (itStart != reversed.end())
+			block->begin = itStart->end;
+
+		// Find the keyword just after the end of the block
+		auto itEnd = helper::upper_bound(keywords, block->end, [](size_t pos, const pos::Element& elt) {
 			return pos < elt.begin;
 		});
-		if (it != elements.end())
-			block->end = it->begin;
+		if (itEnd != keywords.end())
+			block->end = itEnd->begin;
 
+		// Process the children blocks
 		for (const auto& child : scope.children())
 			extendBlock(child, elements);
 	}
