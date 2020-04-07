@@ -46,5 +46,7 @@ namespace lac
 		an::ElementsMap getAutoCompletionList(const an::Scope& rootScope, std::string_view str, size_t pos = std::string_view::npos);
 		an::ElementsMap getAutoCompletionList(const an::Scope& localScope, const boost::optional<ast::Variable>& var, CompletionFilter filter = CompletionFilter::none);
 
+		// Extend the block in the scope until the following keyword (and recurse over children)
+		void extendBlock(const an::Scope& scope, const pos::Elements& elements);
 	} // namespace comp
 } // namespace lac

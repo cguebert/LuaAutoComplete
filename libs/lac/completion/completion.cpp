@@ -5,6 +5,7 @@
 #include <lac/completion/variable_at_pos.h>
 #include <lac/parser/chunk.h>
 #include <lac/parser/parser.h>
+#include <lac/helper/algorithm.h>
 
 #include <doctest/doctest.h>
 #include <cctype>
@@ -54,6 +55,9 @@ namespace lac::comp
 			m_rootScope = an::Scope{m_rootBlock};
 			m_rootScope.setUserDefined(m_userDefined);
 			an::analyseBlock(m_rootScope, m_rootBlock);
+
+			// Extend each block until the following keyword
+			extendBlock(m_rootScope, m_positions.elements());
 		}
 
 		// Always update the boundary of the root block
@@ -176,4 +180,19 @@ namespace lac::comp
 			return {};
 		return removeLastPart(*var);
 	};
+
+	void extendBlock(const an::Scope& scope, const pos::Elements& elements)
+	{
+		auto block = scope.block();
+		if (!block)
+			return;
+		auto it = helper::upper_bound(elements, block->end, [](size_t pos, const pos::Element& elt) {
+			return pos < elt.begin;
+		});
+		if (it != elements.end())
+			block->end = it->begin;
+
+		for (const auto& child : scope.children())
+			extendBlock(child, elements);
+	}
 } // namespace lac::comp
