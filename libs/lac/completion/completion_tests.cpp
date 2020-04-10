@@ -274,6 +274,10 @@ end
 			CHECK(getAutoCompletionList(scope, "none").size() == 5);
 			CHECK(getAutoCompletionList(scope, "num").size() == 5);
 
+			// A nil table has no members
+			CHECK(getAutoCompletionList(scope, "noTable.test").size() == 0);
+			CHECK(getAutoCompletionList(scope, "noTable:test").size() == 0);
+
 			// Return all members
 			CHECK(getAutoCompletionList(scope, "myTable.").size() == 5);
 			CHECK(getAutoCompletionList(scope, "myTable.memberNum").size() == 5);

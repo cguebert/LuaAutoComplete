@@ -151,7 +151,7 @@ namespace lac::comp
 
 		const auto info = getVariableType(localScope, *var);
 		if (info.type == an::Type::nil)
-			return localScope.getElements(false);
+			return {}; // Cannot return members as this is not a known table
 
 		if (filter == CompletionFilter::none)
 			return getElements(info);
