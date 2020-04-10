@@ -319,6 +319,25 @@ myTable.m_func2 = function(a) return a * 2 end
 			CHECK(completion.getAutoCompletionList("myTable:dummy").size() == 2);
 		}
 
+		TEST_CASE("Completion with errors")
+		{
+			// This program does not compile because of an error on line 2
+			// but if we tell Completion that we are currently editing that line
+			// it will remove it and the program can compile
+			std::string program = R"~~(
+function test(first, second)
+	fir
+end
+)~~";
+
+			Completion completion;
+			REQUIRE_FALSE(completion.updateProgram(program));
+			REQUIRE(completion.updateProgram(program, 32));
+
+			auto list = completion.getAutoCompletionList(program, 32);
+			CHECK(list.count("first") == 1);
+		}
+
 		TEST_SUITE_END();
 	} // namespace comp
 } // namespace lac
