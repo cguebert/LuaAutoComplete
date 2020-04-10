@@ -298,14 +298,14 @@ namespace lac
 			UserDefined user;
 
 			TypeInfo complexType = Type::table;
-			complexType.name = "complex";
+			complexType.name = "Complex";
 			complexType.members["real"] = Type::number;
 			complexType.members["imag"] = Type::number;
 			user.addType(complexType);
 
 			user.addFreeFunction("createComplex", {{{"real", Type::number},
 													{"imag", Type::number}},
-												   {TypeInfo::fromTypeName("complex")}});
+												   {TypeInfo::fromTypeName("Complex")}});
 
 			user.addScriptInput("run", {{{"num", Type::number},
 										 {"name", Type::string}}});
@@ -319,7 +319,7 @@ namespace lac
 				const auto scope = analyseBlock(block, &parentScope);
 				const auto info = scope.getVariableType("x");
 				CHECK(info.type == Type::userdata);
-				CHECK(info.name == "complex");
+				CHECK(info.name == "Complex");
 			}
 
 			{
@@ -336,8 +336,8 @@ namespace lac
 				const auto scope = analyseBlock(block, &parentScope);
 				const auto infoX = scope.getVariableType("x");
 				CHECK(infoX.type == Type::userdata);
-				CHECK(infoX.name == "complex");
-				const auto type = scope.getUserType("complex");
+				CHECK(infoX.name == "Complex");
+				const auto type = scope.getUserType(infoX.name);
 				CHECK(type.members.size() == 2);
 				CHECK(type.member("real").type == Type::number);
 				CHECK(type.member("imag").type == Type::number);
@@ -356,6 +356,66 @@ namespace lac
 				CHECK(infoI.type == Type::number);
 				const auto infoN = funcScope.getVariableType("n");
 				CHECK(infoN.type == Type::string);
+			}
+		}
+
+		TEST_CASE("User defined complex")
+		{
+			UserDefined userDefined;
+			TypeInfo vec3Type = Type::table;
+			vec3Type.name = "Vector3";
+			vec3Type.members["x"] = Type::number;
+			vec3Type.members["y"] = Type::number;
+			vec3Type.members["z"] = Type::number;
+			vec3Type.members["length"] = TypeInfo::createFunction({}, {Type::number});
+			vec3Type.members["mult"] = TypeInfo::createFunction({{"v", Type::number}}, {TypeInfo::fromTypeName("Vector3")});
+			userDefined.addType(std::move(vec3Type));
+
+			TypeInfo playerType = Type::table;
+			playerType.name = "Player";
+			playerType.members["name"] = Type::string;
+			playerType.members["id"] = TypeInfo::createFunction({}, {Type::number});
+			playerType.members["position"] = TypeInfo::createFunction({}, {TypeInfo::fromTypeName("Vector3")});
+			playerType.members["setPosition"] = TypeInfo::createFunction({{"position", TypeInfo::fromTypeName("Vector3")}}, {});
+			userDefined.addType(std::move(playerType));
+
+			userDefined.addFreeFunction("getPlayer", {{}, {TypeInfo::fromTypeName("Player")}});
+
+			Scope parentScope;
+			parentScope.setUserDefined(&userDefined);
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local player = getPlayer()", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("player");
+				CHECK(info.type == Type::userdata);
+				CHECK(info.name == "Player");
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local name = getPlayer().name", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("name");
+				CHECK(info.type == Type::string);
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local pos = getPlayer():position()", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("pos");
+				CHECK(info.type == Type::userdata);
+				CHECK(info.name == "Vector3");
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local len = getPlayer():position().length()", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("len");
+				CHECK(info.type == Type::number);
 			}
 		}
 

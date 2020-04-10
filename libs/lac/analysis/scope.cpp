@@ -131,6 +131,13 @@ namespace lac::an
 				   : m_userDefined;
 	}
 
+	TypeInfo Scope::resolve(const TypeInfo& type) const
+	{
+		if (type.type == Type::userdata)
+			return getUserType(type.name);
+		return type;
+	}
+
 	const ast::Block* Scope::block() const
 	{
 		return m_block;

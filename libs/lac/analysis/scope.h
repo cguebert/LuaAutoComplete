@@ -63,6 +63,7 @@ namespace lac::an
 
 		void setUserDefined(UserDefined* userDefined);
 		const UserDefined* getUserDefined() const;
+		TypeInfo resolve(const TypeInfo& type) const; // If the given type is userdata, return the corresponding table, else no change
 
 		const ast::Block* block() const;
 		const std::vector<Scope>& children() const;

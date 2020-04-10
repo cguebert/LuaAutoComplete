@@ -25,28 +25,15 @@ namespace lac::an
 
 		TypeInfo operator()(const ast::TableIndexName& tin) const
 		{
-			const auto parent = parentAsVariable();
-			if (parent.type == Type::table)
-			{
-				return parent.members.count(tin.name)
-						   ? parent.members.at(tin.name)
-						   : TypeInfo{};
-			}
-			else if (parent.type == Type::userdata)
-			{
-				const auto userType = m_scope.getUserType(parent.name);
-				if (userType.type != Type::table)
-					return {};
-
-				return userType.member(tin.name);
-			}
-
-			return {};
+			return parentAsVariable().member(tin.name);
 		}
 
 		TypeInfo operator()(const ast::FunctionCallEnd& fce) const
 		{
-			const auto parent = parentAsFunction();
+			const auto parent = fce.member
+									? parentAsVariable().member(*fce.member)
+									: parentAsFunction();
+
 			if (parent.function.results.empty())
 				return {};
 			return parent.function.results.front(); // TODO: return all results
@@ -67,8 +54,8 @@ namespace lac::an
 		TypeInfo parentAsVariable() const
 		{
 			if (m_parentType.type == Type::string)
-				return m_scope.getVariableType(m_parentType.name);
-			return m_parentType;
+				return m_scope.resolve(m_scope.getVariableType(m_parentType.name));
+			return m_scope.resolve(m_parentType);
 		}
 
 		TypeInfo parentAsFunction() const
