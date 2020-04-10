@@ -53,14 +53,14 @@ namespace lac::an
 	private:
 		TypeInfo parentAsVariable() const
 		{
-			if (m_parentType.type == Type::string)
+			if (m_parentType.type == Type::unknown && !m_parentType.name.empty())
 				return m_scope.resolve(m_scope.getVariableType(m_parentType.name));
 			return m_scope.resolve(m_parentType);
 		}
 
 		TypeInfo parentAsFunction() const
 		{
-			if (m_parentType.type == Type::string)
+			if (m_parentType.type == Type::unknown && !m_parentType.name.empty())
 				return m_scope.getFunctionType(m_parentType.name);
 			return m_parentType;
 		}

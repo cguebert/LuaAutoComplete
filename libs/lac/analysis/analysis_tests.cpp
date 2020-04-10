@@ -412,7 +412,7 @@ namespace lac
 
 			{
 				ast::Block block;
-				REQUIRE(test_phrase_parser("local len = getPlayer():position().length()", parser::chunkRule(), block));
+				REQUIRE(test_phrase_parser("local len = getPlayer():position():length()", parser::chunkRule(), block));
 				const auto scope = analyseBlock(block, &parentScope);
 				const auto info = scope.getVariableType("len");
 				CHECK(info.type == Type::number);
