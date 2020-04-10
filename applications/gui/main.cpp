@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 	lac::editor::LuaEditor editor;
 	editor.setMinimumSize(600, 600);
 	editor.setTabStopDistance(30);
-	editor.setUserDefined(&userDefined);
+	editor.setUserDefined(userDefined);
 	editor.highlighter()->useLuaRules();
 	editor.setPlainText(R"~~(--Test program
 num = 42

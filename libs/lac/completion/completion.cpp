@@ -12,9 +12,9 @@
 
 namespace lac::comp
 {
-	void Completion::setUserDefined(lac::an::UserDefined* userDefined)
+	void Completion::setUserDefined(lac::an::UserDefined userDefined)
 	{
-		m_userDefined = userDefined;
+		m_userDefined = std::move(userDefined);
 	}
 
 	bool Completion::updateProgram(std::string_view view, size_t currentPosition)
@@ -38,7 +38,7 @@ namespace lac::comp
 					start = 0;
 				if (end == std::string::npos)
 					end = view.size() - 1;
-				++start;                                           // Start after the white space
+				++start; // Start after the white space
 				if (start < end)
 					str.replace(start, end - start, end - start, ' '); // Replace the current line with spaces
 
@@ -53,7 +53,8 @@ namespace lac::comp
 			std::swap(m_positions, ret.positions);
 
 			m_rootScope = an::Scope{m_rootBlock};
-			m_rootScope.setUserDefined(m_userDefined);
+			if (m_userDefined)
+				m_rootScope.setUserDefined(&m_userDefined.get());
 			an::analyseBlock(m_rootScope, m_rootBlock);
 
 			// Extend each block until the following keyword

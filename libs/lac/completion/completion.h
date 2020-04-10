@@ -3,14 +3,12 @@
 #include <lac/parser/ast.h>
 #include <lac/parser/positions.h>
 #include <lac/analysis/scope.h>
+#include <lac/analysis/user_defined.h>
+
+#include <boost/optional.hpp>
 
 namespace lac
 {
-	namespace an
-	{
-		class UserDefined;
-	}
-
 	namespace comp
 	{
 		enum class CompletionFilter
@@ -23,14 +21,14 @@ namespace lac
 		class LAC_API Completion
 		{
 		public:
-			void setUserDefined(lac::an::UserDefined* userDefined);
+			void setUserDefined(lac::an::UserDefined userDefined);
 
 			bool updateProgram(std::string_view str, size_t currentPosition = std::string_view::npos);
 			an::ElementsMap getAutoCompletionList(std::string_view str, size_t pos = std::string_view::npos);
 			an::TypeInfo getTypeAtPos(std::string_view str, size_t pos);
 
 		private:
-			lac::an::UserDefined* m_userDefined = nullptr;
+			boost::optional<lac::an::UserDefined> m_userDefined;
 			ast::Block m_rootBlock;
 			an::Scope m_rootScope;
 			pos::Positions<std::string_view::const_iterator> m_positions;
