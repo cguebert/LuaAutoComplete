@@ -169,7 +169,7 @@ namespace lac::an
 			Element elt;
 			elt.local = local;
 			elt.name = name;
-			elt.elementType = ElementType::label;
+			elt.elementType = ElementType::function;
 			elt.typeInfo = type;
 			elements[name] = std::move(elt);
 		};

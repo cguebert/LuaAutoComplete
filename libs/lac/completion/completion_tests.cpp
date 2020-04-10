@@ -198,7 +198,8 @@ end
 			auto ptr = pos::getScopeAtPos(scope, 30);
 			REQUIRE(ptr);
 			auto elements = ptr->getElements();
-			CHECK(elements.size() == 1);
+			CHECK(elements.size() == 2);
+			CHECK(elements.count("split_path"));
 			CHECK(elements.count("str"));
 
 			ptr = pos::getScopeAtPos(scope, 310);
@@ -211,7 +212,8 @@ end
 			ptr = pos::getScopeAtPos(scope, 350);
 			REQUIRE(ptr);
 			elements = ptr->getElements();
-			CHECK(elements.size() == 4);
+			CHECK(elements.size() == 5);
+			CHECK(elements.count("myFunc"));
 			CHECK(elements.count("testValue"));
 			CHECK(elements.count("x"));
 			CHECK(elements.count("y"));

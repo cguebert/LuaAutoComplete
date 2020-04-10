@@ -132,6 +132,18 @@ namespace lac
 			CHECK(fd.parameters[1].name() == "y");
 		}
 
+		TEST_CASE("Function scope")
+		{
+			ast::Block block;
+			REQUIRE(test_phrase_parser("function func(x, y) return x + y end", parser::chunkRule(), block));
+
+			auto scope = analyseBlock(block);
+			REQUIRE(scope.children().size() == 1);
+			const auto& child = scope.children().front();
+			CHECK(child.getVariableType("x").type == Type::unknown);
+			CHECK(child.getFunctionType("func").type == Type::function); // A function is known inside itself (for recursive functions)
+		}
+
 		TEST_CASE("Local function definition")
 		{
 			ast::Block block;

@@ -108,6 +108,9 @@ namespace lac::an
 				{
 					for (const auto& p : fb.parameters->parameters)
 						scope.addVariable(p, Type::unknown);
+
+					if (!functionName.empty())
+						scope.addFunction(functionName, m_scope.getFunctionType(functionName)); // The function can be called recursively
 				}
 			}
 
