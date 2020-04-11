@@ -19,7 +19,9 @@ namespace lac::comp
 		if (pos == std::string_view::npos)
 			pos = view.size() - 1;
 
-		if (pos >= view.size() || !isName(view[pos]))
+		if (pos >= view.size()
+			|| !(isName(view[pos])
+				 || view[pos] == ')'))
 			return {};
 
 		auto pe = pos, ps = pos;
@@ -41,29 +43,41 @@ namespace lac::comp
 			int nbParen = 0;
 			while (ps != 0)
 			{
+				--ps;
+
 				// TODO: test if the parenthesis is inside a litteral string
-				if (view[ps - 1] == ')')
+				if (view[ps] == ')')
 					++nbParen;
-				else if (view[ps - 1] == '(')
+				else if (view[ps] == '(')
 				{
 					--nbParen;
 					if (!nbParen)
 						break;
 				}
-				--ps;
 			}
 		};
 
-		// Go to the end of the name
-		while (pe < view.size() && isName(view[pe]))
-			++pe;
+		if (isName(view[pos]))
+		{
+			// Go to the end of the name
+			while (pe < view.size() && isName(view[pe]))
+				++pe;
 
-		// Go to the start of the name
-		goToNameStart();
+			// Go to the start of the name
+			goToNameStart();
 
-		// Cannot go to the left
-		if (ps < 2)
-			return view.substr(ps, pe - ps);
+			// Cannot go to the left
+			if (ps < 2)
+				return view.substr(ps, pe - ps);
+		}
+		else if (view[pos] == ')')
+		{
+			ps = pe = pos + 1;
+			ignoreFunctionCall();
+			ignoreWhiteSpace();
+			goToNameStart();
+			pos = ps;
+		}
 
 		// Test the next character to the left and see if we must continue
 		while (pos > 1)
@@ -78,11 +92,8 @@ namespace lac::comp
 				ignoreWhiteSpace();
 
 				if (view[ps - 1] == ')')
-				{
-					--ps;
 					ignoreFunctionCall();
-				}
-				
+
 				ignoreWhiteSpace();
 				goToNameStart();
 				pos = ps;
@@ -102,7 +113,8 @@ namespace lac::comp
 		if (extracted.empty())
 			return {};
 
-		if (auto ret = parser::parseVariable(extracted); ret.parsed)
+		auto ret = parser::parseVariable(extracted);
+		if (ret.parsed)
 			return ret.variable;
 		return {};
 	}
@@ -184,7 +196,10 @@ namespace lac::comp
 
 	TEST_CASE("With function call")
 	{
+		CHECK(extractVariableAtPos("foo()", 4) == "foo()");
+		CHECK(extractVariableAtPos("test foo()", 9) == "foo()");
 		CHECK(extractVariableAtPos("foo().bar", 8) == "foo().bar");
+		CHECK(extractVariableAtPos("test foo().bar", 12) == "foo().bar");
 		CHECK(extractVariableAtPos("foo ( ) . bar", 11) == "foo ( ) . bar");
 		CHECK(extractVariableAtPos("foo(a, 42, false).bar", 20) == "foo(a, 42, false).bar");
 		CHECK(extractVariableAtPos("foo('anything here').bar", 23) == "foo('anything here').bar");
@@ -192,6 +207,11 @@ namespace lac::comp
 		CHECK(extractVariableAtPos("foo():bar.test", 8) == "foo():bar");
 		CHECK(extractVariableAtPos("foo().bar.test", 12) == "foo().bar.test");
 		CHECK(extractVariableAtPos("foo():bar.test", 12) == "foo():bar.test");
+		CHECK(extractVariableAtPos("foo.bar().test", 12) == "foo.bar().test");
+		CHECK(extractVariableAtPos("foo():bar().test", 14) == "foo():bar().test");
+		CHECK(extractVariableAtPos("first():second():third():fourth", 12) == "first():second");
+		CHECK(extractVariableAtPos("first():second():third():fourth", 20) == "first():second():third");
+		CHECK(extractVariableAtPos("first():second():third():fourth", 30) == "first():second():third():fourth");
 	}
 
 	TEST_SUITE_END();

@@ -77,7 +77,7 @@ namespace lac::comp
 		return comp::getTypeAtPos(m_rootScope, str, pos);
 	}
 
-	boost::optional<ast::Variable> removeLastPart(ast::VariableOrFunction var)
+	boost::optional<ast::VariableOrFunction> removeLastPart(ast::VariableOrFunction var)
 	{
 		// TODO: what can we do if the start is a bracketed expression?
 		if (var.variable.start.get().type() != typeid(std::string))
@@ -85,14 +85,24 @@ namespace lac::comp
 
 		// If there is a member function, remove it and return the rest as is
 		if (var.member)
-			return var.variable;
+		{
+			var.member.reset();
+			return var;
+		}
+
+		// If there is a function call, remove it and return the rest as is
+		if (var.functionCall)
+		{
+			var.functionCall.reset();
+			return var;
+		}
 
 		// Else we must remove the last part of the variable
 		if (var.variable.rest.empty())
 			return {}; // There is nothing left
 
 		var.variable.rest.pop_back();
-		return var.variable;
+		return var;
 	}
 
 	an::ElementsMap getAutoCompletionList(const an::Scope& rootScope, std::string_view str, size_t pos)
@@ -130,7 +140,7 @@ namespace lac::comp
 			if (!var)
 				return {}; // Return an empty map here
 
-			return getAutoCompletionList(*scope, var->variable, filter);
+			return getAutoCompletionList(*scope, var, filter);
 		}
 
 		auto var = parseVariableAtPos(str, pos);
@@ -144,7 +154,7 @@ namespace lac::comp
 		return getAutoCompletionList(*scope, removeLastPart(*var), filter);
 	}
 
-	an::ElementsMap getAutoCompletionList(const an::Scope& localScope, const boost::optional<ast::Variable>& var, CompletionFilter filter)
+	an::ElementsMap getAutoCompletionList(const an::Scope& localScope, const boost::optional<ast::VariableOrFunction>& var, CompletionFilter filter)
 	{
 		if (!var)
 			return localScope.getElements(false);
@@ -162,19 +172,14 @@ namespace lac::comp
 							   : an::ElementType::function);
 	}
 
-	boost::optional<ast::Variable> getContext(std::string_view str, size_t pos)
+	boost::optional<ast::VariableOrFunction> getContext(std::string_view str, size_t pos)
 	{
 		if (pos == std::string_view::npos)
 			pos = str.size() - 1;
 		if (pos >= str.size())
 			return {};
 		if (str[pos] == '.' || str[pos] == ':')
-		{
-			auto var = parseVariableAtPos(str, pos - 1); // Do not remove the last part, as it does not exist
-			if (var)
-				return var->variable;
-			return {};
-		}
+			return parseVariableAtPos(str, pos - 1); // Do not remove the last part, as it does not exist
 
 		auto var = parseVariableAtPos(str, pos);
 		if (!var)

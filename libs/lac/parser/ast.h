@@ -290,6 +290,7 @@ namespace lac::ast
 	struct VariableOrFunction
 	{
 		Variable variable;
+		boost::optional<FunctionCallEnd> functionCall;
 		boost::optional<FunctionNameMember> member;
 	};
 

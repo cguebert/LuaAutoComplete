@@ -393,7 +393,9 @@ namespace lac::parser
 
 	const auto variablesList_def = variable % ',';
 
-	const auto variableOrFunction_def = variable >> -functionNameMember;
+	const auto variableOrFunction_def = variable
+										>> -functionCallEnd
+										>> -functionNameMember;
 
 	// Expressions
 	const auto simpleExpression_def = expressionConstant

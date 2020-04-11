@@ -1,3 +1,4 @@
+#include <lac/analysis/user_defined.h>
 #include <lac/analysis/visitor.h>
 #include <lac/completion/type_at_pos.h>
 #include <lac/completion/variable_at_pos.h>
@@ -19,12 +20,33 @@ namespace
 
 		return scope.getFunctionType(name);
 	}
+
+	lac::an::TypeInfo processPostFix(const lac::an::Scope& scope, lac::an::TypeInfo type, const lac::ast::VariablePostfix& vpf)
+	{
+		if (vpf.get().type() == typeid(lac::ast::TableIndexName))
+			return scope.resolve(type.member(boost::get<lac::ast::TableIndexName>(vpf).name));
+		else if (vpf.get().type() == typeid(lac::ast::VariableFunctionCall))
+		{
+			const auto fc = boost::get<lac::ast::f_VariableFunctionCall>(vpf).get();
+			if (fc.functionCall.member)
+				type = type.member(*fc.functionCall.member);
+			if (type.function.results.empty())
+				return lac::an::Type::unknown;
+			type = scope.resolve(type.function.results.front());
+			return processPostFix(scope, type, fc.postVariable);
+		}
+		else
+			return lac::an::Type::unknown;
+	}
 } // namespace
 
 namespace lac::comp
 {
 	an::TypeInfo getTypeAtPos(std::string_view view, size_t pos)
 	{
+		if (pos == std::string_view::npos)
+			pos = view.size() - 1;
+
 		// Parse the program
 		const auto ret = parser::parseBlock(view);
 		if (!ret.parsed)
@@ -37,6 +59,9 @@ namespace lac::comp
 
 	an::TypeInfo getTypeAtPos(const an::Scope& rootScope, std::string_view view, size_t pos)
 	{
+		if (pos == std::string_view::npos)
+			pos = view.size() - 1;
+
 		// Parse what is under the cursor
 		const auto var = parseVariableAtPos(view, pos);
 		if (!var)
@@ -60,12 +85,7 @@ namespace lac::comp
 		if (!var.rest.empty())
 		{
 			for (const auto& r : var.rest)
-			{
-				if (r.get().type() != typeid(ast::TableIndexName))
-					return an::Type::unknown;
-
-				type = type.member(boost::get<ast::TableIndexName>(r).name);
-			}
+				type = processPostFix(localScope, type, r);
 		}
 
 		return type;
@@ -73,7 +93,16 @@ namespace lac::comp
 
 	an::TypeInfo getVariableType(const an::Scope& localScope, const ast::VariableOrFunction& var)
 	{
-		const auto type = getVariableType(localScope, var.variable);
+		auto type = getVariableType(localScope, var.variable);
+		if (var.functionCall)
+		{
+			if (var.functionCall->member)
+				type = type.member(*var.functionCall->member);
+
+			if (type.function.results.empty())
+				return an::Type::unknown;
+			type = localScope.resolve(type.function.results.front());
+		}
 		return var.member
 				   ? type.member(var.member->name)
 				   : type;

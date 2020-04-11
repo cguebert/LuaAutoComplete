@@ -797,11 +797,13 @@ namespace lac::parser
 		CHECK(test_phrase_parser("a(b)[c]:d().e", variableOrFunction));
 		CHECK(test_phrase_parser("a(b)[c]:d()[e]", variableOrFunction));
 
+		// These are accepted thanks to the optional function call
+		CHECK(test_phrase_parser("a(b)", variableOrFunction));
+		CHECK(test_phrase_parser("a(b):c", variableOrFunction));
+
+		// These are accepted thanks to the optional member
 		CHECK(test_phrase_parser("a:b", variableOrFunction));
 		CHECK(test_phrase_parser("a(b)[c]:d", variableOrFunction));
-
-		CHECK_FALSE(test_phrase_parser("a(b)", variableOrFunction));
-		CHECK_FALSE(test_phrase_parser("a(b):c", variableOrFunction));
 	}
 
 	TEST_CASE("empty statement")

@@ -87,6 +87,9 @@ namespace lac::ast
 		for (const auto& r : var->variable.rest)
 			str += '.' + boost::get<TableIndexName>(r).name;
 
+		if (var->functionCall)
+			str += "(...)";
+
 		if (var->member)
 			str += ':' + var->member->name;
 
@@ -342,6 +345,66 @@ end
 
 			auto list = completion.getAutoCompletionList(program, 32);
 			CHECK(list.count("first") == 1);
+		}
+
+		TEST_CASE("Completion with user defined types")
+		{
+			using namespace lac::an;
+			UserDefined userDefined;
+			TypeInfo vec3Type = Type::table;
+			vec3Type.name = "Vector3";
+			vec3Type.members["x"] = Type::number;
+			vec3Type.members["y"] = Type::number;
+			vec3Type.members["z"] = Type::number;
+			vec3Type.members["length"] = TypeInfo::createFunction({}, {Type::number});
+			vec3Type.members["mult"] = TypeInfo::createFunction({{"v", Type::number}}, {TypeInfo::fromTypeName("Vector3")});
+			userDefined.addType(std::move(vec3Type));
+
+			TypeInfo playerType = Type::table;
+			playerType.name = "Player";
+			playerType.members["name"] = Type::string;
+			playerType.members["id"] = TypeInfo::createFunction({}, {Type::number});
+			playerType.members["position"] = TypeInfo::createFunction({}, {TypeInfo::fromTypeName("Vector3")});
+			playerType.members["setPosition"] = TypeInfo::createFunction({{"position", TypeInfo::fromTypeName("Vector3")}}, {});
+			userDefined.addType(std::move(playerType));
+
+			userDefined.addScriptInput("run", {{{"player", TypeInfo::fromTypeName("Player")}}, {}});
+
+			std::string program = R"~~(
+function run(player)
+	local len = player:position():length()
+	if len > 500 then
+		local newPos = player:position():mult(500 / len)
+		player:setPosition(newPos)
+	end
+end
+)~~";
+
+			Completion completion;
+			completion.setUserDefined(userDefined);
+			REQUIRE(completion.updateProgram(program));
+
+			auto list = completion.getAutoCompletionList(program, 41); // player:
+			CHECK(list.size() == 3);
+			CHECK(list.count("id"));
+			CHECK(list.count("position"));
+			CHECK(list.count("setPosition"));
+
+			list = completion.getAutoCompletionList(program, 44); // player:pos
+			CHECK(list.size() == 3);
+			CHECK(list.count("id"));
+			CHECK(list.count("position"));
+			CHECK(list.count("setPosition"));
+
+			list = completion.getAutoCompletionList(program, 52); // player:position():
+			CHECK(list.size() == 2);
+			CHECK(list.count("length"));
+			CHECK(list.count("mult"));
+
+			list = completion.getAutoCompletionList(program, 55); // player:position():len
+			CHECK(list.size() == 2);
+			CHECK(list.count("length"));
+			CHECK(list.count("mult"));
 		}
 
 		TEST_SUITE_END();

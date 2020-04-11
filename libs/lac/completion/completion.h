@@ -35,14 +35,14 @@ namespace lac
 		};
 
 		// Remove the last member of the variable. If not possible, return empty.
-		boost::optional<ast::Variable> removeLastPart(ast::VariableOrFunction var);
+		boost::optional<ast::VariableOrFunction> removeLastPart(ast::VariableOrFunction var);
 
 		// Return the "parent" variable at the current position
-		boost::optional<ast::Variable> getContext(std::string_view str, size_t pos = std::string_view::npos);
+		boost::optional<ast::VariableOrFunction> getContext(std::string_view str, size_t pos = std::string_view::npos);
 
 		// Return a list of possibilities for auto-completion
 		an::ElementsMap getAutoCompletionList(const an::Scope& rootScope, std::string_view str, size_t pos = std::string_view::npos);
-		an::ElementsMap getAutoCompletionList(const an::Scope& localScope, const boost::optional<ast::Variable>& var, CompletionFilter filter = CompletionFilter::none);
+		an::ElementsMap getAutoCompletionList(const an::Scope& localScope, const boost::optional<ast::VariableOrFunction>& var, CompletionFilter filter = CompletionFilter::none);
 
 		// Extend the block in the scope until the following keyword (and recurse over children)
 		void extendBlock(const an::Scope& scope, const pos::Elements& elements);
