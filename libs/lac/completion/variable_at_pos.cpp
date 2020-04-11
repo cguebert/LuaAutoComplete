@@ -24,14 +24,34 @@ namespace lac::comp
 
 		auto pe = pos, ps = pos;
 
+		// Go left until we it a chracter that is not alpha numeric nor underscore
 		auto goToNameStart = [&ps, &view] {
 			while (ps != 0 && isName(view[ps - 1]))
 				--ps;
 		};
 
+		// Go left while the character is a whitespace
 		auto ignoreWhiteSpace = [&ps, &view] {
 			while (ps != 0 && std::isspace(view[ps - 1]))
 				--ps;
+		};
+
+		// Go left until we encounter the opening parenthesis
+		auto ignoreFunctionCall = [&ps, &view] {
+			int nbParen = 0;
+			while (ps != 0)
+			{
+				// TODO: test if the parenthesis is inside a litteral string
+				if (view[ps - 1] == ')')
+					++nbParen;
+				else if (view[ps - 1] == '(')
+				{
+					--nbParen;
+					if (!nbParen)
+						break;
+				}
+				--ps;
+			}
 		};
 
 		// Go to the end of the name
@@ -54,7 +74,15 @@ namespace lac::comp
 			auto c = view[ps - 1];
 			if (c == '.' || c == ':')
 			{
-				ps -= 2;
+				--ps;
+				ignoreWhiteSpace();
+
+				if (view[ps - 1] == ')')
+				{
+					--ps;
+					ignoreFunctionCall();
+				}
+				
 				ignoreWhiteSpace();
 				goToNameStart();
 				pos = ps;
@@ -152,6 +180,18 @@ namespace lac::comp
 		CHECK(boost::get<ast::TableIndexName>(var->variable.rest[0]).name == "second");
 		REQUIRE(var->member.has_value());
 		CHECK(var->member->name == "third");
+	}
+
+	TEST_CASE("With function call")
+	{
+		CHECK(extractVariableAtPos("foo().bar", 8) == "foo().bar");
+		CHECK(extractVariableAtPos("foo ( ) . bar", 11) == "foo ( ) . bar");
+		CHECK(extractVariableAtPos("foo(a, 42, false).bar", 20) == "foo(a, 42, false).bar");
+		CHECK(extractVariableAtPos("foo('anything here').bar", 23) == "foo('anything here').bar");
+		CHECK(extractVariableAtPos("foo().bar.test", 8) == "foo().bar");
+		CHECK(extractVariableAtPos("foo():bar.test", 8) == "foo():bar");
+		CHECK(extractVariableAtPos("foo().bar.test", 12) == "foo().bar.test");
+		CHECK(extractVariableAtPos("foo():bar.test", 12) == "foo():bar.test");
 	}
 
 	TEST_SUITE_END();
