@@ -155,14 +155,14 @@ namespace lac::parser
 		TEST_VALUE("--[[test\n123]]", comment, "test\n123");
 		TEST_VALUE("--[=[test]]\n123]=]", comment, "test]]\n123");
 
-		SUBCASE("short comment value")
+		// short comment value
 		{
 			std::string v;
 			CHECK(test_phrase_parser("-- test 1 2", comment, v));
 			CHECK(v == std::string("test 1 2"));
 		}
 
-		SUBCASE("long comment value")
+		// long comment value
 		{
 			std::string v;
 			CHECK(test_phrase_parser("--[[test 1 2]]", comment, v));
@@ -231,7 +231,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("42", field));
 		CHECK(test_phrase_parser("f(x)", field));
 
-		SUBCASE("by expression")
+		// by expression
 		{
 			ast::Field f;
 			REQUIRE(test_phrase_parser("['x'] = 42", field, f));
@@ -244,7 +244,7 @@ namespace lac::parser
 			CHECK(fe.value.operand.asNumeral().asInt() == 42);
 		}
 
-		SUBCASE("by assignment")
+		// by assignment
 		{
 			ast::Field f;
 			REQUIRE(test_phrase_parser("x = 42", field, f));
@@ -256,7 +256,7 @@ namespace lac::parser
 			CHECK(fa.value.operand.asNumeral().asInt() == 42);
 		}
 
-		SUBCASE("expression only")
+		// expression only
 		{
 			ast::Field f;
 			REQUIRE(test_phrase_parser("'x'", field, f));
@@ -307,7 +307,7 @@ namespace lac::parser
 		CHECK_FALSE(test_phrase_parser("a,", parametersList));
 		CHECK_FALSE(test_phrase_parser("a, b...", parametersList));
 
-		SUBCASE("multiple parameters")
+		// multiple parameters
 		{
 			ast::ParametersList pl;
 			REQUIRE(test_phrase_parser("a, b, c", parametersList, pl));
@@ -318,7 +318,7 @@ namespace lac::parser
 			CHECK(pl.parameters[2] == "c");
 		}
 
-		SUBCASE("one parameter with varargs")
+		// one parameter with varargs
 		{
 			ast::ParametersList pl;
 			REQUIRE(test_phrase_parser("a, ...", parametersList, pl));
@@ -327,7 +327,7 @@ namespace lac::parser
 			CHECK(pl.parameters[0] == "a");
 		}
 
-		SUBCASE("only varargs")
+		// only varargs
 		{
 			ast::ParametersList pl;
 			REQUIRE(test_phrase_parser("...", parametersList, pl));
@@ -357,14 +357,14 @@ namespace lac::parser
 		CHECK(test_phrase_parser("{x=1}", arguments));
 		CHECK(test_phrase_parser("'test'", arguments));
 
-		SUBCASE("empty arguments")
+		// empty arguments
 		{
 			ast::Arguments ar;
 			REQUIRE(test_phrase_parser("()", arguments, ar));
 			CHECK(ar.get().type() == typeid(ast::EmptyArguments));
 		}
 
-		SUBCASE("arguments expressions")
+		// arguments expressions
 		{
 			ast::Arguments ar;
 			REQUIRE(test_phrase_parser("(1, 2)", arguments, ar));
@@ -373,7 +373,7 @@ namespace lac::parser
 			CHECK(el.size() == 2);
 		}
 
-		SUBCASE("table")
+		// table
 		{
 			ast::Arguments ar;
 			REQUIRE(test_phrase_parser("{1, 2}", arguments, ar));
@@ -395,7 +395,7 @@ namespace lac::parser
 
 		CHECK_FALSE(test_phrase_parser("func", functionCall));
 
-		SUBCASE("no member")
+		// no member
 		{
 			ast::FunctionCall fc;
 			REQUIRE(test_phrase_parser("func()", functionCall, fc));
@@ -404,7 +404,7 @@ namespace lac::parser
 			CHECK(fc.functionCall.member.is_initialized() == false);
 		}
 
-		SUBCASE("with member")
+		// with member
 		{
 			ast::FunctionCall fc;
 			REQUIRE(test_phrase_parser("func:member()", functionCall, fc));
@@ -422,14 +422,14 @@ namespace lac::parser
 		CHECK(test_phrase_parser(":member(42)", functionCallEnd));
 		CHECK(test_phrase_parser("(42)", functionCallEnd));
 
-		SUBCASE("no member")
+		// no member
 		{
 			ast::FunctionCallEnd fce;
 			REQUIRE(test_phrase_parser("(42)", functionCallEnd, fce));
 			CHECK(fce.member.is_initialized() == false);
 		}
 
-		SUBCASE("with member")
+		// with member
 		{
 			ast::FunctionCallEnd fce;
 			REQUIRE(test_phrase_parser(":member(42)", functionCallEnd, fce));
@@ -440,21 +440,21 @@ namespace lac::parser
 
 	TEST_CASE("postPrefixExpression")
 	{
-		SUBCASE("table index name")
+		// table index name
 		{
 			ast::PostPrefix pp;
 			REQUIRE(test_phrase_parser(".b", postPrefix, pp));
 			CHECK(pp.get().type() == typeid(ast::TableIndexName));
 		}
 
-		SUBCASE("table index expression")
+		// table index expression
 		{
 			ast::PostPrefix pp;
 			REQUIRE(test_phrase_parser("[42]", postPrefix, pp));
 			CHECK(pp.get().type() == typeid(ast::TableIndexExpression));
 		}
 
-		SUBCASE("function call end")
+		// function call end
 		{
 			ast::PostPrefix pp;
 			REQUIRE(test_phrase_parser("(42)", postPrefix, pp));
@@ -475,21 +475,21 @@ namespace lac::parser
 		CHECK(test_phrase_parser("a.b('c'):d()", prefixExpression));
 		CHECK(test_phrase_parser("a.b('c'):d(42)", prefixExpression));
 
-		SUBCASE("bracketed expression")
+		// bracketed expression
 		{
 			ast::PrefixExpression pe;
 			REQUIRE(test_phrase_parser("(42)", prefixExpression, pe));
 			CHECK(pe.start.get().type() == typeid(ast::BracketedExpression));
 		}
 
-		SUBCASE("name")
+		// name
 		{
 			ast::PrefixExpression pe;
 			REQUIRE(test_phrase_parser("a", prefixExpression, pe));
 			CHECK(pe.start.get().type() == typeid(std::string));
 		}
 
-		SUBCASE("rest")
+		// rest
 		{
 			ast::PrefixExpression pe;
 			REQUIRE(test_phrase_parser("a.b.c", prefixExpression, pe));
@@ -538,7 +538,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("func{x, x=1}", expression));
 		CHECK(test_phrase_parser("func'42'", expression));
 
-		SUBCASE("expression constant")
+		// expression constant
 		{
 			ast::Expression ex;
 			REQUIRE(test_phrase_parser("nil", expression, ex));
@@ -546,7 +546,7 @@ namespace lac::parser
 			CHECK(boost::get<ast::ExpressionConstant>(ex.operand) == ast::ExpressionConstant::nil);
 		}
 
-		SUBCASE("numeral int")
+		// numeral int
 		{
 			ast::Expression ex;
 			REQUIRE(test_phrase_parser("42", expression, ex));
@@ -555,7 +555,7 @@ namespace lac::parser
 			CHECK(ex.operand.asNumeral().asInt() == 42);
 		}
 
-		SUBCASE("numeral float")
+		// numeral float
 		{
 			ast::Expression ex;
 			REQUIRE(test_phrase_parser("42.3", expression, ex));
@@ -564,7 +564,7 @@ namespace lac::parser
 			CHECK(ex.operand.asNumeral().asFloat() == 42.3);
 		}
 
-		SUBCASE("string")
+		// string
 		{
 			ast::Expression ex;
 			REQUIRE(test_phrase_parser("'test'", expression, ex));
@@ -572,7 +572,7 @@ namespace lac::parser
 			CHECK(ex.operand.asLiteral().value == "test");
 		}
 
-		SUBCASE("unary operation")
+		// unary operation
 		{
 			ast::Expression ex;
 			REQUIRE(test_phrase_parser("not true", expression, ex));
@@ -583,7 +583,7 @@ namespace lac::parser
 			CHECK(boost::get<ast::ExpressionConstant>(uo.expression.operand) == ast::ExpressionConstant::True);
 		}
 
-		SUBCASE("binary operation")
+		// binary operation
 		{
 			ast::Expression ex;
 			REQUIRE(test_phrase_parser("1 + 2", expression, ex));
@@ -599,14 +599,14 @@ namespace lac::parser
 			CHECK(bo.expression.operand.asNumeral().asInt() == 2);
 		}
 
-		SUBCASE("function definition")
+		// function definition
 		{
 			ast::Expression ex;
 			REQUIRE(test_phrase_parser("function(a, b, c) return a + b / c; end", expression, ex));
 			REQUIRE(ex.operand.get().type() == typeid(ast::f_FunctionBody));
 		}
 
-		SUBCASE("table constructor")
+		// table constructor
 		{
 			ast::Expression ex;
 			REQUIRE(test_phrase_parser("{1, 2}", expression, ex));
@@ -633,7 +633,7 @@ namespace lac::parser
 		CHECK_FALSE(test_phrase_parser("42", bracketedExpression));
 		CHECK_FALSE(test_phrase_parser("()", bracketedExpression));
 
-		SUBCASE("expression inside parentheses")
+		// expression inside parentheses
 		{
 			ast::BracketedExpression be;
 			REQUIRE(test_phrase_parser("(42)", bracketedExpression, be));
@@ -652,7 +652,7 @@ namespace lac::parser
 
 		CHECK_FALSE(test_phrase_parser("[]", tableIndexExpression));
 
-		SUBCASE("expression")
+		// expression
 		{
 			ast::TableIndexExpression tie;
 			REQUIRE(test_phrase_parser("[42]", tableIndexExpression, tie));
@@ -670,7 +670,7 @@ namespace lac::parser
 		CHECK_FALSE(test_phrase_parser(".", tableIndexName));
 		CHECK_FALSE(test_phrase_parser(".42", tableIndexName));
 
-		SUBCASE("name")
+		// name
 		{
 			ast::TableIndexName tin;
 			REQUIRE(test_phrase_parser(".test", tableIndexName, tin));
@@ -689,21 +689,21 @@ namespace lac::parser
 
 	TEST_CASE("variablePostfix")
 	{
-		SUBCASE("table index name")
+		// table index name
 		{
 			ast::VariablePostfix vp;
 			REQUIRE(test_phrase_parser(".b", variablePostfix, vp));
 			CHECK(vp.get().type() == typeid(ast::TableIndexName));
 		}
 
-		SUBCASE("table index expression")
+		// table index expression
 		{
 			ast::VariablePostfix vp;
 			REQUIRE(test_phrase_parser("[42]", variablePostfix, vp));
 			CHECK(vp.get().type() == typeid(ast::TableIndexExpression));
 		}
 
-		SUBCASE("function call end")
+		// function call end
 		{
 			ast::VariablePostfix vp;
 			REQUIRE(test_phrase_parser("(42).a", variablePostfix, vp));
@@ -749,7 +749,7 @@ namespace lac::parser
 		CHECK_FALSE(test_phrase_parser(":c", functionName));
 		CHECK_FALSE(test_phrase_parser(".a:c", functionName));
 
-		SUBCASE("one name")
+		// one name
 		{
 			ast::FunctionName fn;
 			REQUIRE(test_phrase_parser("func", functionName, fn));
@@ -758,7 +758,7 @@ namespace lac::parser
 			CHECK(fn.member.is_initialized() == false);
 		}
 
-		SUBCASE("multiple names")
+		// multiple names
 		{
 			ast::FunctionName fn;
 			REQUIRE(test_phrase_parser("a.b.c", functionName, fn));
@@ -769,7 +769,7 @@ namespace lac::parser
 			CHECK(fn.member.is_initialized() == false);
 		}
 
-		SUBCASE("multiple names and member")
+		// multiple names and member
 		{
 			ast::FunctionName fn;
 			REQUIRE(test_phrase_parser("a.b.c:d", functionName, fn));
@@ -817,7 +817,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("x = 42 + 3.14", assignmentStatement));
 		CHECK(test_phrase_parser("x, y = 'hello', 'World'", assignmentStatement));
 
-		SUBCASE("one variable")
+		// one variable
 		{
 			ast::AssignmentStatement as;
 			REQUIRE(test_phrase_parser("x = 42", assignmentStatement, as));
@@ -832,7 +832,7 @@ namespace lac::parser
 			REQUIRE(exp.operand.asNumeral().asInt() == 42);
 		}
 
-		SUBCASE("two variables")
+		// two variables
 		{
 			ast::AssignmentStatement as;
 			REQUIRE(test_phrase_parser("x, y = 42, 'hello'", assignmentStatement, as));
@@ -866,7 +866,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("local x = 42 + 3.14", localAssignmentStatement));
 		CHECK(test_phrase_parser("local x, y = 'hello', 'World'", localAssignmentStatement));
 
-		SUBCASE("one variable")
+		// one variable
 		{
 			ast::LocalAssignmentStatement las;
 			REQUIRE(test_phrase_parser("local x", localAssignmentStatement, las));
@@ -875,7 +875,7 @@ namespace lac::parser
 			CHECK(las.expressions.is_initialized() == false);
 		}
 
-		SUBCASE("two variables")
+		// two variables
 		{
 			ast::LocalAssignmentStatement las;
 			REQUIRE(test_phrase_parser("local x, y", localAssignmentStatement, las));
@@ -885,7 +885,7 @@ namespace lac::parser
 			CHECK(las.expressions.is_initialized() == false);
 		}
 
-		SUBCASE("two variables assigned")
+		// two variables assigned
 		{
 			ast::LocalAssignmentStatement las;
 			REQUIRE(test_phrase_parser("local x, y = 42, 'hello'", localAssignmentStatement, las));
@@ -915,7 +915,7 @@ namespace lac::parser
 		CHECK_FALSE(test_phrase_parser(":: test 123 ::", labelStatement));
 		CHECK_FALSE(test_phrase_parser("::::", labelStatement));
 
-		SUBCASE("name")
+		// name
 		{
 			ast::LabelStatement ls;
 			REQUIRE(test_phrase_parser("::test::", labelStatement, ls));
@@ -930,7 +930,7 @@ namespace lac::parser
 
 		CHECK_FALSE(test_phrase_parser("goto 123", gotoStatement));
 
-		SUBCASE("name")
+		// name
 		{
 			ast::GotoStatement gs;
 			REQUIRE(test_phrase_parser("goto test", gotoStatement, gs));
@@ -964,7 +964,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("if x < 10 then print(x) else print(x / 2) end", ifThenElseStatement));
 		CHECK(test_phrase_parser("if x < 10 then print(x) elseif x < 20 then print(x / 2) else print(x / 4) end", ifThenElseStatement));
 
-		SUBCASE("only if")
+		// only if
 		{
 			ast::IfThenElseStatement s;
 			REQUIRE(test_phrase_parser("if x < 10 then print(x) end", ifThenElseStatement, s));
@@ -972,7 +972,7 @@ namespace lac::parser
 			CHECK(s.elseBlock.is_initialized() == false);
 		}
 
-		SUBCASE("two elseif")
+		// two elseif
 		{
 			ast::IfThenElseStatement s;
 			REQUIRE(test_phrase_parser("if x < 10 then print(x) "
@@ -984,7 +984,7 @@ namespace lac::parser
 			CHECK(s.elseBlock.is_initialized() == false);
 		}
 
-		SUBCASE("with else")
+		// with else
 		{
 			ast::IfThenElseStatement s;
 			REQUIRE(test_phrase_parser("if x < 10 then print(x) "
@@ -1002,7 +1002,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("for x = 1, 10 do print(x) end", numericalForStatement));
 		CHECK(test_phrase_parser("for x = 1, 10, 2 do print(x) end", numericalForStatement));
 
-		SUBCASE("no step")
+		// no step
 		{
 			ast::NumericalForStatement s;
 			REQUIRE(test_phrase_parser("for x = 1, 10 do print(x) end", numericalForStatement, s));
@@ -1016,7 +1016,7 @@ namespace lac::parser
 			CHECK(s.step.is_initialized() == false);
 		}
 
-		SUBCASE("with step")
+		// with step
 		{
 			ast::NumericalForStatement s;
 			REQUIRE(test_phrase_parser("for x = 1, 10, 2 do print(x) end", numericalForStatement, s));
@@ -1039,7 +1039,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("for x in iter() do print(x) end", genericForStatement));
 		CHECK(test_phrase_parser("for x, y in iterX(), iterY() do print(x) end", genericForStatement));
 
-		SUBCASE("one name")
+		// one name
 		{
 			ast::GenericForStatement s;
 			REQUIRE(test_phrase_parser("for x in iter() do print(x) end", genericForStatement, s));
@@ -1049,7 +1049,7 @@ namespace lac::parser
 			REQUIRE(s.expressions[0].operand.get().type() == typeid(ast::f_PrefixExpression));
 		}
 
-		SUBCASE("two names")
+		// two names
 		{
 			ast::GenericForStatement s;
 			REQUIRE(test_phrase_parser("for x, y in pairs(t) do print(x, y) end", genericForStatement, s));
@@ -1067,7 +1067,7 @@ namespace lac::parser
 		CHECK(test_phrase_parser("function test(x, y) return 42 end", functionDeclarationStatement));
 		CHECK(test_phrase_parser("function a.b:c(d) return d + 42 end", functionDeclarationStatement));
 
-		SUBCASE("simple name")
+		// simple name
 		{
 			ast::FunctionDeclarationStatement s;
 			REQUIRE(test_phrase_parser("function test() return 42 end", functionDeclarationStatement, s));
@@ -1077,7 +1077,7 @@ namespace lac::parser
 			CHECK(s.body.parameters.is_initialized() == false);
 		}
 
-		SUBCASE("complex name")
+		// complex name
 		{
 			ast::FunctionDeclarationStatement s;
 			REQUIRE(test_phrase_parser("function a.b:c(d) return d + 42 end", functionDeclarationStatement, s));
@@ -1109,14 +1109,14 @@ namespace lac::parser
 		CHECK(test_phrase_parser("return 1, x;", returnStatement));
 		CHECK(test_phrase_parser("return func(42), 'hello'", returnStatement));
 
-		SUBCASE("no expression")
+		// no expression
 		{
 			ast::ReturnStatement rs;
 			CHECK(test_phrase_parser("return", returnStatement, rs));
 			CHECK(rs.expressions.empty());
 		}
 
-		SUBCASE("one expression")
+		// one expression
 		{
 			ast::ReturnStatement rs;
 			CHECK(test_phrase_parser("return 42", returnStatement, rs));
@@ -1127,7 +1127,7 @@ namespace lac::parser
 			REQUIRE(exp.operand.asNumeral().asInt() == 42);
 		}
 
-		SUBCASE("two expressions")
+		// two expressions
 		{
 			ast::ReturnStatement rs;
 			CHECK(test_phrase_parser("return 42, 'hello'", returnStatement, rs));
@@ -1182,7 +1182,7 @@ namespace lac::parser
 	{
 		CHECK(test_phrase_parser("local x = 42; return x", block));
 
-		SUBCASE("no return")
+		// no return
 		{
 			ast::Block b;
 			CHECK(test_phrase_parser("x = 2", block, b));
@@ -1190,7 +1190,7 @@ namespace lac::parser
 			CHECK(b.returnStatement.is_initialized() == false);
 		}
 
-		SUBCASE("with return")
+		// with return
 		{
 			ast::Block b;
 			CHECK(test_phrase_parser("local x = 2\n print(x) return x + 42", block, b));
