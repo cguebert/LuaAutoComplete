@@ -400,8 +400,8 @@ namespace lac::parser
 
 	const auto variablesList_def = variable % ',';
 
-	const auto variableOrFunction_def = variable
-										>> -functionCallEnd
+	const auto variableOrFunction_def = ((variable >> !functionCallEnd) // Ensure there is no function call after the variable
+										 | functionCall)
 										>> -functionNameMember;
 
 	// Expressions

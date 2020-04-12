@@ -296,8 +296,7 @@ namespace lac::ast
 	// This is not part of the Lua language, but we use it for completion
 	struct VariableOrFunction
 	{
-		Variable variable;
-		boost::optional<FunctionCallEnd> functionCall;
+		boost::spirit::x3::variant<Variable, FunctionCall> start;
 		boost::optional<FunctionNameMember> member;
 	};
 

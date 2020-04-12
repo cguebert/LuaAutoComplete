@@ -79,10 +79,6 @@ namespace lac::comp
 
 	boost::optional<ast::VariableOrFunction> removeLastPart(ast::VariableOrFunction var)
 	{
-		// TODO: what can we do if the start is a bracketed expression?
-		if (var.variable.start.get().type() != typeid(std::string))
-			return {};
-
 		// If there is a member function, remove it and return the rest as is
 		if (var.member)
 		{
@@ -90,18 +86,24 @@ namespace lac::comp
 			return var;
 		}
 
-		// If there is a function call, remove it and return the rest as is
-		if (var.functionCall)
+		if (var.start.get().type() == typeid(ast::Variable))
 		{
-			var.functionCall.reset();
-			return var;
+			auto& variable = boost::get<ast::Variable>(var.start);
+			// Else we must remove the last part of the variable
+			if (variable.rest.empty())
+				return {}; // There is nothing left
+
+			variable.rest.pop_back();
+		}
+		else
+		{
+			auto& fc = boost::get<ast::FunctionCall>(var.start);
+			if (fc.rest.empty())
+				return {}; // There is nothing left
+
+			fc.rest.pop_back();
 		}
 
-		// Else we must remove the last part of the variable
-		if (var.variable.rest.empty())
-			return {}; // There is nothing left
-
-		var.variable.rest.pop_back();
 		return var;
 	}
 

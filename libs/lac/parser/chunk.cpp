@@ -393,12 +393,17 @@ namespace lac::parser
 		CHECK(test_phrase_parser("func {x, x=1}", functionCall));
 		CHECK(test_phrase_parser("func '42'", functionCall));
 
-		CHECK(test_phrase_parser("a(x)", functionCall));
-		CHECK(test_phrase_parser("a(x)()", functionCall));
-		CHECK(test_phrase_parser("a(x):b(y)", functionCall));
+		CHECK(test_phrase_parser("a(b)", functionCall));
+		CHECK(test_phrase_parser("a(b)()", functionCall));
+		CHECK(test_phrase_parser("a(b):c()", functionCall));
+		CHECK(test_phrase_parser("a(b):c(y)", functionCall));
+		CHECK(test_phrase_parser("a(b)():c()", functionCall));
 		CHECK(test_phrase_parser("a():b():c().d:e()", functionCall));
 
 		CHECK_FALSE(test_phrase_parser("func", functionCall));
+		CHECK_FALSE(test_phrase_parser("a().b", functionCall));
+		CHECK_FALSE(test_phrase_parser("a():b", functionCall));
+		CHECK_FALSE(test_phrase_parser("a()(b)[c]", functionCall));
 		
 		// no member
 		{
@@ -793,6 +798,7 @@ namespace lac::parser
 	// This is used for the completion, not part of the Lua parser
 	TEST_CASE("variable or function")
 	{
+		// These use the variable parser
 		CHECK(test_phrase_parser("test", variableOrFunction));
 		CHECK(test_phrase_parser("a", variableOrFunction));
 		CHECK(test_phrase_parser("a[2]", variableOrFunction));
@@ -805,9 +811,10 @@ namespace lac::parser
 		CHECK(test_phrase_parser("a(b)[c]:d().e", variableOrFunction));
 		CHECK(test_phrase_parser("a(b)[c]:d()[e]", variableOrFunction));
 
-		// These are accepted thanks to the optional function call
+		// These use the function call parser
 		CHECK(test_phrase_parser("a(b)", variableOrFunction));
-		CHECK(test_phrase_parser("a(b):c", variableOrFunction));
+		CHECK(test_phrase_parser("a(b):c()", variableOrFunction));
+		CHECK(test_phrase_parser("a(b)():c()", variableOrFunction));
 
 		// These are accepted thanks to the optional member
 		CHECK(test_phrase_parser("a:b", variableOrFunction));

@@ -38,6 +38,55 @@ namespace
 		else
 			return lac::an::Type::unknown;
 	}
+
+	lac::an::TypeInfo processPostFix(const lac::an::Scope& scope, lac::an::TypeInfo type, const lac::ast::FunctionCallPostfix& fcp)
+	{
+		if (fcp.tableIndex)
+		{
+			if (fcp.tableIndex->get().type() == typeid(lac::ast::TableIndexName))
+				type = scope.resolve(type.member(boost::get<lac::ast::TableIndexName>(*fcp.tableIndex).name));
+			else
+				return lac::an::Type::unknown;
+		}
+		
+		if (fcp.functionCall.member)
+			type = type.member(*fcp.functionCall.member);
+		if (type.function.results.empty())
+			return lac::an::Type::unknown;
+		return scope.resolve(type.function.results.front());
+	}
+
+	lac::an::TypeInfo getVariableType(const lac::an::Scope& localScope, const lac::ast::Variable& var)
+	{
+		// Iterate over the expression
+		if (var.start.get().type() != typeid(std::string))
+			return {};
+		auto type = getType(localScope, boost::get<std::string>(var.start));
+
+		if (!var.rest.empty())
+		{
+			for (const auto& r : var.rest)
+				type = processPostFix(localScope, type, r);
+		}
+
+		return type;
+	}
+
+	lac::an::TypeInfo getVariableType(const lac::an::Scope& localScope, const lac::ast::FunctionCall& fc)
+	{
+		// Iterate over the expression
+		if (fc.start.get().type() != typeid(std::string))
+			return {};
+		auto type = getType(localScope, boost::get<std::string>(fc.start));
+
+		if (!fc.rest.empty())
+		{
+			for (const auto& r : fc.rest)
+				type = processPostFix(localScope, type, r);
+		}
+
+		return type;
+	}
 } // namespace
 
 namespace lac::comp
@@ -75,34 +124,14 @@ namespace lac::comp
 		return getVariableType(*scope, *var);
 	}
 
-	an::TypeInfo getVariableType(const an::Scope& localScope, const ast::Variable& var)
-	{
-		// Iterate over the expression
-		if (var.start.get().type() != typeid(std::string))
-			return {};
-		auto type = getType(localScope, boost::get<std::string>(var.start));
-
-		if (!var.rest.empty())
-		{
-			for (const auto& r : var.rest)
-				type = processPostFix(localScope, type, r);
-		}
-
-		return type;
-	}
-
 	an::TypeInfo getVariableType(const an::Scope& localScope, const ast::VariableOrFunction& var)
 	{
-		auto type = getVariableType(localScope, var.variable);
-		if (var.functionCall)
-		{
-			if (var.functionCall->member)
-				type = type.member(*var.functionCall->member);
+		an::TypeInfo type;
+		if (var.start.get().type() == typeid(ast::Variable))
+			type = ::getVariableType(localScope, boost::get<ast::Variable>(var.start));
+		else
+			type = ::getVariableType(localScope, boost::get<ast::FunctionCall>(var.start));
 
-			if (type.function.results.empty())
-				return an::Type::unknown;
-			type = localScope.resolve(type.function.results.front());
-		}
 		return var.member
 				   ? type.member(var.member->name)
 				   : type;
@@ -125,14 +154,18 @@ namespace lac::comp
 
 		auto var = [](std::string name) {
 			ast::VariableOrFunction v;
-			v.variable.start = std::move(name);
+			ast::Variable var;
+			var.start = std::move(name);
+			v.start = std::move(var);
 			return v;
 		};
 
 		auto var2 = [](std::string name, std::string member) {
 			ast::VariableOrFunction v;
-			v.variable.start = std::move(name);
-			v.variable.rest.push_back(ast::VariablePostfix{ast::TableIndexName{std::move(member)}});
+			ast::Variable var;
+			var.start = std::move(name);
+			var.rest.push_back(ast::VariablePostfix{ast::TableIndexName{std::move(member)}});
+			v.start = var;
 			return v;
 		};
 

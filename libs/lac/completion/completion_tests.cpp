@@ -40,7 +40,7 @@ namespace lac::ast
 		if (rhs->member)
 			return false;
 
-		return *lhs == rhs->variable;
+		return *lhs == boost::get<ast::Variable>(rhs->start);
 	}
 
 	bool operator==(const boost::optional<ast::VariableOrFunction>& lhs, const boost::optional<ast::VariableOrFunction>& rhs)
@@ -51,7 +51,7 @@ namespace lac::ast
 		if (lhs.has_value() != rhs.has_value())
 			return false;
 
-		if (!(lhs->variable == rhs->variable))
+		if (!(boost::get<ast::Variable>(lhs->start) == boost::get<ast::Variable>(rhs->start)))
 			return false;
 
 		if (!lhs->member && !rhs->member)
@@ -83,12 +83,25 @@ namespace lac::ast
 		if (!var)
 			return "{}";
 
-		std::string str = boost::get<std::string>(var->variable.start);
-		for (const auto& r : var->variable.rest)
-			str += '.' + boost::get<TableIndexName>(r).name;
-
-		if (var->functionCall)
-			str += "(...)";
+		std::string str;
+		if (var->start.get().type() == typeid(ast::Variable))
+		{
+			const auto& variable = boost::get<ast::Variable>(var->start);
+			str += boost::get<std::string>(variable.start);
+			for (const auto& r : variable.rest)
+				str += '.' + boost::get<TableIndexName>(r).name;
+		}
+		else
+		{
+			const auto& variable = boost::get<ast::FunctionCall>(var->start);
+			str += boost::get<std::string>(variable.start);
+			for (const auto& r : variable.rest)
+			{
+				if (r.tableIndex)
+					str += '.' + boost::get<TableIndexName>(*r.tableIndex).name;
+				str += "()";
+			}
+		}
 
 		if (var->member)
 			str += ':' + var->member->name;
@@ -136,7 +149,7 @@ end
 				++ps;
 			while (isspace(program[pe]))
 				--pe;
-			std::string_view view = program; 
+			std::string_view view = program;
 			return view.substr(ps, pe - ps + 1);
 		}
 #endif

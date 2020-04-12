@@ -143,8 +143,10 @@ namespace lac::comp
 	{
 		auto var = parseVariableAtPos("foobar test", 5);
 		REQUIRE(var.has_value());
-		REQUIRE(var->variable.start.get().type() == typeid(std::string));
-		CHECK(boost::get<std::string>(var->variable.start) == "foobar");
+		REQUIRE(var->start.get().type() == typeid(ast::Variable));
+		const auto& variable = boost::get<ast::Variable>(var->start);
+		REQUIRE(variable.start.get().type() == typeid(std::string));
+		CHECK(boost::get<std::string>(variable.start) == "foobar");
 	}
 
 	TEST_CASE("Member variable")
@@ -163,13 +165,15 @@ namespace lac::comp
 	{
 		auto var = parseVariableAtPos("first.second.third", 15);
 		REQUIRE(var.has_value());
-		REQUIRE(var->variable.start.get().type() == typeid(std::string));
-		CHECK(boost::get<std::string>(var->variable.start) == "first");
-		REQUIRE(var->variable.rest.size() == 2);
-		REQUIRE(var->variable.rest[0].get().type() == typeid(ast::TableIndexName));
-		CHECK(boost::get<ast::TableIndexName>(var->variable.rest[0]).name == "second");
-		REQUIRE(var->variable.rest[1].get().type() == typeid(ast::TableIndexName));
-		CHECK(boost::get<ast::TableIndexName>(var->variable.rest[1]).name == "third");
+		REQUIRE(var->start.get().type() == typeid(ast::Variable));
+		const auto& variable = boost::get<ast::Variable>(var->start);
+		REQUIRE(variable.start.get().type() == typeid(std::string));
+		CHECK(boost::get<std::string>(variable.start) == "first");
+		REQUIRE(variable.rest.size() == 2);
+		REQUIRE(variable.rest[0].get().type() == typeid(ast::TableIndexName));
+		CHECK(boost::get<ast::TableIndexName>(variable.rest[0]).name == "second");
+		REQUIRE(variable.rest[1].get().type() == typeid(ast::TableIndexName));
+		CHECK(boost::get<ast::TableIndexName>(variable.rest[1]).name == "third");
 	}
 
 	TEST_CASE("Member function")
@@ -185,11 +189,13 @@ namespace lac::comp
 	{
 		auto var = parseVariableAtPos("first.second:third", 15);
 		REQUIRE(var.has_value());
-		REQUIRE(var->variable.start.get().type() == typeid(std::string));
-		CHECK(boost::get<std::string>(var->variable.start) == "first");
-		REQUIRE(var->variable.rest.size() == 1);
-		REQUIRE(var->variable.rest[0].get().type() == typeid(ast::TableIndexName));
-		CHECK(boost::get<ast::TableIndexName>(var->variable.rest[0]).name == "second");
+		REQUIRE(var->start.get().type() == typeid(ast::Variable));
+		const auto& variable = boost::get<ast::Variable>(var->start);
+		REQUIRE(variable.start.get().type() == typeid(std::string));
+		CHECK(boost::get<std::string>(variable.start) == "first");
+		REQUIRE(variable.rest.size() == 1);
+		REQUIRE(variable.rest[0].get().type() == typeid(ast::TableIndexName));
+		CHECK(boost::get<ast::TableIndexName>(variable.rest[0]).name == "second");
 		REQUIRE(var->member.has_value());
 		CHECK(var->member->name == "third");
 	}
