@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lac/lac_api.h>
+#include <lac/core_api.h>
 
 #include <map>
 #include <memory>
@@ -26,7 +26,7 @@ namespace lac::an
 	};
 
 	class TypeInfo;
-	class LAC_API VariableInfo
+	class CORE_API VariableInfo
 	{
 	public:
 		VariableInfo(const VariableInfo& other);
@@ -50,7 +50,7 @@ namespace lac::an
 		std::vector<TypeInfo> results;
 	};
 
-	class LAC_API TypeInfo
+	class CORE_API TypeInfo
 	{
 	public:
 		TypeInfo();

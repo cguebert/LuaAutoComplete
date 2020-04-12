@@ -6,11 +6,11 @@ find_package(doctest CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 
 # Target name
-set(target "lac")
+set(target "core")
 
 # Set API export file and macro
 string(TOUPPER ${target} target_upper)
-set(export_file  "include/${target}/${target}_api.h")
+set(export_file  "include/lac/${target}_api.h")
 set(export_macro "${target_upper}_API")
 
 # Sources
@@ -99,7 +99,7 @@ install(DIRECTORY
 
 # Generated header files
 install(DIRECTORY
-	${CMAKE_CURRENT_BINARY_DIR}/include/${target} DESTINATION ${INSTALL_INCLUDE}
+	${CMAKE_CURRENT_BINARY_DIR}/include/lac DESTINATION ${INSTALL_INCLUDE}
 	COMPONENT dev
 )
 

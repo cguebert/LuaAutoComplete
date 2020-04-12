@@ -7,7 +7,7 @@
 
 namespace lac::an
 {
-	class LAC_API UserDefined
+	class CORE_API UserDefined
 	{
 	public:
 		using Variables = std::map<std::string, TypeInfo>;

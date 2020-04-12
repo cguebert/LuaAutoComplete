@@ -5,7 +5,7 @@
 #pragma warning(disable : 4521) // multiple copy constructors specified
 #endif
 
-#include <lac/lac_api.h>
+#include <lac/core_api.h>
 
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
 #include <boost/fusion/include/io.hpp>
@@ -15,7 +15,7 @@
 
 namespace lac::ast
 {
-	enum class LAC_API ElementType
+	enum class CORE_API ElementType
 	{
 		not_defined,
 		keyword,

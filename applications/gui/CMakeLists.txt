@@ -15,7 +15,7 @@ GroupFiles(Source_Files)
 add_executable(${target} ${Header_Files} ${Source_Files})
 
 target_link_libraries(${target}
-	${META_PROJECT_NAME}::lac
+	${META_PROJECT_NAME}::core
 	${META_PROJECT_NAME}::editor
 	)
 

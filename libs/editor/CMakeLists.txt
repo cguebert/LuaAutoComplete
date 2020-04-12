@@ -48,7 +48,7 @@ target_include_directories(${target}
 # Libraries
 target_link_libraries(${target} 
 	PUBLIC
-	LuaAutoComplete::lac
+	LuaAutoComplete::core
 	Qt5::Widgets)
 
 	# Compile definitions

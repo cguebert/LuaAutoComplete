@@ -65,7 +65,7 @@ namespace lac
 		template <class T>
 		inline constexpr bool is_position_annotated = std::is_base_of<ast::PositionAnnotated, T>::value;
 
-		struct LAC_API Element
+		struct CORE_API Element
 		{
 			Element() = default;
 			Element(ast::ElementType type)

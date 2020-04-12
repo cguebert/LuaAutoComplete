@@ -18,7 +18,7 @@ namespace lac
 			functions
 		};
 
-		class LAC_API Completion
+		class CORE_API Completion
 		{
 		public:
 			void setUserDefined(lac::an::UserDefined userDefined);

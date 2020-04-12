@@ -2,11 +2,11 @@
 
 #include <lac/parser/ast.h>
 #include <lac/parser/positions.h>
-#include <lac/lac_api.h>
+#include <lac/core_api.h>
 
 namespace lac::parser
 {
-	struct LAC_API ParseBlockResults
+	struct CORE_API ParseBlockResults
 	{
 		ParseBlockResults(std::string_view view);
 
@@ -16,13 +16,13 @@ namespace lac::parser
 	};
 
 	// These skip comments and spaces
-	LAC_API ParseBlockResults parseBlock(std::string_view view, bool registerPositions = true);
+	CORE_API ParseBlockResults parseBlock(std::string_view view, bool registerPositions = true);
 
-	struct LAC_API ParseVariableResults
+	struct CORE_API ParseVariableResults
 	{
 		bool parsed = false;
 		ast::VariableOrFunction variable;
 	};
 
-	LAC_API ParseVariableResults parseVariable(std::string_view view);
+	CORE_API ParseVariableResults parseVariable(std::string_view view);
 } // namespace lac::parser
