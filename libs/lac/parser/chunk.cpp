@@ -720,7 +720,9 @@ namespace lac::parser
 		{
 			ast::VariablePostfix vp;
 			REQUIRE(test_phrase_parser("(42).a", variablePostfix, vp));
-			CHECK(vp.get().type() == typeid(ast::f_VariableFunctionCall));
+			REQUIRE(vp.get().type() == typeid(ast::f_VariableFunctionCall));
+			const auto& vfc = boost::get<ast::f_VariableFunctionCall>(vp);
+			CHECK(vfc.get().postVariable.get().type() == typeid(ast::TableIndexName));
 		}
 	}
 
@@ -741,6 +743,29 @@ namespace lac::parser
 		CHECK_FALSE(test_phrase_parser("a(b)", variable));
 		CHECK_FALSE(test_phrase_parser("a(b):d()", variable));
 		CHECK_FALSE(test_phrase_parser("a(b)[c]:d()", variable));
+
+		{
+			ast::Variable var;
+			REQUIRE(test_phrase_parser("a(b):c().d", variable, var));
+			REQUIRE(var.start.get().type() == typeid(std::string));
+			CHECK(boost::get<std::string>(var.start) == "a");
+			CHECK(var.rest.size() == 1);
+
+			const auto& r0 = var.rest.front();
+			REQUIRE(r0.get().type() == typeid(ast::f_VariableFunctionCall));
+			const auto& fc0 = boost::get<ast::f_VariableFunctionCall>(r0).get();
+			CHECK_FALSE(fc0.functionCall.member.is_initialized());
+
+			const auto& r1 = fc0.postVariable;
+			REQUIRE(r1.get().type() == typeid(ast::f_VariableFunctionCall));
+			const auto& fc1 = boost::get<ast::f_VariableFunctionCall>(r1).get();
+			CHECK(fc1.functionCall.member.is_initialized());
+
+			const auto& r2 = fc1.postVariable;
+			REQUIRE(r2.get().type() == typeid(ast::TableIndexName));
+			const auto& tin2 = boost::get<ast::TableIndexName>(r2);
+			CHECK(tin2.name == "d");
+		}
 	}
 
 	TEST_CASE("variablesList")
