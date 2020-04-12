@@ -1,4 +1,4 @@
-#include <editor/CompletionModel.h>
+#include <lac/editor/CompletionModel.h>
 
 namespace lac::editor
 {

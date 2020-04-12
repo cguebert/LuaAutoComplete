@@ -1,6 +1,6 @@
-#include <editor/CompletionModel.h>
-#include <editor/EditorHighlighter.h>
-#include <editor/LuaEditor.h>
+#include <lac/editor/CompletionModel.h>
+#include <lac/editor/EditorHighlighter.h>
+#include <lac/editor/LuaEditor.h>
 
 #include <lac/completion/type_at_pos.h>
 

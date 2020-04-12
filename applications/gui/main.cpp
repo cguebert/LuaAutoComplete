@@ -1,5 +1,5 @@
-#include <editor/LuaEditor.h>
-#include <editor/EditorHighlighter.h>
+#include <lac/editor/LuaEditor.h>
+#include <lac/editor/EditorHighlighter.h>
 
 #include <lac/analysis/user_defined.h>
 

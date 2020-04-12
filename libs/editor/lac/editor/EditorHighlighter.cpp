@@ -1,4 +1,4 @@
-#include <editor/EditorHighlighter.h>
+#include <lac/editor/EditorHighlighter.h>
 
 namespace lac::editor
 {

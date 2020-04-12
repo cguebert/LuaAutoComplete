@@ -1,6 +1,6 @@
 #pragma once
 
-#include <editor/editor_api.h>
+#include <lac/editor_api.h>
 
 #include <QBrush>
 #include <QRegularExpression>

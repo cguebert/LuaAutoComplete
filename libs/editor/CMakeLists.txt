@@ -13,7 +13,7 @@ set(CMAKE_AUTOMOC ON)
 
 # Set API export file and macro
 string(TOUPPER ${target} target_upper)
-set(export_file  "include/${target}/${target}_api.h")
+set(export_file  "include/lac/${target}_api.h")
 set(export_macro "${target_upper}_API")
 
 # Sources
@@ -21,8 +21,8 @@ file(GLOB_RECURSE Header_Files "*.h")
 file(GLOB_RECURSE Source_Files "*.cpp")
 
 # Group source files
-GroupFiles(Header_Files)
-GroupFiles(Source_Files)
+GroupFiles(Header_Files "lac/editor/")
+GroupFiles(Source_Files "lac/editor/")
 
 add_library(${target} ${Header_Files} ${Source_Files})
 
@@ -38,10 +38,10 @@ generate_export_header(${target} EXPORT_FILE_NAME ${export_file} EXPORT_MACRO_NA
 # Include directories
 target_include_directories(${target} 
 	PRIVATE
-	${CMAKE_SOURCE_DIR}/libs
+	${CMAKE_SOURCE_DIR}/libs/editor
 	${CMAKE_CURRENT_BINARY_DIR}/include
 	INTERFACE
-	$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs>
+	$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/editor>
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include> 
 	$<INSTALL_INTERFACE:include>)
 
@@ -88,14 +88,14 @@ install(TARGETS ${target}
 
 # Header files
 install(DIRECTORY
-	${CMAKE_CURRENT_SOURCE_DIR} DESTINATION ${INSTALL_INCLUDE} 
+	${CMAKE_CURRENT_SOURCE_DIR}/lac DESTINATION ${INSTALL_INCLUDE} 
 	COMPONENT dev
 	FILES_MATCHING PATTERN "*.h"
 )
 
 # Generated header files
 install(DIRECTORY
-	${CMAKE_CURRENT_BINARY_DIR}/include/${target} DESTINATION ${INSTALL_INCLUDE}
+	${CMAKE_CURRENT_BINARY_DIR}/include/lac DESTINATION ${INSTALL_INCLUDE}
 	COMPONENT dev
 )
 
