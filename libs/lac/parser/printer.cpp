@@ -304,12 +304,26 @@ namespace lac
 			return j;
 		}
 
-		nlohmann::json operator()(const FunctionCall& s) const
+		nlohmann::json operator()(const FunctionCallPostfix& fcp) const
+		{
+			nlohmann::json j;
+			if (fcp.tableIndex)
+				j["index"] = boost::apply_visitor(Printer{}, *fcp.tableIndex);
+			j["call"] = (*this)(fcp.functionCall);
+			return j;
+		}
+
+		nlohmann::json operator()(const FunctionCall& fc) const
 		{
 			nlohmann::json j;
 			j["type"] = "FunctionCall";
-			j["left"] = (*this)(s.variable);
-			j["right"] = (*this)(s.functionCall);
+			j["start"] = boost::apply_visitor(Printer{}, fc.start);
+			if (!fc.rest.empty())
+			{
+				auto& rest = j["rest"];
+				for (const auto& post : fc.rest)
+					rest.push_back((*this)(post));
+			}
 			return j;
 		}
 

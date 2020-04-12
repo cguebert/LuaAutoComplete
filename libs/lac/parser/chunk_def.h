@@ -193,6 +193,7 @@ namespace lac::parser
 	RULE(parametersList, ast::ParametersList);
 	RULE(arguments, ast::Arguments);
 	RULE(functionBody, ast::FunctionBody);
+	RULE(functionCallPostfix, ast::FunctionCallPostfix);
 	RULE(functionCall, ast::FunctionCall);
 	RULE(functionCallEnd, ast::FunctionCallEnd);
 	RULE(functionDefinition, ast::FunctionBody);
@@ -361,7 +362,13 @@ namespace lac::parser
 
 	const auto functionDefinition_def = kwd("function") >> functionBody;
 
-	const auto functionCall_def = variable >> functionCallEnd;
+	const auto functionCallPostfix_def = -(tableIndexExpression
+										   | tableIndexName)
+										 >> functionCallEnd;
+
+	const auto functionCall_def = (bracketedExpression
+								   | name)
+								  >> +functionCallPostfix;
 
 	const auto functionCallEnd_def = -(':' >> name) >> arguments;
 
@@ -466,7 +473,7 @@ namespace lac::parser
 						skipper,
 						fieldByExpression, fieldByAssignment, field, fieldsList, tableConstructor,
 						parametersList, arguments,
-						functionBody, functionCall, functionCallEnd,
+						functionBody, functionCallPostfix, functionCall, functionCallEnd,
 						functionDefinition, functionNameMember, functionName,
 						bracketedExpression, tableIndexExpression, tableIndexName,
 						prefixExpression, postPrefix,

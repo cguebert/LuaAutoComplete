@@ -181,9 +181,18 @@ namespace lac::an
 				boost::apply_visitor(*this, vp);
 		}
 
+		void operator()(const ast::FunctionCallPostfix& fcp) const
+		{
+			if (fcp.tableIndex)
+				boost::apply_visitor(*this, *fcp.tableIndex);
+			(*this)(fcp.functionCall);
+		}
+
 		void operator()(const ast::FunctionCall& fc) const
 		{
-			(*this)(fc.functionCall);
+			boost::apply_visitor(*this, fc.start);
+			for (const auto& r : fc.rest)
+				(*this)(r);
 		}
 
 		void operator()(const ast::ReturnStatement& rs) const

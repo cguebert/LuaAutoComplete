@@ -393,25 +393,33 @@ namespace lac::parser
 		CHECK(test_phrase_parser("func {x, x=1}", functionCall));
 		CHECK(test_phrase_parser("func '42'", functionCall));
 
-		CHECK_FALSE(test_phrase_parser("func", functionCall));
+		CHECK(test_phrase_parser("a(x)", functionCall));
+		CHECK(test_phrase_parser("a(x)()", functionCall));
+		CHECK(test_phrase_parser("a(x):b(y)", functionCall));
+		CHECK(test_phrase_parser("a():b():c().d:e()", functionCall));
 
+		CHECK_FALSE(test_phrase_parser("func", functionCall));
+		
 		// no member
 		{
 			ast::FunctionCall fc;
 			REQUIRE(test_phrase_parser("func()", functionCall, fc));
-			REQUIRE(fc.variable.start.get().type() == typeid(std::string));
-			CHECK(boost::get<std::string>(fc.variable.start) == "func");
-			CHECK(fc.functionCall.member.is_initialized() == false);
+			REQUIRE(fc.start.get().type() == typeid(std::string));
+			CHECK(boost::get<std::string>(fc.start) == "func");
+			REQUIRE(fc.rest.size() == 1);
+			CHECK(fc.rest.front().tableIndex.is_initialized() == false);
+			CHECK(fc.rest.front().functionCall.member.is_initialized() == false);
 		}
 
 		// with member
 		{
 			ast::FunctionCall fc;
 			REQUIRE(test_phrase_parser("func:member()", functionCall, fc));
-			REQUIRE(fc.variable.start.get().type() == typeid(std::string));
-			CHECK(boost::get<std::string>(fc.variable.start) == "func");
-			REQUIRE(fc.functionCall.member.is_initialized());
-			CHECK(fc.functionCall.member.get() == "member");
+			REQUIRE(fc.start.get().type() == typeid(std::string));
+			CHECK(boost::get<std::string>(fc.start) == "func");
+			REQUIRE(fc.rest.size() == 1);
+			REQUIRE(fc.rest.front().functionCall.member.is_initialized());
+			CHECK(fc.rest.front().functionCall.member.get() == "member");
 		}
 	}
 

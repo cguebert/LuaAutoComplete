@@ -280,10 +280,17 @@ namespace lac::ast
 		boost::optional<FunctionNameMember> member;
 	};
 
+	using TableIndex = boost::spirit::x3::variant<TableIndexExpression, TableIndexName>;
+	struct FunctionCallPostfix
+	{
+		boost::optional<TableIndex> tableIndex;
+		FunctionCallEnd functionCall;
+	};
+
 	struct FunctionCall
 	{
-		Variable variable;
-		FunctionCallEnd functionCall;
+		boost::spirit::x3::variant<BracketedExpression, std::string> start;
+		std::vector<FunctionCallPostfix> rest;
 	};
 
 	// This is not part of the Lua language, but we use it for completion
