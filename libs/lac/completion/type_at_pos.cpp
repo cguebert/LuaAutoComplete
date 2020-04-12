@@ -48,7 +48,7 @@ namespace
 			else
 				return lac::an::Type::unknown;
 		}
-		
+
 		if (fcp.functionCall.member)
 			type = type.member(*fcp.functionCall.member);
 		if (type.function.results.empty())
@@ -211,7 +211,7 @@ myTabel.child.text = 'meow'
 		REQUIRE(ret.parsed);
 
 		// Analyse the program
-		const auto view = program;
+		const std::string_view view = program;
 		auto scope = an::analyseBlock(ret.block);
 		CHECK(getTypeAtPos(scope, view, 3).type == an::Type::table);
 		CHECK(getTypeAtPos(scope, view, 23).type == an::Type::number);
@@ -220,6 +220,40 @@ myTabel.child.text = 'meow'
 		CHECK(getTypeAtPos(scope, view, 83).type == an::Type::function);
 		CHECK(getTypeAtPos(scope, view, 133).type == an::Type::table);
 		CHECK(getTypeAtPos(scope, view, 159).type == an::Type::string);
+	}
+
+	TEST_CASE("Method calls")
+	{
+		an::UserDefined userDefined;
+		an::TypeInfo nodeType = an::Type::table;
+		nodeType.name = "Node";
+		const auto parentFuncType = an::TypeInfo::createFunction({}, {an::TypeInfo::fromTypeName("Node")});
+		nodeType.members["parent"] = parentFuncType;
+		const auto nbChildsFuncType = an::TypeInfo::createFunction({}, {an::Type::number});
+		nodeType.members["nbChilds"] = nbChildsFuncType;
+		const auto childFuncType = an::TypeInfo::createFunction({{"index", an::Type::number}}, {an::TypeInfo::fromTypeName("Node")});
+		nodeType.members["child"] = childFuncType;
+		userDefined.addType(std::move(nodeType));
+
+		userDefined.addFreeFunction("root", {{}, {an::TypeInfo::fromTypeName("Node")}});
+
+		const std::string program = "root():child(1):child(2):parent():parent():nbChilds()";
+
+		// Parse the program
+		const auto ret = parser::parseBlock(program);
+		REQUIRE(ret.parsed);
+
+		// Analyse the program
+		auto scope = an::Scope(ret.block);
+		scope.setUserDefined(&userDefined);
+		an::analyseBlock(scope, ret.block);
+
+		const std::string_view view = program;
+		CHECK(getTypeAtPos(scope, view, 10) == childFuncType);
+		CHECK(getTypeAtPos(scope, view, 20) == childFuncType);
+		CHECK(getTypeAtPos(scope, view, 30) == parentFuncType);
+		CHECK(getTypeAtPos(scope, view, 38) == parentFuncType);
+		CHECK(getTypeAtPos(scope, view, 50) == nbChildsFuncType);
 	}
 
 	TEST_SUITE_END();

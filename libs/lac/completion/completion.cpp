@@ -93,7 +93,7 @@ namespace lac::comp
 			if (variable.rest.empty())
 				return {}; // There is nothing left
 
-			variable.rest.pop_back();
+			variable.rest.pop_back(); // TODO: it can be more complicated than this
 		}
 		else
 		{
@@ -101,7 +101,7 @@ namespace lac::comp
 			if (fc.rest.empty())
 				return {}; // There is nothing left
 
-			fc.rest.pop_back();
+			fc.rest.pop_back(); // TODO: it can be more complicated than this
 		}
 
 		return var;
