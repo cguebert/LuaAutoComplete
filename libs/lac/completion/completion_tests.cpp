@@ -393,6 +393,8 @@ function run(player)
 end
 )~~";
 
+			using StrVec = std::vector<std::string>;
+
 			Completion completion;
 			completion.setUserDefined(userDefined);
 			REQUIRE(completion.updateProgram(program));
@@ -402,12 +404,16 @@ end
 			CHECK(list.count("id"));
 			CHECK(list.count("position"));
 			CHECK(list.count("setPosition"));
+			CHECK(completion.getTypeAtPos(program, 40) == playerType);
+			CHECK(completion.getTypeHierarchyAtPos(program, 40) == StrVec{"Player"});
 
 			list = completion.getAutoCompletionList(program, 44); // player:pos
 			CHECK(list.size() == 3);
 			CHECK(list.count("id"));
 			CHECK(list.count("position"));
 			CHECK(list.count("setPosition"));
+			CHECK(completion.getTypeAtPos(program, 44).type == Type::function);
+			CHECK(completion.getTypeHierarchyAtPos(program, 44) == StrVec{"Player", "position"});
 
 			list = completion.getAutoCompletionList(program, 52); // player:position():
 			CHECK(list.size() == 2);
@@ -418,6 +424,8 @@ end
 			CHECK(list.size() == 2);
 			CHECK(list.count("length"));
 			CHECK(list.count("mult"));
+			CHECK(completion.getTypeAtPos(program, 55).type == Type::function);
+			CHECK(completion.getTypeHierarchyAtPos(program, 55) == StrVec{"Vector3", "length"});
 		}
 
 		TEST_SUITE_END();

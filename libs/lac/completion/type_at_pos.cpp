@@ -58,34 +58,135 @@ namespace
 
 	lac::an::TypeInfo getVariableType(const lac::an::Scope& localScope, const lac::ast::Variable& var)
 	{
-		// Iterate over the expression
 		if (var.start.get().type() != typeid(std::string))
 			return {};
-		auto type = getType(localScope, boost::get<std::string>(var.start));
 
-		if (!var.rest.empty())
-		{
-			for (const auto& r : var.rest)
-				type = processPostFix(localScope, type, r);
-		}
+		auto type = getType(localScope, boost::get<std::string>(var.start));
+		for (const auto& r : var.rest)
+			type = processPostFix(localScope, type, r);
 
 		return type;
 	}
 
-	lac::an::TypeInfo getVariableType(const lac::an::Scope& localScope, const lac::ast::FunctionCall& fc)
+	lac::an::TypeInfo getFunctionCallType(const lac::an::Scope& localScope, const lac::ast::FunctionCall& fc)
 	{
-		// Iterate over the expression
 		if (fc.start.get().type() != typeid(std::string))
 			return {};
-		auto type = getType(localScope, boost::get<std::string>(fc.start));
 
-		if (!fc.rest.empty())
-		{
-			for (const auto& r : fc.rest)
-				type = processPostFix(localScope, type, r);
-		}
+		auto type = getType(localScope, boost::get<std::string>(fc.start));
+		for (const auto& r : fc.rest)
+			type = processPostFix(localScope, type, r);
 
 		return type;
+	}
+
+	lac::an::TypeInfo processPostFix(std::vector<std::string>& hierarchy, const lac::an::Scope& scope, lac::an::TypeInfo type, const lac::ast::VariablePostfix& vpf)
+	{
+		if (vpf.get().type() == typeid(lac::ast::TableIndexName))
+		{
+			const auto name = boost::get<lac::ast::TableIndexName>(vpf).name;
+			hierarchy.push_back(name);
+			return scope.resolve(type.member(name));
+		}
+		else if (vpf.get().type() == typeid(lac::ast::VariableFunctionCall))
+		{
+			const auto fc = boost::get<lac::ast::f_VariableFunctionCall>(vpf).get();
+			if (fc.functionCall.member)
+				type = type.member(*fc.functionCall.member);
+			if (type.function.results.empty())
+			{
+				hierarchy.clear();
+				return lac::an::Type::unknown;
+			}
+
+			// Restart with the result of this call
+			hierarchy.clear();
+			const auto& res = type.function.results.front();
+			hierarchy.push_back(res.typeName());
+			type = scope.resolve(res);
+
+			// Continue the chain
+			return processPostFix(hierarchy, scope, type, fc.postVariable);
+		}
+		else
+		{
+			hierarchy.clear();
+			return lac::an::Type::unknown;
+		}
+	}
+
+	lac::an::TypeInfo processPostFix(std::vector<std::string>& hierarchy, const lac::an::Scope& scope, lac::an::TypeInfo type, const lac::ast::FunctionCallPostfix& fcp)
+	{
+		if (fcp.tableIndex)
+		{
+			if (fcp.tableIndex->get().type() == typeid(lac::ast::TableIndexName))
+			{
+				const auto name = boost::get<lac::ast::TableIndexName>(*fcp.tableIndex).name;
+				hierarchy.push_back(name);
+				type = scope.resolve(type.member(name));
+			}
+			else
+			{
+				hierarchy.clear();
+				return lac::an::Type::unknown;
+			}
+		}
+
+		if (fcp.functionCall.member)
+			type = type.member(*fcp.functionCall.member);
+		if (type.function.results.empty())
+		{
+			hierarchy.clear();
+			return lac::an::Type::unknown;
+		}
+
+		// Restart with the result of this call
+		hierarchy.clear();
+		const auto& res = type.function.results.front();
+		hierarchy.push_back(res.typeName());
+		type = scope.resolve(res);
+		return type;
+	}
+
+	std::vector<std::string> getTypeHierarchy(const lac::an::Scope &localScope, const lac::ast::Variable &var)
+	{
+		if (var.start.get().type() != typeid(std::string))
+			return {};
+
+		const auto& name = boost::get<std::string>(var.start);
+
+		auto type = localScope.getVariableType(name);
+		if (!type)
+			type = localScope.getFunctionType(name);
+
+		std::vector<std::string> hierarchy;
+		hierarchy.push_back(type.typeName()); // We want the type name before resolving userdata into table
+		type = localScope.resolve(type);
+
+		for (const auto& r : var.rest)
+			type = processPostFix(hierarchy, localScope, type, r);
+		return hierarchy;
+	}
+
+	std::vector<std::string> getTypeHierarchy(const lac::an::Scope& localScope, const lac::ast::FunctionCall& fc)
+	{
+		if (fc.start.get().type() != typeid(std::string))
+			return {};
+		const auto& name = boost::get<std::string>(fc.start);
+
+		std::vector<std::string> hierarchy;
+		auto type = localScope.getVariableType(name);
+		if (type)
+		{
+			hierarchy.push_back(type.typeName()); // We want the type name before resolving userdata into table
+			type = localScope.resolve(type);
+		}
+		else
+			type = localScope.getFunctionType(name);
+
+		for (const auto& r : fc.rest)
+			type = processPostFix(hierarchy, localScope, type, r);
+		return hierarchy;
 	}
 } // namespace
 
@@ -130,11 +231,37 @@ namespace lac::comp
 		if (var.start.get().type() == typeid(ast::Variable))
 			type = ::getVariableType(localScope, boost::get<ast::Variable>(var.start));
 		else
-			type = ::getVariableType(localScope, boost::get<ast::FunctionCall>(var.start));
+			type = ::getFunctionCallType(localScope, boost::get<ast::FunctionCall>(var.start));
 
 		return var.member
-				   ? type.member(var.member->name)
+				   ? localScope.resolve(type.member(var.member->name))
 				   : type;
+	}
+
+	std::vector<std::string> getTypeHierarchyAtPos(const an::Scope& rootScope, std::string_view view, size_t pos)
+	{
+		if (pos == std::string_view::npos)
+			pos = view.size() - 1;
+
+		// Parse what is under the cursor
+		const auto var = parseVariableAtPos(view, pos);
+		if (!var)
+			return {};
+
+		// Get the scope under the cursor
+		auto scope = pos::getScopeAtPos(rootScope, pos);
+		if (!scope)
+			return {};
+
+		std::vector<std::string> hierarchy;
+		if (var->start.get().type() == typeid(ast::Variable))
+			hierarchy = getTypeHierarchy(*scope, boost::get<ast::Variable>(var->start));
+		else
+			hierarchy = getTypeHierarchy(*scope, boost::get<ast::FunctionCall>(var->start));
+	
+		if (var->member)
+			hierarchy.push_back(var->member->name);
+		return hierarchy;
 	}
 
 	TEST_SUITE_BEGIN("Type at position");
@@ -165,7 +292,7 @@ namespace lac::comp
 			ast::Variable var;
 			var.start = std::move(name);
 			var.rest.push_back(ast::VariablePostfix{ast::TableIndexName{std::move(member)}});
-			v.start = var;
+			v.start = std::move(var);
 			return v;
 		};
 
@@ -249,11 +376,19 @@ myTabel.child.text = 'meow'
 		an::analyseBlock(scope, ret.block);
 
 		const std::string_view view = program;
+		using StrVec = std::vector<std::string>;
+
 		CHECK(getTypeAtPos(scope, view, 10) == childFuncType);
 		CHECK(getTypeAtPos(scope, view, 20) == childFuncType);
 		CHECK(getTypeAtPos(scope, view, 30) == parentFuncType);
 		CHECK(getTypeAtPos(scope, view, 38) == parentFuncType);
 		CHECK(getTypeAtPos(scope, view, 50) == nbChildsFuncType);
+
+		CHECK(getTypeHierarchyAtPos(scope, view, 10) == StrVec{"Node", "child"});
+		CHECK(getTypeHierarchyAtPos(scope, view, 20) == StrVec{"Node", "child"});
+		CHECK(getTypeHierarchyAtPos(scope, view, 30) == StrVec{"Node", "parent"});
+		CHECK(getTypeHierarchyAtPos(scope, view, 38) == StrVec{"Node", "parent"});
+		CHECK(getTypeHierarchyAtPos(scope, view, 50) == StrVec{"Node", "nbChilds"});
 	}
 
 	TEST_SUITE_END();

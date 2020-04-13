@@ -77,6 +77,11 @@ namespace lac::comp
 		return comp::getTypeAtPos(m_rootScope, str, pos);
 	}
 
+	std::vector<std::string> Completion::getTypeHierarchyAtPos(std::string_view str, size_t pos)
+	{
+		return comp::getTypeHierarchyAtPos(m_rootScope, str, pos);
+	}
+
 	boost::optional<ast::VariableOrFunction> removeLastPart(ast::VariableOrFunction var)
 	{
 		// If there is a member function, remove it and return the rest as is

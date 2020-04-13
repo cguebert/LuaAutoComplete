@@ -26,6 +26,7 @@ namespace lac
 			bool updateProgram(std::string_view str, size_t currentPosition = std::string_view::npos);
 			an::ElementsMap getAutoCompletionList(std::string_view str, size_t pos = std::string_view::npos);
 			an::TypeInfo getTypeAtPos(std::string_view str, size_t pos);
+			std::vector<std::string> getTypeHierarchyAtPos(std::string_view str, size_t pos);
 
 		private:
 			boost::optional<lac::an::UserDefined> m_userDefined;
