@@ -361,6 +361,9 @@ end
 
 			TypeInfo complexType = Type::table;
 			complexType.name = "Complex";
+			complexType.members["new"] = TypeInfo::createFunction({{"real", Type::number},
+																   {"imag", Type::number}},
+																  {TypeInfo::fromTypeName("Complex")});
 			complexType.members["real"] = Type::number;
 			complexType.members["imag"] = Type::number;
 			user.addType(complexType);
@@ -386,6 +389,15 @@ end
 
 			{
 				ast::Block block;
+				REQUIRE(test_phrase_parser("local x = Complex.new(0.7, 1.0)", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("x");
+				CHECK(info.type == Type::userdata);
+				CHECK(info.name == "Complex");
+			}
+
+			{
+				ast::Block block;
 				REQUIRE(test_phrase_parser("local x = createComplex(0.7, 1.0).real", parser::chunkRule(), block));
 				const auto scope = analyseBlock(block, &parentScope);
 				const auto info = scope.getVariableType("x");
@@ -400,7 +412,8 @@ end
 				CHECK(infoX.type == Type::userdata);
 				CHECK(infoX.name == "Complex");
 				const auto type = scope.getUserType(infoX.name);
-				CHECK(type.members.size() == 2);
+				CHECK(type.members.size() == 3);
+				CHECK(type.member("new").type == Type::function);
 				CHECK(type.member("real").type == Type::number);
 				CHECK(type.member("imag").type == Type::number);
 				CHECK(type.member("xxx").type == Type::nil);
@@ -421,7 +434,7 @@ end
 			}
 		}
 
-		TEST_CASE("User defined complex")
+		TEST_CASE("User defined multi types")
 		{
 			UserDefined userDefined;
 			TypeInfo vec3Type = Type::table;

@@ -54,7 +54,12 @@ namespace lac::an
 		TypeInfo parentAsVariable() const
 		{
 			if (m_parentType.type == Type::unknown && !m_parentType.name.empty())
-				return m_scope.resolve(m_scope.getVariableType(m_parentType.name));
+			{
+				auto info = m_scope.getVariableType(m_parentType.name);
+				if (!info)
+					info = m_scope.getUserType(m_parentType.name);
+				return m_scope.resolve(info);
+			}
 			return m_scope.resolve(m_parentType);
 		}
 

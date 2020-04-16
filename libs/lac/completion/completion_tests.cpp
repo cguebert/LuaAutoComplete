@@ -459,6 +459,11 @@ len = vec:length()
 			auto list = completion.getAutoCompletionList(program, 15); // Vector3.n
 			CHECK(list.size() == 1);
 			CHECK(list.count("new"));
+
+			list = completion.getAutoCompletionList(program, 45); // vec:leng
+			CHECK(list.size() == 2);
+			CHECK(list.count("length"));
+			CHECK(list.count("mult"));
 		}
 
 		TEST_SUITE_END();
