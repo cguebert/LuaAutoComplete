@@ -70,7 +70,7 @@ namespace lac::an
 			}
 		}
 
-		void operator()(const ast::FunctionBody& fb, std::string_view functionName = {}) const
+		void operator()(const ast::FunctionBody& fb, const std::string& functionName = {}) const
 		{
 			Scope scope{fb.block, &m_scope};
 			bool isScriptInput = false;
@@ -110,7 +110,7 @@ namespace lac::an
 						scope.addVariable(p, Type::unknown);
 
 					if (!functionName.empty())
-						scope.addFunction(functionName, m_scope.getFunctionType(functionName)); // The function can be called recursively
+						scope.addVariable(functionName, m_scope.getVariableType(functionName)); // The function can be called recursively
 				}
 			}
 
@@ -331,7 +331,7 @@ namespace lac::an
 
 			// Global function
 			if (s.name.rest.empty() && !s.name.member)
-				m_scope.addFunction(s.name.start, std::move(funcType));
+				m_scope.addVariable(s.name.start, std::move(funcType));
 
 			// TODO: support declaration of a table method
 
@@ -341,7 +341,7 @@ namespace lac::an
 		void operator()(const ast::LocalFunctionDeclarationStatement& s) const
 		{
 			auto funcType = getType(m_scope, s.body);
-			m_scope.addFunction(s.name, std::move(funcType));
+			m_scope.addVariable(s.name, std::move(funcType));
 			(*this)(s.body, s.name);
 		}
 

@@ -11,18 +11,26 @@ namespace lac::an
 	{
 	}
 
-	void Scope::addVariable(std::string_view name, TypeInfo type)
+	void Scope::addVariable(const std::string& name, TypeInfo type)
 	{
-		m_variables.push_back(VariableInfo{std::string{name}, std::move(type)});
+		if (m_userDefined && type.type == Type::function)
+		{
+			auto inputType = m_userDefined->getScriptInput(name);
+			if (inputType)
+			{
+				// This function is called by the application, and the signature is known
+				m_variables[name] = *inputType;
+				return;
+			}
+		}
+		m_variables[name] = std::move(type);
 	}
 
-	TypeInfo Scope::getVariableType(std::string_view name) const
+	TypeInfo Scope::getVariableType(const std::string& name) const
 	{
-		const auto it = std::find_if(m_variables.begin(), m_variables.end(), [name](const VariableInfo& v) {
-			return v.name == name;
-		});
+		const auto it = m_variables.find(name);
 		if (it != m_variables.end())
-			return it->type;
+			return it->second;
 		if (m_userDefined)
 		{
 			if (auto var = m_userDefined->getVariable(name))
@@ -33,65 +41,28 @@ namespace lac::an
 		return Type::nil;
 	}
 
-	TypeInfo& Scope::modifyTable(std::string_view name)
+	TypeInfo& Scope::modifyTable(const std::string& name)
 	{
-		const auto it = std::find_if(m_variables.begin(), m_variables.end(), [name](const VariableInfo& v) {
-			return v.name == name;
-		});
+		const auto it = m_variables.find(name);
 		if (it != m_variables.end())
-			return it->type;
+			return it->second;
 
-		m_variables.push_back(VariableInfo{std::string{name}, Type::table});
-		return m_variables.back().type;
+		m_variables[name] = Type::table;
+		return m_variables[name];
 	}
 
-	void Scope::addLabel(std::string_view name)
+	void Scope::addLabel(const std::string& name)
 	{
-		m_labels.push_back(LabelInfo{std::string{name}});
+		m_labels.insert(name);
 	}
 
-	bool Scope::hasLabel(std::string_view name) const
+	bool Scope::hasLabel(const std::string& name) const
 	{
-		const auto it = std::find_if(m_labels.begin(), m_labels.end(), [name](const LabelInfo& l) {
-			return l.name == name;
-		});
-		if (it != m_labels.end())
+		if (m_labels.count(name))
 			return true;
 		if (m_parent)
 			return m_parent->hasLabel(name);
 		return false;
-	}
-
-	void Scope::addFunction(std::string_view name, TypeInfo type)
-	{
-		if (m_userDefined)
-		{
-			auto inputType = m_userDefined->getScriptInput(name);
-			if (inputType)
-			{
-				// This function is called by the application, and the signature is known
-				m_functions.push_back(FunctionInfo{std::string{name}, *inputType});
-				return;
-			}
-		}
-		m_functions.push_back(FunctionInfo{std::string{name}, std::move(type)});
-	}
-
-	TypeInfo Scope::getFunctionType(std::string_view name) const
-	{
-		const auto it = std::find_if(m_functions.begin(), m_functions.end(), [name](const FunctionInfo& f) {
-			return f.name == name;
-		});
-		if (it != m_functions.end())
-			return it->type;
-		if (m_userDefined)
-		{
-			if (auto func = m_userDefined->getFunction(name))
-				return *func;
-		}
-		if (m_parent)
-			return m_parent->getFunctionType(name);
-		return Type::nil;
 	}
 
 	TypeInfo Scope::getUserType(std::string_view name) const
@@ -169,44 +140,26 @@ namespace lac::an
 			elements[name] = std::move(elt);
 		};
 
-		auto addFunction = [&elements](const std::string& name, const TypeInfo& type, bool local) {
-			if (elements.count(name))
-				return;
-
-			Element elt;
-			elt.local = local;
-			elt.name = name;
-			elt.elementType = ElementType::function;
-			elt.typeInfo = type;
-			elements[name] = std::move(elt);
-		};
-
 		auto addScope = [&](const Scope& scope, bool local) {
-			for (const auto& var : scope.m_variables)
-				addVariable(var.name, var.type, local);
-
-			for (const auto& func : scope.m_functions)
-				addFunction(func.name, func.type, local);
+			for (const auto& it : scope.m_variables)
+				addVariable(it.first, it.second, local);
 
 			for (const auto& label : scope.m_labels)
 			{
-				if (elements.count(label.name))
+				if (elements.count(label))
 					continue;
 
 				Element elt;
 				elt.local = local;
-				elt.name = label.name;
+				elt.name = label;
 				elt.elementType = ElementType::label;
-				elements[label.name] = std::move(elt);
+				elements[label] = std::move(elt);
 			}
 
 			if (scope.m_userDefined)
 			{
 				for (const auto& it : scope.m_userDefined->variables())
 					addVariable(it.first, it.second, false);
-
-				for (const auto& it : scope.m_userDefined->functions())
-					addFunction(it.first, it.second, false);
 			}
 		};
 

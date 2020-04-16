@@ -9,16 +9,12 @@
 
 namespace
 {
-	lac::an::TypeInfo getType(const lac::an::Scope& scope, std::string_view name)
+	lac::an::TypeInfo getType(const lac::an::Scope& scope, const std::string& name)
 	{
 		auto info = scope.getVariableType(name);
 		if (info.type == lac::an::Type::userdata)
 			return scope.getUserType(info.name);
-
-		if (info.type != lac::an::Type::nil)
-			return info;
-
-		return scope.getFunctionType(name);
+		return info;
 	}
 
 	lac::an::TypeInfo processPostFix(const lac::an::Scope& scope, lac::an::TypeInfo type, const lac::ast::VariablePostfix& vpf)
@@ -156,8 +152,6 @@ namespace
 		const auto& name = boost::get<std::string>(var.start);
 
 		auto type = localScope.getVariableType(name);
-		if (!type)
-			type = localScope.getFunctionType(name);
 
 		std::vector<std::string> hierarchy;
 		hierarchy.push_back(type.typeName()); // We want the type name before resolving userdata into table
@@ -181,8 +175,6 @@ namespace
 			hierarchy.push_back(type.typeName()); // We want the type name before resolving userdata into table
 			type = localScope.resolve(type);
 		}
-		else
-			type = localScope.getFunctionType(name);
 
 		for (const auto& r : fc.rest)
 			type = processPostFix(hierarchy, localScope, type, r);
@@ -362,7 +354,7 @@ myTabel.child.text = 'meow'
 		nodeType.members["child"] = childFuncType;
 		userDefined.addType(std::move(nodeType));
 
-		userDefined.addFreeFunction("root", {{}, {an::TypeInfo::fromTypeName("Node")}});
+		userDefined.addVariable("root", an::TypeInfo::createFunction({}, {an::TypeInfo::fromTypeName("Node")}));
 
 		const std::string program = "root():child(1):child(2):parent():parent():nbChilds()";
 

@@ -32,7 +32,7 @@ namespace lac::an
 		{
 			const auto parent = fce.member
 									? parentAsVariable().member(*fce.member)
-									: parentAsFunction();
+									: parentAsVariable();
 
 			if (parent.function.results.empty())
 				return {};
@@ -56,13 +56,6 @@ namespace lac::an
 			if (m_parentType.type == Type::unknown && !m_parentType.name.empty())
 				return m_scope.resolve(m_scope.getVariableType(m_parentType.name));
 			return m_scope.resolve(m_parentType);
-		}
-
-		TypeInfo parentAsFunction() const
-		{
-			if (m_parentType.type == Type::unknown && !m_parentType.name.empty())
-				return m_scope.getFunctionType(m_parentType.name);
-			return m_parentType;
 		}
 
 		const Scope& m_scope;

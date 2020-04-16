@@ -15,29 +15,9 @@ namespace lac::an
 		return nullptr;
 	}
 
-	const UserDefined::Variables& UserDefined::variables() const
+	const UserDefined::TypeMap& UserDefined::variables() const
 	{
 		return m_variables;
-	}
-
-	void UserDefined::addFreeFunction(std::string_view name, FunctionInfo func)
-	{
-		TypeInfo info = Type::function;
-		info.function = std::move(func);
-		m_functions[std::string{name}] = std::move(info);
-	}
-
-	const TypeInfo* UserDefined::getFunction(std::string_view name) const
-	{
-		const auto it = m_functions.find(std::string{name});
-		if (it != m_functions.end())
-			return &it->second;
-		return nullptr;
-	}
-
-	const UserDefined::Functions& UserDefined::functions() const
-	{
-		return m_functions;
 	}
 
 	void UserDefined::addScriptInput(std::string_view name, FunctionInfo func)
@@ -55,7 +35,7 @@ namespace lac::an
 		return nullptr;
 	}
 	
-	const UserDefined::Functions& UserDefined::scriptInputs() const
+	const UserDefined::TypeMap& UserDefined::scriptInputs() const
 	{
 		return m_scriptEntries;
 	}
@@ -73,7 +53,7 @@ namespace lac::an
 		return nullptr;
 	}
 
-	const UserDefined::Types& UserDefined::types() const
+	const UserDefined::TypeMap& UserDefined::types() const
 	{
 		return m_types;
 	}

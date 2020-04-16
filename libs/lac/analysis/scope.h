@@ -2,6 +2,8 @@
 
 #include <lac/analysis/type_info.h>
 
+#include <map>
+#include <set>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -37,24 +39,13 @@ namespace lac::an
 		Scope() = default;
 		Scope(const ast::Block& block, Scope* parent = nullptr);
 
-		// This class cannot be copied
-		Scope(const Scope&) = delete;
-		Scope& operator=(const Scope&) = delete;
+		void addVariable(const std::string& name, TypeInfo type);
+		TypeInfo getVariableType(const std::string& name) const;
 
-		// But it can be moved
-		Scope(Scope&&) noexcept = default;
-		Scope& operator=(Scope&&) noexcept = default;
+		TypeInfo& modifyTable(const std::string& name);
 
-		void addVariable(std::string_view name, TypeInfo type);
-		TypeInfo getVariableType(std::string_view name) const;
-
-		TypeInfo& modifyTable(std::string_view name);
-
-		void addLabel(std::string_view name);
-		bool hasLabel(std::string_view name) const;
-
-		void addFunction(std::string_view name, TypeInfo type);
-		TypeInfo getFunctionType(std::string_view name) const;
+		void addLabel(const std::string& name);
+		bool hasLabel(const std::string& name) const;
 
 		TypeInfo getUserType(std::string_view name) const;
 
@@ -75,27 +66,9 @@ namespace lac::an
 		Scope* m_parent = nullptr;
 		UserDefined* m_userDefined = nullptr;
 
-		struct VariableInfo
-		{
-			std::string name;
-			TypeInfo type;
-		};
-
-		struct LabelInfo
-		{
-			std::string name;
-		};
-
-		struct FunctionInfo
-		{
-			std::string name;
-			TypeInfo type;
-		};
-
 		std::vector<Scope> m_children;
-		std::vector<VariableInfo> m_variables;
-		std::vector<LabelInfo> m_labels;
-		std::vector<FunctionInfo> m_functions;
+		std::map<std::string, TypeInfo> m_variables;
+		std::set<std::string> m_labels;
 	};
 
 	ElementsMap getElements(const TypeInfo& type);

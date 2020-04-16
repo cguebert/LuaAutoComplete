@@ -123,7 +123,7 @@ namespace lac
 			REQUIRE(test_phrase_parser("function func(x, y) end", parser::chunkRule(), block));
 
 			auto scope = analyseBlock(block);
-			const auto info = scope.getFunctionType("func");
+			const auto info = scope.getVariableType("func");
 			REQUIRE(info.type == Type::function);
 			const auto& fd = info.function;
 			REQUIRE(fd.parameters.size() == 2);
@@ -141,7 +141,7 @@ namespace lac
 			REQUIRE(scope.children().size() == 1);
 			const auto& child = scope.children().front();
 			CHECK(child.getVariableType("x").type == Type::unknown);
-			CHECK(child.getFunctionType("func").type == Type::function); // A function is known inside itself (for recursive functions)
+			CHECK(child.getVariableType("func").type == Type::function); // A function is known inside itself (for recursive functions)
 		}
 
 		TEST_CASE("Local function definition")
@@ -150,7 +150,7 @@ namespace lac
 			REQUIRE(test_phrase_parser("local function func(x, y) end", parser::chunkRule(), block));
 
 			auto scope = analyseBlock(block);
-			const auto info = scope.getFunctionType("func");
+			const auto info = scope.getVariableType("func");
 			REQUIRE(info.type == Type::function);
 			const auto& fd = info.function;
 			REQUIRE(fd.parameters.size() == 2);
@@ -275,14 +275,14 @@ namespace lac
 		TEST_CASE("Functions")
 		{
 			UserDefined user;
-			user.addFreeFunction("func", {{{"x", Type::number},
-										   {"y"}},
-										  {Type::number}});
+			user.addVariable("func", TypeInfo::createFunction({{"x", Type::number},
+															   {"y"}},
+															  {Type::number}));
 
 			Scope scope;
 			scope.setUserDefined(&user);
 
-			const auto func = scope.getFunctionType("func");
+			const auto func = scope.getVariableType("func");
 			REQUIRE(func.type == Type::function);
 			REQUIRE(func.function.results.size() == 1);
 			CHECK(func.function.results[0].type == Type::number);
@@ -303,9 +303,9 @@ namespace lac
 			complexType.members["imag"] = Type::number;
 			user.addType(complexType);
 
-			user.addFreeFunction("createComplex", {{{"real", Type::number},
-													{"imag", Type::number}},
-												   {TypeInfo::fromTypeName("Complex")}});
+			user.addVariable("createComplex", TypeInfo::createFunction({{"real", Type::number},
+																		{"imag", Type::number}},
+																	   {TypeInfo::fromTypeName("Complex")}));
 
 			user.addScriptInput("run", {{{"num", Type::number},
 										 {"name", Type::string}}});
@@ -379,7 +379,7 @@ namespace lac
 			playerType.members["setPosition"] = TypeInfo::createFunction({{"position", TypeInfo::fromTypeName("Vector3")}}, {});
 			userDefined.addType(std::move(playerType));
 
-			userDefined.addFreeFunction("getPlayer", {{}, {TypeInfo::fromTypeName("Player")}});
+			userDefined.addVariable("getPlayer", TypeInfo::createFunction({}, {TypeInfo::fromTypeName("Player")}));
 
 			Scope parentScope;
 			parentScope.setUserDefined(&userDefined);
