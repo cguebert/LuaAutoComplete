@@ -121,6 +121,11 @@ namespace lac::an
 		return true;
 	}
 
+	bool TypeInfo::hasMember(const std::string& name) const
+	{
+		return members.count(name) != 0;
+	}
+
 	TypeInfo TypeInfo::member(const std::string& name) const
 	{
 		return members.count(name)

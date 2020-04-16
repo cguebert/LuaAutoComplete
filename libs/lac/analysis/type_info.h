@@ -72,6 +72,7 @@ namespace lac::an
 
 		// For tables
 		std::map<std::string, TypeInfo> members;
+		bool hasMember(const std::string& name) const;
 		TypeInfo member(const std::string& name) const;
 
 		// For functions

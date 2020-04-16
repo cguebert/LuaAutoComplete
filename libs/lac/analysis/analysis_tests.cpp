@@ -186,14 +186,14 @@ namespace lac
 			REQUIRE(info.type == Type::table);
 			REQUIRE(info.members.size() == 3);
 
-			REQUIRE(info.members.count("x"));
-			CHECK(info.members.at("x").type == Type::number);
+			REQUIRE(info.hasMember("x"));
+			CHECK(info.member("x").type == Type::number);
 
-			REQUIRE(info.members.count("name"));
-			CHECK(info.members.at("name").type == Type::string);
+			REQUIRE(info.hasMember("name"));
+			CHECK(info.member("name").type == Type::string);
 
-			REQUIRE(info.members.count("test"));
-			CHECK(info.members.at("test").type == Type::boolean);
+			REQUIRE(info.hasMember("test"));
+			CHECK(info.member("test").type == Type::boolean);
 		}
 
 		TEST_CASE("Table constructor expression only")
@@ -206,14 +206,14 @@ namespace lac
 			REQUIRE(info.type == Type::table);
 			REQUIRE(info.members.size() == 3);
 
-			REQUIRE(info.members.count("1"));
-			CHECK(info.members.at("1").type == Type::number);
+			REQUIRE(info.hasMember("1"));
+			CHECK(info.member("1").type == Type::number);
 
-			REQUIRE(info.members.count("2"));
-			CHECK(info.members.at("2").type == Type::string);
+			REQUIRE(info.hasMember("2"));
+			CHECK(info.member("2").type == Type::string);
 
-			REQUIRE(info.members.count("3"));
-			CHECK(info.members.at("3").type == Type::boolean);
+			REQUIRE(info.hasMember("3"));
+			CHECK(info.member("3").type == Type::boolean);
 		}
 
 		TEST_CASE("Table constructor varied")
@@ -226,16 +226,16 @@ namespace lac
 			REQUIRE(info.type == Type::table);
 			REQUIRE(info.members.size() == 3);
 
-			REQUIRE(info.members.count("1"));
-			CHECK(info.members.at("1").type == Type::number);
+			REQUIRE(info.hasMember("1"));
+			CHECK(info.member("1").type == Type::number);
 
-			REQUIRE(info.members.count("2"));
-			CHECK(info.members.at("2").type == Type::boolean);
+			REQUIRE(info.hasMember("2"));
+			CHECK(info.member("2").type == Type::boolean);
 
-			REQUIRE(info.members.count("text"));
-			CHECK(info.members.at("text").type == Type::string);
+			REQUIRE(info.hasMember("text"));
+			CHECK(info.member("text").type == Type::string);
 
-			CHECK_FALSE(info.members.count("3"));
+			CHECK_FALSE(info.hasMember("3"));
 		}
 
 		TEST_CASE("Table member assignment")
@@ -248,14 +248,14 @@ namespace lac
 			REQUIRE(info.type == Type::table);
 			REQUIRE(info.members.size() == 3);
 
-			REQUIRE(info.members.count("x"));
-			CHECK(info.members.at("x").type == Type::number);
+			REQUIRE(info.hasMember("x"));
+			CHECK(info.member("x").type == Type::number);
 
-			REQUIRE(info.members.count("str"));
-			CHECK(info.members.at("str").type == Type::string);
+			REQUIRE(info.hasMember("str"));
+			CHECK(info.member("str").type == Type::string);
 
-			REQUIRE(info.members.count("test"));
-			CHECK(info.members.at("test").type == Type::boolean);
+			REQUIRE(info.hasMember("test"));
+			CHECK(info.member("test").type == Type::boolean);
 		}
 
 		TEST_CASE("Table member hierarchy")
