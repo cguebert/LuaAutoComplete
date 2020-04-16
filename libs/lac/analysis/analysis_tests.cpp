@@ -36,6 +36,7 @@ namespace lac
 			EXPRESSION_TYPE("true", Type::boolean);
 			EXPRESSION_TYPE("42", Type::number);
 			EXPRESSION_TYPE("'test'", Type::string);
+			EXPRESSION_TYPE("{}", Type::table);
 			EXPRESSION_TYPE("{x=1, 2}", Type::table);
 			EXPRESSION_TYPE("function () end", Type::function);
 
@@ -272,6 +273,50 @@ namespace lac
 			CHECK(info.member("b").member("v").type == Type::number);
 			CHECK(info.member("b").member("c").type == Type::table);
 			CHECK(info.member("b").member("c").member("t").type == Type::boolean);
+		}
+
+		TEST_CASE("Table function definition syntactic sugar")
+		{
+			ast::Block block;
+			const auto program = R"~~(
+t = {}
+t.val = 42
+function t.func(x)
+	return -x;
+end
+
+function t:getVal()
+	return self.val
+end
+
+function t.setVal(self, x)
+	self.val = x
+end
+)~~";
+			REQUIRE(test_phrase_parser(program, parser::chunkRule(), block));
+
+			auto scope = analyseBlock(block);
+			const auto info = scope.getVariableType("t");
+			REQUIRE(info.type == Type::table);
+			REQUIRE(info.members.size() == 4);
+			CHECK(info.member("val").type == Type::number);
+
+			const auto func = info.member("func");
+			CHECK(func.type == Type::function);
+			CHECK_FALSE(func.isMethod());
+			REQUIRE(func.function.parameters.size() == 1);
+			CHECK(func.function.parameters.front().name() == "x");
+
+			const auto getVal = info.member("getVal");
+			CHECK(getVal.type == Type::function);
+			CHECK(getVal.isMethod());
+			CHECK(getVal.function.parameters.empty());
+
+			const auto setVal = info.member("setVal");
+			CHECK(setVal.type == Type::function);
+			CHECK(setVal.isMethod());
+			REQUIRE(setVal.function.parameters.size() == 1);
+			CHECK(setVal.function.parameters.front().name() == "x");
 		}
 
 		TEST_SUITE_BEGIN("User defined");

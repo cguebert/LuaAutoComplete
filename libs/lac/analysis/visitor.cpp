@@ -233,9 +233,9 @@ namespace lac::an
 						auto* memberType = &tableType;
 
 						// Table member
-						for (auto restIt = var.rest.begin(); restIt != var.rest.end(); ++restIt)
+						for (const auto& restIt : var.rest)
 						{
-							const auto& memberExp = restIt->get();
+							const auto& memberExp = restIt.get();
 							const auto& memberExpType = memberExp.type();
 							if (memberExpType == typeid(ast::TableIndexName))
 							{
@@ -331,11 +331,32 @@ namespace lac::an
 
 			// Global function
 			if (s.name.rest.empty() && !s.name.member)
+			{
 				m_scope.addVariable(s.name.start, std::move(funcType));
+				(*this)(s.body, s.name.start);
+				return;
+			}
 
-			// TODO: support declaration of a table method
+			// Declaration of a table function or method
+			auto& tableType = m_scope.modifyTable(s.name.start);
+			auto* memberType = &tableType;
 
-			(*this)(s.body, s.name.start); // TODO: also use the full function name here (or empty)
+			// Table member
+			for (const auto& r : s.name.rest)
+				memberType = &memberType->members[r];
+			
+			if (memberType)
+			{
+				if (s.name.member)
+				{
+					funcType.function.isMethod = true;
+					memberType = &memberType->members[s.name.member->name];
+				}
+
+				*memberType = funcType;
+			}
+			
+			(*this)(s.body); // Visit the body scope
 		}
 
 		void operator()(const ast::LocalFunctionDeclarationStatement& s) const
