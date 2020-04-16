@@ -10,6 +10,42 @@
 #include <doctest/doctest.h>
 #include <cctype>
 
+namespace
+{
+	// If a variable has a simple name (only one part) return it or else empty string
+	std::string getSimpleName(const lac::ast::VariableOrFunction& var)
+	{
+		if (var.member)
+			return {};
+
+		if (var.start.get().type() == typeid(lac::ast::Variable))
+		{
+			const auto& variable = boost::get<lac::ast::Variable>(var.start);
+			if (variable.rest.empty() && variable.start.get().type() == typeid(std::string))
+				return boost::get<std::string>(variable.start);
+		}
+		else
+		{
+			const auto& call = boost::get<lac::ast::FunctionCall>(var.start);
+			if (call.rest.empty() && call.start.get().type() == typeid(std::string))
+				return boost::get<std::string>(call.start);
+		}
+
+		return {};
+	}
+
+	lac::an::ElementsMap filterFunctions(const lac::an::ElementsMap& in)
+	{
+		lac::an::ElementsMap out;
+		for (const auto& it : in)
+		{
+			if (it.second.typeInfo.type == lac::an::Type::function)
+				out.insert(it);
+		}
+		return out;
+	}
+} // namespace
+
 namespace lac::comp
 {
 	void Completion::setUserDefined(lac::an::UserDefined userDefined)
@@ -124,7 +160,7 @@ namespace lac::comp
 		if (!scope)
 			return rootScope.getElements();
 
-		CompletionFilter filter = CompletionFilter::none;	
+		CompletionFilter filter = CompletionFilter::none;
 		if (str[pos] == '.')
 			filter = CompletionFilter::variables;
 		else if (str[pos] == ':')
@@ -164,9 +200,16 @@ namespace lac::comp
 		if (!var)
 			return localScope.getElements(false);
 
-		const auto info = getVariableType(localScope, *var);
-		if (info.type == an::Type::nil)
-			return {}; // Cannot return members as this is not a known table
+		auto info = getVariableType(localScope, *var);
+		if (info.type != an::Type::table && filter == CompletionFilter::variables)
+		{ // Test if we can show a type's functions (this is for constructors)
+			const auto name = getSimpleName(*var);
+			if (!name.empty())
+				info = localScope.getUserType(name);
+			if (info.type == an::Type::table)
+				return filterFunctions(getElements(info, an::ElementType::variable));
+			return {};
+		}
 
 		if (filter == CompletionFilter::none)
 			return getElements(info);

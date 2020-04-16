@@ -430,6 +430,37 @@ end
 			CHECK(completion.getTypeHierarchyAtPos(program, 55) == StrVec{"Vector3", "length"});
 		}
 
+		TEST_CASE("Completion of constructors")
+		{
+			using namespace lac::an;
+			UserDefined userDefined;
+			TypeInfo vec3Type = Type::table;
+			vec3Type.name = "Vector3";
+			vec3Type.members["new"] = TypeInfo::createFunction({}, {TypeInfo::fromTypeName("Vector3")});
+			vec3Type.members["x"] = Type::number;
+			vec3Type.members["y"] = Type::number;
+			vec3Type.members["z"] = Type::number;
+			vec3Type.members["length"] = TypeInfo::createMethod({}, {Type::number});
+			vec3Type.members["mult"] = TypeInfo::createMethod({{"v", Type::number}}, {TypeInfo::fromTypeName("Vector3")});
+			userDefined.addType(std::move(vec3Type));
+
+			std::string program = R"~~(
+vec = Vector3.new()
+vec.x = 42
+len = vec:length()
+)~~";
+
+			using StrVec = std::vector<std::string>;
+
+			Completion completion;
+			completion.setUserDefined(userDefined);
+			REQUIRE(completion.updateProgram(program));
+
+			auto list = completion.getAutoCompletionList(program, 15); // Vector3.n
+			CHECK(list.size() == 1);
+			CHECK(list.count("new"));
+		}
+
 		TEST_SUITE_END();
 	} // namespace comp
 } // namespace lac
