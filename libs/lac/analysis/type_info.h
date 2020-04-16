@@ -48,6 +48,7 @@ namespace lac::an
 	{
 		std::vector<VariableInfo> parameters;
 		std::vector<TypeInfo> results;
+		bool isMethod = false;
 	};
 
 	class CORE_API TypeInfo
@@ -59,6 +60,7 @@ namespace lac::an
 		static TypeInfo fromTypeName(std::string_view name); // For used-defined types
 		static TypeInfo fromName(std::string_view name); // For either variable or function names (when we do not yet know) 
 		static TypeInfo createFunction(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results = {});
+		static TypeInfo createMethod(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results = {});
 
 		// Returns destination if possible, error otherwise
 		TypeInfo convert(Type destination) const;
@@ -74,6 +76,7 @@ namespace lac::an
 
 		// For functions
 		FunctionInfo function;
+		bool isMethod() const;
 
 		// For variable name, function name, or user-defined type
 		std::string name;

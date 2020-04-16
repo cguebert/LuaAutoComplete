@@ -144,18 +144,6 @@ namespace lac::an
 			for (const auto& it : scope.m_variables)
 				addVariable(it.first, it.second, local);
 
-			for (const auto& label : scope.m_labels)
-			{
-				if (elements.count(label))
-					continue;
-
-				Element elt;
-				elt.local = local;
-				elt.name = label;
-				elt.elementType = ElementType::label;
-				elements[label] = std::move(elt);
-			}
-
 			if (scope.m_userDefined)
 			{
 				for (const auto& it : scope.m_userDefined->variables())
@@ -184,8 +172,8 @@ namespace lac::an
 			Element elt;
 			elt.name = it.first;
 			elt.typeInfo = it.second;
-			if (it.second.type == Type::function)
-				elt.elementType = ElementType::function;
+			if (it.second.isMethod())
+				elt.elementType = ElementType::method;
 			elements[it.first] = std::move(elt);
 		}
 
@@ -197,16 +185,14 @@ namespace lac::an
 		ElementsMap elements;
 		for (const auto& it : type.members)
 		{
-			if (it.second.type == Type::function && filter == ElementType::variable)
-				continue;
-			if (it.second.type != Type::function && filter == ElementType::function)
+			if (it.second.isMethod() != (filter == ElementType::method))
 				continue;
 
 			Element elt;
 			elt.name = it.first;
 			elt.typeInfo = it.second;
-			if (it.second.type == Type::function)
-				elt.elementType = ElementType::function;
+			if (it.second.isMethod())
+				elt.elementType = ElementType::method;
 			elements[it.first] = std::move(elt);
 		}
 

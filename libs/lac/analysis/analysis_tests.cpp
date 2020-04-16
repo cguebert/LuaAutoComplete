@@ -126,6 +126,23 @@ namespace lac
 			const auto info = scope.getVariableType("func");
 			REQUIRE(info.type == Type::function);
 			const auto& fd = info.function;
+			CHECK_FALSE(fd.isMethod);
+			REQUIRE(fd.parameters.size() == 2);
+			CHECK(fd.parameters[0].name() == "x");
+			CHECK(fd.parameters[0].type().type == Type::unknown);
+			CHECK(fd.parameters[1].name() == "y");
+		}
+
+		TEST_CASE("Method definition")
+		{
+			ast::Block block;
+			REQUIRE(test_phrase_parser("function func(self, x, y) end", parser::chunkRule(), block));
+
+			auto scope = analyseBlock(block);
+			const auto info = scope.getVariableType("func");
+			REQUIRE(info.type == Type::function);
+			const auto& fd = info.function;
+			CHECK(fd.isMethod);
 			REQUIRE(fd.parameters.size() == 2);
 			CHECK(fd.parameters[0].name() == "x");
 			CHECK(fd.parameters[0].type().type == Type::unknown);

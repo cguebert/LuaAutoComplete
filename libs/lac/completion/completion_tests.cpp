@@ -282,8 +282,8 @@ end
 			myTable.members["memberNum"] = an::Type::number;
 			myTable.members["memberText"] = an::Type::string;
 			myTable.members["memberBool"] = an::Type::boolean;
-			myTable.members["method1"] = an::Type::function;
-			myTable.members["method2"] = an::Type::function;
+			myTable.members["method1"] = an::TypeInfo::createMethod({});
+			myTable.members["method2"] = an::TypeInfo::createMethod({});
 			scope.addVariable("myTable", myTable);
 
 			CHECK(getAutoCompletionList(scope, "").size() == 5);
@@ -294,10 +294,10 @@ end
 			CHECK(getAutoCompletionList(scope, "noTable.test").size() == 0);
 			CHECK(getAutoCompletionList(scope, "noTable:test").size() == 0);
 
-			// Return all members
-			CHECK(getAutoCompletionList(scope, "myTable.").size() == 5);
-			CHECK(getAutoCompletionList(scope, "myTable.memberNum").size() == 5);
-			CHECK(getAutoCompletionList(scope, "myTable.dummy").size() == 5);
+			// Return all variables
+			CHECK(getAutoCompletionList(scope, "myTable.").size() == 3);
+			CHECK(getAutoCompletionList(scope, "myTable.memberNum").size() == 3);
+			CHECK(getAutoCompletionList(scope, "myTable.dummy").size() == 3);
 
 			// Return only methods
 			CHECK(getAutoCompletionList(scope, "myTable:").size() == 2);
@@ -321,6 +321,8 @@ myTable.m_text = 'bar'
 myTable.m_bool = false
 myTable.m_func1 = function(a) return -a end
 myTable.m_func2 = function(a) return a * 2 end
+myTable.m_meth1 = function(self, a) return -a end
+myTable.m_meth2 = function(self, a) return a * 2 end
 )~~";
 
 			Completion completion;
@@ -330,7 +332,7 @@ myTable.m_func2 = function(a) return a * 2 end
 			CHECK(completion.getAutoCompletionList("none").size() == 5);
 			CHECK(completion.getAutoCompletionList("num").size() == 5);
 
-			// Return all members
+			// Return all variables
 			CHECK(completion.getAutoCompletionList("myTable.").size() == 5);
 			CHECK(completion.getAutoCompletionList("myTable.memberNum").size() == 5);
 			CHECK(completion.getAutoCompletionList("myTable.dummy").size() == 5);
@@ -369,16 +371,16 @@ end
 			vec3Type.members["x"] = Type::number;
 			vec3Type.members["y"] = Type::number;
 			vec3Type.members["z"] = Type::number;
-			vec3Type.members["length"] = TypeInfo::createFunction({}, {Type::number});
-			vec3Type.members["mult"] = TypeInfo::createFunction({{"v", Type::number}}, {TypeInfo::fromTypeName("Vector3")});
+			vec3Type.members["length"] = TypeInfo::createMethod({}, {Type::number});
+			vec3Type.members["mult"] = TypeInfo::createMethod({{"v", Type::number}}, {TypeInfo::fromTypeName("Vector3")});
 			userDefined.addType(std::move(vec3Type));
 
 			TypeInfo playerType = Type::table;
 			playerType.name = "Player";
 			playerType.members["name"] = Type::string;
-			playerType.members["id"] = TypeInfo::createFunction({}, {Type::number});
-			playerType.members["position"] = TypeInfo::createFunction({}, {TypeInfo::fromTypeName("Vector3")});
-			playerType.members["setPosition"] = TypeInfo::createFunction({{"position", TypeInfo::fromTypeName("Vector3")}}, {});
+			playerType.members["id"] = TypeInfo::createMethod({}, {Type::number});
+			playerType.members["position"] = TypeInfo::createMethod({}, {TypeInfo::fromTypeName("Vector3")});
+			playerType.members["setPosition"] = TypeInfo::createMethod({{"position", TypeInfo::fromTypeName("Vector3")}}, {});
 			userDefined.addType(std::move(playerType));
 
 			userDefined.addScriptInput("run", {{{"player", TypeInfo::fromTypeName("Player")}}, {}});

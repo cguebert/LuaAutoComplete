@@ -124,13 +124,11 @@ namespace lac::comp
 		if (!scope)
 			return rootScope.getElements();
 
-		CompletionFilter filter = CompletionFilter::none;
-		/*	
+		CompletionFilter filter = CompletionFilter::none;	
 		if (str[pos] == '.')
 			filter = CompletionFilter::variables;
-		else */
-		if (str[pos] == ':')
-			filter = CompletionFilter::functions;
+		else if (str[pos] == ':')
+			filter = CompletionFilter::methods;
 
 		bool membersOnly = (str[pos] == '.' || str[pos] == ':');
 		if (membersOnly)
@@ -156,8 +154,8 @@ namespace lac::comp
 
 		// Deduct the filter from the syntax used
 		filter = var->member
-					 ? CompletionFilter::functions
-					 : CompletionFilter::none; // Not only variables, but all members
+					 ? CompletionFilter::methods
+					 : CompletionFilter::variables;
 		return getAutoCompletionList(*scope, removeLastPart(*var), filter);
 	}
 
@@ -174,9 +172,9 @@ namespace lac::comp
 			return getElements(info);
 
 		return getElements(info,
-						   filter == CompletionFilter::variables
-							   ? an::ElementType::variable
-							   : an::ElementType::function);
+						   filter == CompletionFilter::methods
+							   ? an::ElementType::method
+							   : an::ElementType::variable);
 	}
 
 	boost::optional<ast::VariableOrFunction> getContext(std::string_view str, size_t pos)

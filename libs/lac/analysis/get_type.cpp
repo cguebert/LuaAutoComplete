@@ -102,10 +102,18 @@ namespace lac::an
 		TypeInfo operator()(const ast::FunctionBody& fb) const
 		{
 			TypeInfo info{Type::function};
-			if (fb.parameters)
+			if (fb.parameters && !fb.parameters->parameters.empty())
 			{
-				for (const auto& p : fb.parameters->parameters)
-					info.function.parameters.emplace_back(p);
+				const auto& params = fb.parameters->parameters;
+				size_t i = 0;
+				if (params.front() == "self")
+				{
+					info.function.isMethod = true;
+					++i; // Ignore this parameter
+				}
+
+				for (size_t nb = params.size(); i<nb; ++i)
+					info.function.parameters.emplace_back(params[i]);
 			}
 			// TODO: fill the function results
 			return info;

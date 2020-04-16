@@ -65,6 +65,16 @@ namespace lac::an
 		TypeInfo type{Type::function};
 		type.function.parameters = std::move(parameters);
 		type.function.results = std::move(results);
+		type.function.isMethod = false;
+		return type;
+	}
+
+	TypeInfo TypeInfo::createMethod(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results)
+	{
+		TypeInfo type{Type::function};
+		type.function.parameters = std::move(parameters);
+		type.function.results = std::move(results);
+		type.function.isMethod = true;
 		return type;
 	}
 
@@ -116,6 +126,11 @@ namespace lac::an
 		return members.count(name)
 				   ? members.at(name)
 				   : TypeInfo{};
+	}
+
+	bool TypeInfo::isMethod() const
+	{
+		return function.isMethod;
 	}
 
 	std::string TypeInfo::typeName() const

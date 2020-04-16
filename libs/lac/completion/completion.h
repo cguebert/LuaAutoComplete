@@ -15,7 +15,7 @@ namespace lac
 		{
 			none,
 			variables,
-			functions
+			methods
 		};
 
 		class CORE_API Completion

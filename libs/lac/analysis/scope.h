@@ -20,8 +20,7 @@ namespace lac::an
 	enum class ElementType
 	{
 		variable,
-		function,
-		label
+		method,
 	};
 
 	struct Element
