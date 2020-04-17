@@ -26,6 +26,8 @@ namespace
 			const auto fc = boost::get<lac::ast::f_VariableFunctionCall>(vpf).get();
 			if (fc.functionCall.member)
 				type = type.member(*fc.functionCall.member);
+			if (type.function.getResultTypeFunc)
+				return type.function.getResultTypeFunc(fc.functionCall.arguments);
 			if (type.function.results.empty())
 				return lac::an::Type::unknown;
 			type = scope.resolve(type.function.results.front());
@@ -47,6 +49,8 @@ namespace
 
 		if (fcp.functionCall.member)
 			type = type.member(*fcp.functionCall.member);
+		if (type.function.getResultTypeFunc)
+			return type.function.getResultTypeFunc(fcp.functionCall.arguments);
 		if (type.function.results.empty())
 			return lac::an::Type::unknown;
 		return scope.resolve(type.function.results.front());
@@ -89,17 +93,28 @@ namespace
 			const auto fc = boost::get<lac::ast::f_VariableFunctionCall>(vpf).get();
 			if (fc.functionCall.member)
 				type = type.member(*fc.functionCall.member);
-			if (type.function.results.empty())
+			if (type.function.getResultTypeFunc)
 			{
+				// Restart with the result of this call
 				hierarchy.clear();
-				return lac::an::Type::unknown;
+				const auto res = type.function.getResultTypeFunc(fc.functionCall.arguments);
+				hierarchy.push_back(res.typeName());
+				type = scope.resolve(res);
 			}
+			else
+			{
+				if (type.function.results.empty())
+				{
+					hierarchy.clear();
+					return lac::an::Type::unknown;
+				}
 
-			// Restart with the result of this call
-			hierarchy.clear();
-			const auto& res = type.function.results.front();
-			hierarchy.push_back(res.typeName());
-			type = scope.resolve(res);
+				// Restart with the result of this call
+				hierarchy.clear();
+				const auto& res = type.function.results.front();
+				hierarchy.push_back(res.typeName());
+				type = scope.resolve(res);
+			}
 
 			// Continue the chain
 			return processPostFix(hierarchy, scope, type, fc.postVariable);
@@ -130,17 +145,29 @@ namespace
 
 		if (fcp.functionCall.member)
 			type = type.member(*fcp.functionCall.member);
-		if (type.function.results.empty())
-		{
-			hierarchy.clear();
-			return lac::an::Type::unknown;
-		}
 
-		// Restart with the result of this call
-		hierarchy.clear();
-		const auto& res = type.function.results.front();
-		hierarchy.push_back(res.typeName());
-		type = scope.resolve(res);
+		if (type.function.getResultTypeFunc)
+		{
+			// Restart with the result of this call
+			hierarchy.clear();
+			const auto res = type.function.getResultTypeFunc(fcp.functionCall.arguments);
+			hierarchy.push_back(res.typeName());
+			type = scope.resolve(res);
+		}
+		else
+		{
+			if (type.function.results.empty())
+			{
+				hierarchy.clear();
+				return lac::an::Type::unknown;
+			}
+
+			// Restart with the result of this call
+			hierarchy.clear();
+			const auto& res = type.function.results.front();
+			hierarchy.push_back(res.typeName());
+			type = scope.resolve(res);
+		}
 		return type;
 	}
 

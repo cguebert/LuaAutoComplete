@@ -494,6 +494,62 @@ end
 			}
 		}
 
+		TEST_CASE("Function return type callback")
+		{
+			auto testCallback = [](const ast::Arguments& args) -> TypeInfo {
+				if (args.get().type() != typeid(ast::ExpressionsList))
+					return Type::unknown;
+
+				const auto& expList = boost::get<ast::ExpressionsList>(args);
+				if (expList.empty())
+					return Type::unknown;
+
+				const auto& op = expList.front().operand;
+				if (op.get().type() != typeid(ast::LiteralString))
+					return Type::unknown;
+
+				const auto& name = boost::get<ast::LiteralString>(op).value;
+				if (name == "int")
+					return Type::number;
+				else if (name == "string")
+					return Type::string;
+				else if (name == "bool")
+					return Type::boolean;
+
+				return Type::unknown;
+			};
+
+			UserDefined userDefined;
+			userDefined.addVariable("create", TypeInfo::createFunction({{"type", Type::string}}, {}, testCallback));
+
+			Scope parentScope;
+			parentScope.setUserDefined(&userDefined);
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local x = create('int')", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("x");
+				CHECK(info.type == Type::number);
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local x = create('string')", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("x");
+				CHECK(info.type == Type::string);
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local x = create('bool')", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("x");
+				CHECK(info.type == Type::boolean);
+			}
+		}
+
 		TEST_SUITE_END();
 	} // namespace an
 } // namespace lac

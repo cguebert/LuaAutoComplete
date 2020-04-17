@@ -60,21 +60,23 @@ namespace lac::an
 		return type;
 	}
 
-	TypeInfo TypeInfo::createFunction(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results)
+	TypeInfo TypeInfo::createFunction(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results, FunctionInfo::GetResultType func)
 	{
 		TypeInfo type{Type::function};
 		type.function.parameters = std::move(parameters);
 		type.function.results = std::move(results);
 		type.function.isMethod = false;
+		type.function.getResultTypeFunc = func;
 		return type;
 	}
 
-	TypeInfo TypeInfo::createMethod(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results)
+	TypeInfo TypeInfo::createMethod(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results, FunctionInfo::GetResultType func)
 	{
 		TypeInfo type{Type::function};
 		type.function.parameters = std::move(parameters);
 		type.function.results = std::move(results);
 		type.function.isMethod = true;
+		type.function.getResultTypeFunc = func;
 		return type;
 	}
 

@@ -2,11 +2,17 @@
 
 #include <lac/core_api.h>
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
+
+namespace lac::ast
+{
+	struct Arguments;
+}
 
 namespace lac::an
 {
@@ -46,9 +52,12 @@ namespace lac::an
 
 	struct FunctionInfo
 	{
+		using GetResultType = std::function<TypeInfo(const ast::Arguments&)>;
+
 		std::vector<VariableInfo> parameters;
 		std::vector<TypeInfo> results;
 		bool isMethod = false;
+		GetResultType getResultTypeFunc;
 	};
 
 	class CORE_API TypeInfo
@@ -59,8 +68,8 @@ namespace lac::an
 
 		static TypeInfo fromTypeName(std::string_view name); // For used-defined types
 		static TypeInfo fromName(std::string_view name); // For either variable or function names (when we do not yet know) 
-		static TypeInfo createFunction(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results = {});
-		static TypeInfo createMethod(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results = {});
+		static TypeInfo createFunction(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results = {}, FunctionInfo::GetResultType func = {});
+		static TypeInfo createMethod(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results = {}, FunctionInfo::GetResultType func = {});
 
 		// Returns destination if possible, error otherwise
 		TypeInfo convert(Type destination) const;

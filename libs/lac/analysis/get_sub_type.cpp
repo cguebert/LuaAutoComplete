@@ -34,6 +34,9 @@ namespace lac::an
 									? parentAsVariable().member(*fce.member)
 									: parentAsVariable();
 
+			if (parent.function.getResultTypeFunc)
+				return parent.function.getResultTypeFunc(fce.arguments);
+
 			if (parent.function.results.empty())
 				return {};
 			return parent.function.results.front(); // TODO: return all results
