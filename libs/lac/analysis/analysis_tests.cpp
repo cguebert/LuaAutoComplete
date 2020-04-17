@@ -3,6 +3,7 @@
 #include <lac/analysis/user_defined.h>
 #include <lac/parser/chunk.h>
 
+#include <lac/helper/arguments.h>
 #include <lac/helper/test_utils.h>
 
 namespace lac
@@ -497,18 +498,11 @@ end
 		TEST_CASE("Function return type callback")
 		{
 			auto testCallback = [](const ast::Arguments& args) -> TypeInfo {
-				if (args.get().type() != typeid(ast::ExpressionsList))
+				const auto str = helper::getLiteralString(args);
+				if (!str)
 					return Type::unknown;
 
-				const auto& expList = boost::get<ast::ExpressionsList>(args);
-				if (expList.empty())
-					return Type::unknown;
-
-				const auto& op = expList.front().operand;
-				if (op.get().type() != typeid(ast::LiteralString))
-					return Type::unknown;
-
-				const auto& name = boost::get<ast::LiteralString>(op).value;
+				const auto& name = *str;
 				if (name == "int")
 					return Type::number;
 				else if (name == "string")
