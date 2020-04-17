@@ -35,7 +35,7 @@ namespace lac::an
 									: parentAsVariable();
 
 			if (parent.function.getResultTypeFunc)
-				return parent.function.getResultTypeFunc(fce.arguments);
+				return parent.function.getResultTypeFunc(m_scope, fce.arguments);
 
 			if (parent.function.results.empty())
 				return {};

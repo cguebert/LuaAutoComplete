@@ -497,7 +497,7 @@ end
 
 		TEST_CASE("Function return type callback")
 		{
-			auto testCallback = [](const ast::Arguments& args) -> TypeInfo {
+			auto testCallback = [](const an::Scope&, const ast::Arguments& args) -> TypeInfo {
 				const auto str = helper::getLiteralString(args);
 				if (!str)
 					return Type::unknown;
@@ -538,6 +538,67 @@ end
 			{
 				ast::Block block;
 				REQUIRE(test_phrase_parser("local x = create('bool')", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("x");
+				CHECK(info.type == Type::boolean);
+			}
+		}
+
+		TEST_CASE("Function callback argument type")
+		{
+			auto testCallback = [](const an::Scope& scope, const ast::Arguments& args) -> TypeInfo {
+				return helper::getType(scope, args, 0);
+			};
+
+			UserDefined userDefined;
+			userDefined.addVariable("test", TypeInfo::createFunction({{"type", Type::string}}, {}, testCallback));
+
+			Scope parentScope;
+			parentScope.setUserDefined(&userDefined);
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local x = test(42)", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("x");
+				CHECK(info.type == Type::number);
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local x = test('foo')", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("x");
+				CHECK(info.type == Type::string);
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local x = test(true)", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("x");
+				CHECK(info.type == Type::boolean);
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local y = 42; local x = test(y)", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("x");
+				CHECK(info.type == Type::number);
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local y = 'foo'; local x = test(y)", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("x");
+				CHECK(info.type == Type::string);
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local y = false; local x = test(y)", parser::chunkRule(), block));
 				const auto scope = analyseBlock(block, &parentScope);
 				const auto info = scope.getVariableType("x");
 				CHECK(info.type == Type::boolean);

@@ -27,7 +27,7 @@ namespace
 			if (fc.functionCall.member)
 				type = type.member(*fc.functionCall.member);
 			if (type.function.getResultTypeFunc)
-				return type.function.getResultTypeFunc(fc.functionCall.arguments);
+				return type.function.getResultTypeFunc(scope, fc.functionCall.arguments);
 			if (type.function.results.empty())
 				return lac::an::Type::unknown;
 			type = scope.resolve(type.function.results.front());
@@ -50,7 +50,7 @@ namespace
 		if (fcp.functionCall.member)
 			type = type.member(*fcp.functionCall.member);
 		if (type.function.getResultTypeFunc)
-			return type.function.getResultTypeFunc(fcp.functionCall.arguments);
+			return type.function.getResultTypeFunc(scope, fcp.functionCall.arguments);
 		if (type.function.results.empty())
 			return lac::an::Type::unknown;
 		return scope.resolve(type.function.results.front());
@@ -97,7 +97,7 @@ namespace
 			{
 				// Restart with the result of this call
 				hierarchy.clear();
-				const auto res = type.function.getResultTypeFunc(fc.functionCall.arguments);
+				const auto res = type.function.getResultTypeFunc(scope, fc.functionCall.arguments);
 				hierarchy.push_back(res.typeName());
 				type = scope.resolve(res);
 			}
@@ -150,7 +150,7 @@ namespace
 		{
 			// Restart with the result of this call
 			hierarchy.clear();
-			const auto res = type.function.getResultTypeFunc(fcp.functionCall.arguments);
+			const auto res = type.function.getResultTypeFunc(scope, fcp.functionCall.arguments);
 			hierarchy.push_back(res.typeName());
 			type = scope.resolve(res);
 		}

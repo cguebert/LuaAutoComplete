@@ -31,6 +31,7 @@ namespace lac::an
 		error
 	};
 
+	class Scope;
 	class TypeInfo;
 	class CORE_API VariableInfo
 	{
@@ -52,7 +53,7 @@ namespace lac::an
 
 	struct FunctionInfo
 	{
-		using GetResultType = std::function<TypeInfo(const ast::Arguments&)>;
+		using GetResultType = std::function<TypeInfo(const Scope& scope, const ast::Arguments&)>;
 
 		std::vector<VariableInfo> parameters;
 		std::vector<TypeInfo> results;
