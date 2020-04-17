@@ -1,4 +1,4 @@
-#include <lac/analysis/visitor.h>
+#include <lac/analysis/analyze_block.h>
 #include <lac/analysis/scope.h>
 #include <lac/analysis/get_type.h>
 #include <lac/analysis/user_defined.h>

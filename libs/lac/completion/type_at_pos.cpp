@@ -1,5 +1,5 @@
+#include <lac/analysis/analyze_block.h>
 #include <lac/analysis/user_defined.h>
-#include <lac/analysis/visitor.h>
 #include <lac/completion/type_at_pos.h>
 #include <lac/completion/variable_at_pos.h>
 #include <lac/completion/get_block.h>

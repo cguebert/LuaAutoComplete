@@ -1,4 +1,4 @@
-#include <lac/analysis/visitor.h>
+#include <lac/analysis/analyze_block.h>
 #include <lac/completion/completion.h>
 #include <lac/completion/get_block.h>
 #include <lac/completion/variable_at_pos.h>

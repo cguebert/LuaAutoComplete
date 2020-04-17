@@ -1,7 +1,7 @@
-#include <lac/parser/chunk.h>
+#include <lac/analysis/analyze_block.h>
 #include <lac/analysis/scope.h>
-#include <lac/analysis/visitor.h>
 #include <lac/analysis/user_defined.h>
+#include <lac/parser/chunk.h>
 
 #include <lac/helper/test_utils.h>
 
