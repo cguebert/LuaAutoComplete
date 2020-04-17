@@ -2,6 +2,7 @@
 
 #include <lac/core_api.h>
 
+#include <any>
 #include <functional>
 #include <map>
 #include <memory>
@@ -93,5 +94,7 @@ namespace lac::an
 		std::string name;
 
 		std::string typeName() const; // Return the type name, and convert basic types to string
+
+		std::any custom; // For any custom data we may need
 	};
 } // namespace lac::an

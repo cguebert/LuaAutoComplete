@@ -551,7 +551,7 @@ end
 			};
 
 			UserDefined userDefined;
-			userDefined.addVariable("test", TypeInfo::createFunction({{"type", Type::string}}, {}, testCallback));
+			userDefined.addVariable("test", TypeInfo::createFunction({{"arg", Type::unknown}}, {}, testCallback));
 
 			Scope parentScope;
 			parentScope.setUserDefined(&userDefined);
@@ -602,6 +602,107 @@ end
 				const auto scope = analyseBlock(block, &parentScope);
 				const auto info = scope.getVariableType("x");
 				CHECK(info.type == Type::boolean);
+			}
+		}
+
+		TEST_CASE("Function callback custom data")
+		{
+			// This creates a type containing a custom data
+			auto createToken = [](const an::Scope& scope, const ast::Arguments& args) -> TypeInfo {
+				const auto str = helper::getLiteralString(args, 0);
+				if (!str)
+					return Type::unknown;
+
+				auto info = TypeInfo::fromTypeName("Token");
+				info.custom = *str;
+				return info;
+			};
+
+			// This creates a table based on the custom data contained in the argument
+			auto createObject = [](const an::Scope& scope, const ast::Arguments& args) -> TypeInfo {
+				auto token = helper::getType(scope, args, 0);
+				if (token.name != "Token" || token.custom.type() != typeid(std::string))
+					return Type::unknown;
+
+				TypeInfo out = Type::table;
+				const auto type = std::any_cast<std::string>(token.custom);
+				if (type == "cat")
+					out.members["meow"] = TypeInfo::createMethod({}, {});
+				else if (type == "dog")
+					out.members["bark"] = TypeInfo::createMethod({}, {});
+				else
+					return Type::unknown;
+				return out;
+			};
+
+			UserDefined userDefined;
+			userDefined.addVariable("token", TypeInfo::createFunction({{"type", Type::string}}, {TypeInfo::fromTypeName("Token")}, createToken));
+			userDefined.addVariable("create", TypeInfo::createFunction({{"token", TypeInfo::fromTypeName("Token")}}, {Type::table}, createObject));
+
+			Scope parentScope;
+			parentScope.setUserDefined(&userDefined);
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local t = token('foo')", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("t");
+				CHECK(info.type == Type::userdata);
+				CHECK(info.name == "Token");
+				REQUIRE(info.custom.type() == typeid(std::string));
+				CHECK(std::any_cast<std::string>(info.custom) == "foo");
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local o = create('dog')", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("o");
+				CHECK(info.type == Type::unknown);
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local t = token('foo'); local o = create(t)", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("o");
+				CHECK(info.type == Type::unknown);
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local t = token('dog'); local o = create(t)", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("o");
+				CHECK(info.type == Type::table);
+				CHECK(info.hasMember("bark"));
+				CHECK(info.member("bark").type == Type::function);
+				CHECK(info.member("bark").function.isMethod);
+				CHECK_FALSE(info.hasMember("meow"));
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local t = token('cat'); local o = create(t)", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("o");
+				CHECK(info.type == Type::table);
+				CHECK(info.hasMember("meow"));
+				CHECK(info.member("meow").type == Type::function);
+				CHECK(info.member("meow").function.isMethod);
+				CHECK_FALSE(info.hasMember("bark"));
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local o = create(token('dog'))", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("o");
+				CHECK(info.type == Type::table);
+				CHECK(info.hasMember("bark"));
+				CHECK(info.member("bark").type == Type::function);
+				CHECK(info.member("bark").function.isMethod);
+				CHECK_FALSE(info.hasMember("meow"));
 			}
 		}
 
