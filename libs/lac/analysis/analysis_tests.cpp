@@ -706,6 +706,38 @@ end
 			}
 		}
 
+		TEST_CASE("Script entry custom data")
+		{
+			UserDefined user;
+
+			TypeInfo playerType = Type::table;
+			playerType.name = "Player";
+			playerType.custom = 42;
+
+			user.addScriptInput("run", {{{"object", playerType}}});
+
+			auto debugFunc = [](const an::Scope& scope, const ast::Arguments& args) {
+				return helper::getType(scope, args, 0);
+			};
+			user.addVariable("debug", TypeInfo::createFunction({{"obj", Type::unknown}}, {}, debugFunc));
+
+			Scope parentScope;
+			parentScope.setUserDefined(&user);
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("function run(obj) local x = debug(obj) end", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				REQUIRE(scope.children().size() == 1);
+				const auto& funcScope = scope.children().front();
+				const auto info = funcScope.getVariableType("x");
+				CHECK(info == playerType);
+				CHECK(info.type == Type::table);
+				REQUIRE(info.custom.type() == typeid(int));
+				CHECK(std::any_cast<int>(info.custom) == 42);
+			}
+		}
+
 		TEST_SUITE_END();
 	} // namespace an
 } // namespace lac
