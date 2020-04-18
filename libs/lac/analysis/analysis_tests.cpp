@@ -412,7 +412,7 @@ end
 				const auto infoX = scope.getVariableType("x");
 				CHECK(infoX.type == Type::userdata);
 				CHECK(infoX.name == "Complex");
-				const auto type = scope.getUserType(infoX.name);
+				const auto type = scope.resolve(infoX);
 				CHECK(type.members.size() == 3);
 				CHECK(type.member("new").type == Type::function);
 				CHECK(type.member("real").type == Type::number);
@@ -712,9 +712,12 @@ end
 
 			TypeInfo playerType = Type::table;
 			playerType.name = "Player";
-			playerType.custom = 42;
+			playerType.members["pos"] = TypeInfo::fromTypeName("Vector3");
+			user.addType(playerType);
 
-			user.addScriptInput("run", {{{"object", playerType}}});
+			auto playerInst = TypeInfo::fromTypeName("Player");
+			playerInst.custom = 42;
+			user.addScriptInput("run", {{{"object", playerInst}}});
 
 			auto debugFunc = [](const an::Scope& scope, const ast::Arguments& args) {
 				return helper::getType(scope, args, 0);
@@ -730,9 +733,10 @@ end
 				const auto scope = analyseBlock(block, &parentScope);
 				REQUIRE(scope.children().size() == 1);
 				const auto& funcScope = scope.children().front();
-				const auto info = funcScope.getVariableType("x");
-				CHECK(info == playerType);
+				const auto info = scope.resolve(funcScope.getVariableType("x"));
 				CHECK(info.type == Type::table);
+				CHECK(info.name == "Player");
+				CHECK(info.hasMember("pos"));
 				REQUIRE(info.custom.type() == typeid(int));
 				CHECK(std::any_cast<int>(info.custom) == 42);
 			}

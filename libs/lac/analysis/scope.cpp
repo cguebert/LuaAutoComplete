@@ -105,7 +105,13 @@ namespace lac::an
 	TypeInfo Scope::resolve(const TypeInfo& type) const
 	{
 		if (type.type == Type::userdata)
-			return getUserType(type.name);
+		{
+			auto out = getUserType(type.name);
+			// Copy the custom data
+			if (type.custom.has_value() && !out.custom.has_value())
+				out.custom = type.custom;
+			return out;
+		}
 		return type;
 	}
 

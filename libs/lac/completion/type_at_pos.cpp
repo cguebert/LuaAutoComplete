@@ -11,10 +11,7 @@ namespace
 {
 	lac::an::TypeInfo getType(const lac::an::Scope& scope, const std::string& name)
 	{
-		auto info = scope.getVariableType(name);
-		if (info.type == lac::an::Type::userdata)
-			return scope.getUserType(info.name);
-		return info;
+		return scope.resolve(scope.getVariableType(name));
 	}
 
 	lac::an::TypeInfo processPostFix(const lac::an::Scope& scope, lac::an::TypeInfo type, const lac::ast::VariablePostfix& vpf)
