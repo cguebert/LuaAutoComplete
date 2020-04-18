@@ -129,6 +129,11 @@ namespace lac::editor
 		return m_highlighter;
 	}
 
+	void LuaEditor::setTooltipFunc(TooltipFunc func)
+	{
+		m_tooltipFunc = func;
+	}
+
 	bool LuaEditor::event(QEvent* evt)
 	{
 		if (evt->type() == QEvent::ToolTip)
@@ -139,8 +144,14 @@ namespace lac::editor
 			removeNonASCII(text);
 
 			const auto typeInfo = m_programCompletion.getTypeAtPos(text, pos);
-			if (typeInfo.type != lac::an::Type::nil)
-				QToolTip::showText(helpEvent->globalPos(), QString::fromStdString(typeInfo.typeName()));
+			QString tooltipText;
+			if (m_tooltipFunc)
+				tooltipText = m_tooltipFunc(typeInfo);
+			else if (typeInfo.type != lac::an::Type::nil)
+				tooltipText = QString::fromStdString(typeInfo.typeName());
+
+			if (!tooltipText.isEmpty())
+				QToolTip::showText(helpEvent->globalPos(), tooltipText);
 			else
 				QToolTip::hideText();
 
@@ -472,4 +483,6 @@ namespace lac::editor
 			m_completionModel->setCompletionList(list);
 		}
 	}
+
+	
 } // namespace lac::editor

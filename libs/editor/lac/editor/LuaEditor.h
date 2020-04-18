@@ -34,12 +34,16 @@ namespace lac::editor
 	{
 		Q_OBJECT
 	public:
+		using TooltipFunc = std::function<QString(const lac::an::TypeInfo& type)>;
+
 		LuaEditor(QWidget* parent = nullptr);
 
 		void setDesign(const EditorDesign& design); // Change the style of the editor
 		void setUserDefined(lac::an::UserDefined userDefined); // Setup custom types & functions
 
 		EditorHighlighter* highlighter();
+
+		void setTooltipFunc(TooltipFunc func);
 
 	protected:
 		bool event(QEvent* evt) override;
@@ -57,5 +61,7 @@ namespace lac::editor
 
 		EditorHighlighter* m_highlighter = nullptr;
 		bool m_textChanged = true;
+
+		TooltipFunc m_tooltipFunc;
 	};
 } // namespace lac::editor
