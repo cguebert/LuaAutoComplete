@@ -790,6 +790,75 @@ end
 			}
 		}
 
+		TEST_CASE("Generic for ipair")
+		{
+			UserDefined user;
+
+			TypeInfo numArray = Type::array;
+			numArray.name = "number";
+			user.addVariable("nums", numArray);
+
+			TypeInfo strArray = Type::array;
+			strArray.name = "string";
+			user.addVariable("strings", strArray);
+
+			TypeInfo playerType = Type::table;
+			playerType.name = "Player";
+			user.addType(playerType);
+
+			TypeInfo players = Type::array;
+			players.name = "Player";
+			user.addVariable("players", players);
+
+			auto ipairFunc = [](const an::Scope& scope, const ast::Arguments& args) {
+				const auto arrayType = helper::getType(scope, args, 0);
+				TypeInfo valueType = Type::unknown;
+				if (arrayType.type == Type::array)
+					valueType = TypeInfo::fromTypeName(arrayType.name);
+				return TypeInfo::createFunction({}, {Type::number, valueType});
+			};
+			user.addVariable("ipair", TypeInfo::createFunction({{"x", Type::unknown}}, {}, ipairFunc));
+
+			Scope parentScope;
+			parentScope.setUserDefined(&user);
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("for i, v in ipair(nums) do print(i, v) end", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				REQUIRE(scope.children().size() == 1);
+				const auto& funcScope = scope.children().front();
+				const auto infoI = scope.getVariableType("i");
+				CHECK(infoI.type == Type::number);
+				const auto infoV = scope.getVariableType("v");
+				CHECK(infoV.type == Type::number);
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("for i, v in ipair(strings) do print(i, v) end", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				REQUIRE(scope.children().size() == 1);
+				const auto& funcScope = scope.children().front();
+				const auto infoI = scope.getVariableType("i");
+				CHECK(infoI.type == Type::number);
+				const auto infoV = scope.getVariableType("v");
+				CHECK(infoV.type == Type::string);
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("for i, v in ipair(players) do print(i, v) end", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				REQUIRE(scope.children().size() == 1);
+				const auto& funcScope = scope.children().front();
+				const auto infoI = scope.getVariableType("i");
+				CHECK(infoI.type == Type::number);
+				const auto infoV = scope.getVariableType("v");
+				CHECK(infoV == playerType);
+			}
+		}
+
 		TEST_SUITE_END();
 	} // namespace an
 } // namespace lac

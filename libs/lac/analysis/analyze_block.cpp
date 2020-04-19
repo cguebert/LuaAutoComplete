@@ -311,14 +311,32 @@ namespace lac::an
 		void operator()(const ast::GenericForStatement& s) const
 		{
 			Scope scope{s.block, &m_scope};
-			size_t nbV = s.variables.size(), nbE = s.expressions.size();
-			for (size_t i = 0; i < nbV; ++i)
+			if (s.expressions.empty())
 			{
-				TypeInfo type;
-				// TODO: support expressions with multiple returns
-				if (i < nbE)
-					type = getType(m_scope, s.expressions[i]);
-				m_scope.addVariable(s.variables[i], type);
+				for (const auto& var : s.variables)
+					m_scope.addVariable(var, {});
+			}
+			else
+			{
+				const auto iterType = getType(m_scope, s.expressions.front());
+				size_t nbV = s.variables.size();
+				if (iterType.type == Type::function)
+				{
+					const auto& res = iterType.function.results; 
+					size_t nbR = res.size();
+					for (size_t i = 0; i < nbV; ++i)
+					{
+						TypeInfo type;
+						if (i < nbR)
+							type = res[i];
+						m_scope.addVariable(s.variables[i], type);
+					}
+				}
+				else
+				{
+					for (const auto& var : s.variables)
+						m_scope.addVariable(var, {});
+				}
 			}
 
 			analyseBlock(scope, s.block);
