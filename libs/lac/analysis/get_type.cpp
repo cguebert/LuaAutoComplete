@@ -45,7 +45,9 @@ namespace lac::an
 
 		TypeInfo operator()(const std::string& str) const
 		{
-			return TypeInfo::fromName(str);
+			TypeInfo type = Type::unknown;
+			type.name = str;
+			return type;
 		}
 
 		TypeInfo operator()(const ast::UnaryOperation& uo) const

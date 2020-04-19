@@ -70,7 +70,6 @@ namespace lac::an
 		TypeInfo(Type type);
 
 		static TypeInfo fromTypeName(std::string_view name); // For used-defined types
-		static TypeInfo fromName(std::string_view name); // For either variable or function names (when we do not yet know) 
 		static TypeInfo createFunction(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results = {}, FunctionInfo::GetResultType func = {});
 		static TypeInfo createMethod(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results = {}, FunctionInfo::GetResultType func = {});
 

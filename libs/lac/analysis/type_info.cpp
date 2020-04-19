@@ -62,13 +62,6 @@ namespace lac::an
 		return type;
 	}
 
-	TypeInfo TypeInfo::fromName(std::string_view name)
-	{
-		TypeInfo type{Type::unknown};
-		type.name = name;
-		return type;
-	}
-
 	TypeInfo TypeInfo::createFunction(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results, FunctionInfo::GetResultType func)
 	{
 		TypeInfo type{Type::function};
