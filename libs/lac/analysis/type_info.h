@@ -53,9 +53,15 @@ namespace lac::an
 		std::unique_ptr<TypeInfo> m_type; // Unique_ptr to break the circular dependency
 	};
 
-	struct FunctionInfo
+	class CORE_API FunctionInfo
 	{
+	public:
 		using GetResultType = std::function<TypeInfo(const Scope& scope, const ast::Arguments&)>;
+
+		FunctionInfo();
+		FunctionInfo(std::vector<VariableInfo> params, std::vector<TypeInfo> results = {});
+		FunctionInfo(std::string_view text, FunctionInfo::GetResultType func = {}); // Parse the given string to build the type
+		FunctionInfo(const char* text, FunctionInfo::GetResultType func = {});
 
 		std::vector<VariableInfo> parameters;
 		std::vector<TypeInfo> results;
@@ -68,8 +74,11 @@ namespace lac::an
 	public:
 		TypeInfo();
 		TypeInfo(Type type);
+
 		TypeInfo(std::string_view text); // Parse the given string to build the type
+		TypeInfo(const char* text);
 		TypeInfo(std::string_view text, FunctionInfo::GetResultType func);
+		TypeInfo(const char* text, FunctionInfo::GetResultType func);
 
 		static TypeInfo fromTypeName(std::string_view name); // For used-defined types
 		static TypeInfo createFunction(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results = {}, FunctionInfo::GetResultType func = {});

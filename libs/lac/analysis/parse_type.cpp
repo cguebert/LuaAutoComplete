@@ -272,6 +272,43 @@ namespace lac::type::parser
 
 namespace lac::an
 {
+	TypeInfo createType(const type::ast::NamedType& named)
+	{
+		TypeInfo info;
+		if (named.isArray)
+		{
+			info.type = Type::array;
+			info.name = named.typeName;
+		}
+		else
+			info = TypeInfo::fromTypeName(named.typeName);
+		return info;
+	}
+
+	FunctionInfo createFunction(const type::ast::FunctionType& func)
+	{
+		FunctionInfo info;
+		info.isMethod = func.isMethod;
+		for (const auto& arg : func.arguments)
+			info.parameters.emplace_back(arg.name, createType(arg.type));
+
+		for (const auto& res : func.results)
+			info.results.push_back(createType(res));
+		return info;
+	}
+
+	bool setFunction(FunctionInfo& info, std::string_view view)
+	{
+		auto f = view.begin();
+		const auto l = view.end();
+		type::ast::FunctionType func;
+		if (!boost::spirit::x3::phrase_parse(f, l, type::parser::function, boost::spirit::x3::ascii::space, func) || f != l)
+			return false;
+
+		info = createFunction(func);
+		return true;
+	}
+
 	bool setType(TypeInfo& info, std::string_view view)
 	{
 		auto f = view.begin();
@@ -280,35 +317,46 @@ namespace lac::an
 		if (!boost::spirit::x3::phrase_parse(f, l, type::parser::parsedType, boost::spirit::x3::ascii::space, type) || f != l)
 			return false;
 
-		auto createType = [](const type::ast::NamedType& named) {
-			TypeInfo info;
-			if (named.isArray)
-			{
-				info.type = Type::array;
-				info.name = named.typeName;
-			}
-			else
-				info = TypeInfo::fromTypeName(named.typeName);
-			return info;
-		};
-
 		if (type.get().type() == typeid(type::ast::NamedType))
-		{
 			info = createType(boost::get<type::ast::NamedType>(type));
-		}
 		else
 		{
-			const auto& func = boost::get<type::ast::FunctionType>(type);
 			info.type = Type::function;
-			info.function.isMethod = func.isMethod;
-			for (const auto& arg : func.arguments)
-				info.function.parameters.emplace_back(arg.name, createType(arg.type));
-
-			for (const auto& res : func.results)
-				info.function.results.push_back(createType(res));
+			info.function = createFunction(boost::get<type::ast::FunctionType>(type));
 		}
 
 		return true;
+	}
+
+	TEST_CASE("FunctionInfo from text")
+	{
+		auto info = FunctionInfo{"number function(string text)"};
+		CHECK(info.isMethod == false);
+		CHECK_FALSE(info.getResultTypeFunc);
+		REQUIRE(info.parameters.size() == 1);
+		CHECK(info.parameters[0].name() == "text");
+		CHECK(info.parameters[0].type().type == Type::string);
+		REQUIRE(info.results.size() == 1);
+		CHECK(info.results[0].type == Type::number);
+
+		info = FunctionInfo{"number, Player function(Player[] playerList)"};
+		CHECK(info.isMethod == false);
+		CHECK_FALSE(info.getResultTypeFunc);
+		REQUIRE(info.parameters.size() == 1);
+		CHECK(info.parameters[0].name() == "playerList");
+		CHECK(info.parameters[0].type().type == Type::array);
+		CHECK(info.parameters[0].type().name == "Player");
+		REQUIRE(info.results.size() == 2);
+		CHECK(info.results[0].type == Type::number);
+		CHECK(info.results[1].type == Type::userdata);
+		CHECK(info.results[1].name == "Player");
+
+		auto dummyFunc = [](const an::Scope& scope, const ast::Arguments& args) {
+			return TypeInfo(Type::number);
+		};
+
+		info = FunctionInfo{"function()", dummyFunc};
+		CHECK(info.getResultTypeFunc);
 	}
 
 	TEST_CASE("TypeInfo from text")

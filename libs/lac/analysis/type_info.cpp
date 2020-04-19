@@ -40,6 +40,27 @@ namespace lac::an
 
 	/****************************************************************************/
 
+	FunctionInfo::FunctionInfo() = default;
+
+	FunctionInfo::FunctionInfo(std::vector<VariableInfo> params, std::vector<TypeInfo> results)
+		: parameters(std::move(params))
+		, results(std::move(results))
+	{
+	}
+
+	FunctionInfo::FunctionInfo(std::string_view text, FunctionInfo::GetResultType func)
+	{
+		setFunction(*this, text);
+		getResultTypeFunc = func;
+	}
+
+	FunctionInfo::FunctionInfo(const char* text, FunctionInfo::GetResultType func)
+		: FunctionInfo(std::string_view{text}, std::move(func))
+	{
+	}
+
+	/****************************************************************************/
+
 	TypeInfo::TypeInfo() = default;
 
 	TypeInfo::TypeInfo(Type type)
@@ -53,12 +74,22 @@ namespace lac::an
 			type = Type::error;
 	}
 
+	TypeInfo::TypeInfo(const char* text)
+		: TypeInfo(std::string_view{text})
+	{
+	}
+
 	TypeInfo::TypeInfo(std::string_view text, FunctionInfo::GetResultType func)
 	{
 		if (!setType(*this, text))
 			type = Type::error;
 		else if (type == Type::function)
 			function.getResultTypeFunc = func;
+	}
+
+	TypeInfo::TypeInfo(const char* text, FunctionInfo::GetResultType func)
+		: TypeInfo(std::string_view{text}, func)
+	{
 	}
 
 	TypeInfo TypeInfo::fromTypeName(std::string_view name)
