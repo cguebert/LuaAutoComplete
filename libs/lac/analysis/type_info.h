@@ -68,6 +68,8 @@ namespace lac::an
 	public:
 		TypeInfo();
 		TypeInfo(Type type);
+		TypeInfo(std::string_view text); // Parse the given string to build the type
+		TypeInfo(std::string_view text, FunctionInfo::GetResultType func);
 
 		static TypeInfo fromTypeName(std::string_view name); // For used-defined types
 		static TypeInfo createFunction(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results = {}, FunctionInfo::GetResultType func = {});

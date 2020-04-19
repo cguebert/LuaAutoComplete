@@ -1,4 +1,5 @@
 #include <lac/analysis/type_info.h>
+#include <lac/analysis/parse_type.h>
 
 #include <algorithm>
 
@@ -46,6 +47,20 @@ namespace lac::an
 	{
 	}
 
+	TypeInfo::TypeInfo(std::string_view text)
+	{
+		if (!setType(*this, text))
+			type = Type::error;
+	}
+
+	TypeInfo::TypeInfo(std::string_view text, FunctionInfo::GetResultType func)
+	{
+		if (!setType(*this, text))
+			type = Type::error;
+		else if (type == Type::function)
+			function.getResultTypeFunc = func;
+	}
+
 	TypeInfo TypeInfo::fromTypeName(std::string_view name)
 	{
 		if (name == "nil")
@@ -56,6 +71,8 @@ namespace lac::an
 			return Type::number;
 		else if (name == "string")
 			return Type::string;
+		else if (name == "table")
+			return Type::table;
 
 		TypeInfo type{Type::userdata};
 		type.name = name;
