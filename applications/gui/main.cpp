@@ -10,20 +10,29 @@ lac::an::UserDefined createUserDefined()
 	using namespace lac::an;
 	UserDefined userDefined;
 	TypeInfo mathType = Type::table;
-	mathType.members["abs"] = TypeInfo::createFunction({{"x", Type::number}}, {Type::number});
-	mathType.members["ceil"] = TypeInfo::createFunction({{"x", Type::number}}, {Type::number});
-	mathType.members["floor"] = TypeInfo::createFunction({{"x", Type::number}}, {Type::number});
-	mathType.members["max"] = TypeInfo::createFunction({{"x", Type::number}, {"y", Type::number}}, {Type::number});
-	mathType.members["min"] = TypeInfo::createFunction({{"x", Type::number}, {"y", Type::number}}, {Type::number});
+	mathType.members["abs"] = "number function(number val)";
+	mathType.members["ceil"] = "number function(number val)";
+	mathType.members["floor"] = "number function(number val)";
+	mathType.members["max"] = "number function(number x, number y)";
+	mathType.members["min"] = "number function(number x, number y)";
 	userDefined.addVariable("math", std::move(mathType));
+
+	TypeInfo vec3Type = Type::table;
+	vec3Type.name = "Vector3";
+	vec3Type.members["x"] = Type::number;
+	vec3Type.members["y"] = Type::number;
+	vec3Type.members["z"] = Type::number;
+	vec3Type.members["length"] = "number method()";
+	vec3Type.members["mult"] = "Vector3 method(number v)";
+	userDefined.addType(std::move(vec3Type));
 
 	TypeInfo playerType = Type::table;
 	playerType.name = "Player";
-	playerType.members["pos_x"] = Type::number;
-	playerType.members["pos_y"] = Type::number;
+	playerType.members["position"] = "Vector3 method()";
+	playerType.members["setPosition"] = "method(Vector3 position)";
 	playerType.members["name"] = Type::string;
 	userDefined.addType(playerType);
-	userDefined.addScriptInput("run", {{{"player", TypeInfo::fromTypeName("Player")}}, {}});
+	userDefined.addScriptInput("run", "function(Player player)");
 
 	return userDefined;
 }
@@ -60,8 +69,12 @@ myTable.neg = function(a) return -a end
 myTable.mult = function(a) return a * 2 end
 
 function run (player)
-	player.pos_x = player.pos_x + 1
-	player.pos_y = player.pos_y - 0.5
+	local pos = player:position()
+	local len = pos:length()
+	if len > 500 then
+		pos = pos:mult(500 / len)
+		player:setPosition(pos)
+	end
 end
 
 -- Testing user defined types

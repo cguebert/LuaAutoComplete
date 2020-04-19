@@ -371,19 +371,19 @@ end
 			vec3Type.members["x"] = Type::number;
 			vec3Type.members["y"] = Type::number;
 			vec3Type.members["z"] = Type::number;
-			vec3Type.members["length"] = TypeInfo::createMethod({}, {Type::number});
-			vec3Type.members["mult"] = TypeInfo::createMethod({{"v", Type::number}}, {TypeInfo::fromTypeName("Vector3")});
+			vec3Type.members["length"] = "number method()";
+			vec3Type.members["mult"] = "Vector3 method(number v)";
 			userDefined.addType(std::move(vec3Type));
 
 			TypeInfo playerType = Type::table;
 			playerType.name = "Player";
 			playerType.members["name"] = Type::string;
-			playerType.members["id"] = TypeInfo::createMethod({}, {Type::number});
-			playerType.members["position"] = TypeInfo::createMethod({}, {TypeInfo::fromTypeName("Vector3")});
-			playerType.members["setPosition"] = TypeInfo::createMethod({{"position", TypeInfo::fromTypeName("Vector3")}}, {});
+			playerType.members["id"] =  "number method()";
+			playerType.members["position"] = "Vector3 method()";
+			playerType.members["setPosition"] = "method(Vector3 position)";
 			userDefined.addType(std::move(playerType));
 
-			userDefined.addScriptInput("run", {{{"player", TypeInfo::fromTypeName("Player")}}, {}});
+			userDefined.addScriptInput("run", "function(Player player)");
 
 			std::string program = R"~~(
 function run(player)
@@ -436,12 +436,12 @@ end
 			UserDefined userDefined;
 			TypeInfo vec3Type = Type::table;
 			vec3Type.name = "Vector3";
-			vec3Type.members["new"] = TypeInfo::createFunction({}, {TypeInfo::fromTypeName("Vector3")});
+			vec3Type.members["new"] = "Vector3 function()";
 			vec3Type.members["x"] = Type::number;
 			vec3Type.members["y"] = Type::number;
 			vec3Type.members["z"] = Type::number;
-			vec3Type.members["length"] = TypeInfo::createMethod({}, {Type::number});
-			vec3Type.members["mult"] = TypeInfo::createMethod({{"v", Type::number}}, {TypeInfo::fromTypeName("Vector3")});
+			vec3Type.members["length"] = "number method()";
+			vec3Type.members["mult"] = "Vector3 method(number v)";
 			userDefined.addType(std::move(vec3Type));
 
 			std::string program = R"~~(

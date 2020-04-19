@@ -362,19 +362,14 @@ end
 
 			TypeInfo complexType = Type::table;
 			complexType.name = "Complex";
-			complexType.members["new"] = TypeInfo::createFunction({{"real", Type::number},
-																   {"imag", Type::number}},
-																  {TypeInfo::fromTypeName("Complex")});
+			complexType.members["new"] = "Complex function(number real, number imag)";
 			complexType.members["real"] = Type::number;
 			complexType.members["imag"] = Type::number;
 			user.addType(complexType);
 
-			user.addVariable("createComplex", TypeInfo::createFunction({{"real", Type::number},
-																		{"imag", Type::number}},
-																	   {TypeInfo::fromTypeName("Complex")}));
+			user.addVariable("createComplex", "Complex function(number real, number imag)");
 
-			user.addScriptInput("run", {{{"num", Type::number},
-										 {"name", Type::string}}});
+			user.addScriptInput("run", "function(number num, string name)");
 
 			Scope parentScope;
 			parentScope.setUserDefined(&user);
@@ -435,7 +430,7 @@ end
 			}
 		}
 
-		TEST_CASE("User defined multi types")
+		TEST_CASE("User defined multi types manually defined")
 		{
 			UserDefined userDefined;
 			TypeInfo vec3Type = Type::table;
@@ -456,6 +451,66 @@ end
 			userDefined.addType(std::move(playerType));
 
 			userDefined.addVariable("getPlayer", TypeInfo::createFunction({}, {TypeInfo::fromTypeName("Player")}));
+
+			Scope parentScope;
+			parentScope.setUserDefined(&userDefined);
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local player = getPlayer()", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("player");
+				CHECK(info.type == Type::userdata);
+				CHECK(info.name == "Player");
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local name = getPlayer().name", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("name");
+				CHECK(info.type == Type::string);
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local pos = getPlayer():position()", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("pos");
+				CHECK(info.type == Type::userdata);
+				CHECK(info.name == "Vector3");
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local len = getPlayer():position():length()", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("len");
+				CHECK(info.type == Type::number);
+			}
+		}
+
+		TEST_CASE("User defined multi type text defined")
+		{
+			UserDefined userDefined;
+			TypeInfo vec3Type = Type::table;
+			vec3Type.name = "Vector3";
+			vec3Type.members["x"] = Type::number;
+			vec3Type.members["y"] = Type::number;
+			vec3Type.members["z"] = Type::number;
+			vec3Type.members["length"] =  "number method()";
+			vec3Type.members["mult"] = "Vector3 method(number v)";
+			userDefined.addType(std::move(vec3Type));
+
+			TypeInfo playerType = Type::table;
+			playerType.name = "Player";
+			playerType.members["name"] = Type::string;
+			playerType.members["id"] =  "number method()";
+			playerType.members["position"] = "Vector3 method()";
+			playerType.members["setPosition"] = "method(Vector3 position)";
+			userDefined.addType(std::move(playerType));
+
+			userDefined.addVariable("getPlayer", "Player function()");
 
 			Scope parentScope;
 			parentScope.setUserDefined(&userDefined);
@@ -712,7 +767,7 @@ end
 
 			TypeInfo playerType = Type::table;
 			playerType.name = "Player";
-			playerType.members["pos"] = TypeInfo::fromTypeName("Vector3");
+			playerType.members["pos"] = "Vector3";
 			user.addType(playerType);
 
 			auto playerInst = TypeInfo::fromTypeName("Player");
@@ -746,21 +801,14 @@ end
 		{
 			UserDefined user;
 
-			TypeInfo numArray = Type::array;
-			numArray.name = "number";
-			user.addVariable("nums", numArray);
-
-			TypeInfo strArray = Type::array;
-			strArray.name = "string";
-			user.addVariable("strings", strArray);
+			user.addVariable("nums", "number[]");
+			user.addVariable("strings", "string[]");
 
 			TypeInfo playerType = Type::table;
 			playerType.name = "Player";
 			user.addType(playerType);
 
-			TypeInfo players = Type::array;
-			players.name = "Player";
-			user.addVariable("players", players);
+			user.addVariable("players", "Player[]");
 
 			Scope parentScope;
 			parentScope.setUserDefined(&user);
@@ -794,21 +842,14 @@ end
 		{
 			UserDefined user;
 
-			TypeInfo numArray = Type::array;
-			numArray.name = "number";
-			user.addVariable("nums", numArray);
-
-			TypeInfo strArray = Type::array;
-			strArray.name = "string";
-			user.addVariable("strings", strArray);
+			user.addVariable("nums", "number[]");
+			user.addVariable("strings", "string[]");
 
 			TypeInfo playerType = Type::table;
 			playerType.name = "Player";
 			user.addType(playerType);
 
-			TypeInfo players = Type::array;
-			players.name = "Player";
-			user.addVariable("players", players);
+			user.addVariable("players", "Player[]");
 
 			auto ipairFunc = [](const an::Scope& scope, const ast::Arguments& args) {
 				const auto arrayType = helper::getType(scope, args, 0);
