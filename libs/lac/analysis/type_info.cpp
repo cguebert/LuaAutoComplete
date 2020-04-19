@@ -48,6 +48,15 @@ namespace lac::an
 
 	TypeInfo TypeInfo::fromTypeName(std::string_view name)
 	{
+		if (name == "nil")
+			return Type::nil;
+		else if (name == "boolean")
+			return Type::boolean;
+		else if (name == "number")
+			return Type::number;
+		else if (name == "string")
+			return Type::string;
+
 		TypeInfo type{Type::userdata};
 		type.name = name;
 		return type;

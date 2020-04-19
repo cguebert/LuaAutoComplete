@@ -1,4 +1,5 @@
 #include <lac/analysis/get_sub_type.h>
+#include <lac/analysis/get_type.h>
 #include <lac/analysis/scope.h>
 #include <lac/parser/ast.h>
 
@@ -20,6 +21,10 @@ namespace lac::an
 
 		TypeInfo operator()(const ast::TableIndexExpression& tie) const
 		{
+			const auto parent = parentAsVariable();
+			if (parent.type == Type::array && getType(m_scope, tie.expression).type == Type::number)
+				return TypeInfo::fromTypeName(parent.name);
+
 			return {};
 		}
 

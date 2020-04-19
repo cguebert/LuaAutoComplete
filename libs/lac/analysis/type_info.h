@@ -24,6 +24,7 @@ namespace lac::an
 		number,
 		string,
 		table,
+		array,
 		function,
 		userdata,
 		thread,

@@ -742,6 +742,54 @@ end
 			}
 		}
 
+		TEST_CASE("Arrays")
+		{
+			UserDefined user;
+
+			TypeInfo numArray = Type::array;
+			numArray.name = "number";
+			user.addVariable("nums", numArray);
+
+			TypeInfo strArray = Type::array;
+			strArray.name = "string";
+			user.addVariable("strings", strArray);
+
+			TypeInfo playerType = Type::table;
+			playerType.name = "Player";
+			user.addType(playerType);
+
+			TypeInfo players = Type::array;
+			players.name = "Player";
+			user.addVariable("players", players);
+
+			Scope parentScope;
+			parentScope.setUserDefined(&user);
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("x = nums[1]", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("x");
+				CHECK(info.type == Type::number);
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("n = 42; x = strings[n]", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.getVariableType("x");
+				CHECK(info.type == Type::string);
+			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("x = players[1]", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto info = scope.resolve(scope.getVariableType("x"));
+				CHECK(info == playerType);
+			}
+		}
+
 		TEST_SUITE_END();
 	} // namespace an
 } // namespace lac
