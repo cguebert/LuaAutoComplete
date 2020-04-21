@@ -21,7 +21,6 @@ project(${META_PROJECT_NAME})
 # Options to build some projects
 option(BUILD_SHARED_LIBS "Build shared libraries." ON)
 option(BUILD_UNIT_TESTS "Build the unit tests." OFF)
-option(BUILD_TEST_APPLICATION "Build the test application." ON)
 option(BUILD_QT_PROJECTS "Build the QT projects." ON)
 
 # Generate folders for IDE targets (e.g., VisualStudio solutions)
@@ -72,7 +71,7 @@ if(BUILD_QT_PROJECTS)
 	add_subdirectory("applications/gui")
 endif()
 
-if(BUILD_TEST_APPLICATION)
+if(BUILD_UNIT_TESTS)
 	add_subdirectory("applications/tests")
 endif()
 

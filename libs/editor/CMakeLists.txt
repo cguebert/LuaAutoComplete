@@ -26,6 +26,9 @@ GroupFiles(Source_Files "lac/editor/")
 
 add_library(${target} ${Header_Files} ${Source_Files})
 
+# This changes the filename to `lac_editor`
+set_target_properties(${target} PROPERTIES PREFIX "lac_")
+
 # Create namespaced alias
 add_library(${META_PROJECT_NAME}::${target} ALIAS ${target})
 
