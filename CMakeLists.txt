@@ -21,7 +21,8 @@ project(${META_PROJECT_NAME})
 # Options to build some projects
 option(BUILD_SHARED_LIBS "Build shared libraries." ON)
 option(BUILD_UNIT_TESTS "Build the unit tests." OFF)
-option(BUILD_QT_PROJECTS "Build the QT projects." ON)
+option(BUILD_EDITOR "Build the editor library." ON)
+option(BUILD_EXAMPLE "Build the editor example." OFF)
 
 # Generate folders for IDE targets (e.g., VisualStudio solutions)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -66,8 +67,11 @@ endif()
 
 add_subdirectory("libs/lac")
 
-if(BUILD_QT_PROJECTS)
+if(BUILD_EDITOR)
 	add_subdirectory("libs/editor")
+endif()
+
+if(BUILD_EXAMPLE)
 	add_subdirectory("applications/gui")
 endif()
 
