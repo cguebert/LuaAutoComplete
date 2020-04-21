@@ -98,7 +98,11 @@ namespace lac::an
 			return Type::nil;
 		else if (name == "boolean")
 			return Type::boolean;
-		else if (name == "number")
+		else if (name == "number"
+				 || name == "int"
+				 || name == "integer"
+				 || name == "float"
+				 || name == "double")
 			return Type::number;
 		else if (name == "string")
 			return Type::string;
