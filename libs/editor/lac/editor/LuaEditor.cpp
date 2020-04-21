@@ -11,11 +11,13 @@
 #include <QTimer>
 #include <QToolTip>
 
+#include <cctype>
+
 namespace
 {
 	void removeNonASCII(std::string& str)
 	{
-		// Remove utf-8 characters as we use ASCII for now 
+		// Remove utf-8 characters as we use ASCII for now
 		// TODO: support UTF-8
 		for (auto& c : str)
 		{
@@ -23,7 +25,12 @@ namespace
 				c = ' ';
 		}
 	}
-}
+
+	bool isName(int ch)
+	{
+		return std::isalnum(ch) || ch == '_';
+	}
+} // namespace
 
 namespace lac::editor
 {
@@ -142,6 +149,12 @@ namespace lac::editor
 			const auto pos = cursorForPosition(helpEvent->pos()).position();
 			auto text = document()->toPlainText().toStdString();
 			removeNonASCII(text);
+
+			if (!isName(text[pos]))
+			{
+				QToolTip::hideText();
+				return true;
+			}
 
 			const auto typeInfo = m_programCompletion.getTypeAtPos(text, pos);
 			QString tooltipText;
@@ -484,5 +497,4 @@ namespace lac::editor
 		}
 	}
 
-	
 } // namespace lac::editor

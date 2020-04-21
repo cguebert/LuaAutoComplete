@@ -212,7 +212,9 @@ namespace lac::an
 		case Type::table:
 			return "table";
 		case Type::function:
-			return "function";
+			return function.isMethod
+					   ? "method"
+					   : "function";
 		case Type::userdata:
 			return "userdata";
 		case Type::thread:
