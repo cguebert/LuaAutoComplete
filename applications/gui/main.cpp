@@ -52,18 +52,18 @@ int main(int argc, char* argv[])
 num = 42
 text = 'foo'
 longText = [[multi-line
-text]]
+text with keywords and 42, 3.1459, 'str' ]]
 test = true
 func = function(a, b)
 	return a + b
 end
 
 --[[ Multi-line
-	comment ]]
+	comment, 42, while, "text" ]]
 
 myTable = {}
 myTable.num = 69
-myTable.text = "bar"
+myTable.text = "bar for 42"
 myTable.bool = false
 myTable.neg = function(a) return -a end
 myTable.mult = function(a) return a * 2 end

@@ -26,8 +26,25 @@ namespace lac::editor
 			rules.push_back(std::move(rule));
 		};
 
+		// Singleline comments
+		addRule("--[^\\[].*$", "#57a64a", false);
+
+		// Multiline comments
+		addMultilineRule("--\\[\\[.*", ".*\\]\\]", "#87a64a", false);
+
+
 		// Binary, hexadecimal and decimal numbers
 		addRule(R"~~(\b\d+\b|\b0[xX][0-9a-fA-F]+\b|\b0[b][01]+\b)~~", "#c3e88d");
+
+		// Lua keywords
+		addRule("\\b(and|break|do|else|elseif|end|false|for|function|goto|if|"
+				"in|local|nil|not|or|repeat|return|then|true|until|while)\\b",
+				"#569cd6");
+
+		// Metatables methods
+		addRule("\\b(__add|__sub|__mul|__div|__mod|__pow|__unm|__idiv|__band|__bo|__bxor|"
+				"__bnot|__shl|__shr|__concat|__len|__eq|__lt|__le|__index|__newindex|__call)\\b",
+				"#569cd6");
 
 		// Strings using simple quote
 		addRule(R"~~(\'[^\']*\')~~", "#d69d85");
@@ -40,22 +57,6 @@ namespace lac::editor
 
 		// Multiline strings
 		addMultilineRule("[^-]\\[\\[[^$]*", ".*\\]\\]", "#d69d85", false);
-
-		// Lua keywords
-		addRule("\\b(and|break|do|else|elseif|end|false|for|function|goto|if|"
-				"in|local|nil|not|or|repeat|return|then|true|until|while)\\b",
-				"#569cd6");
-
-		// Metatables methods
-		addRule("\\b(__add|__sub|__mul|__div|__mod|__pow|__unm|__idiv|__band|__bo|__bxor|"
-				"__bnot|__shl|__shr|__concat|__len|__eq|__lt|__le|__index|__newindex|__call)\\b",
-				"#569cd6");
-
-		// Singleline comments
-		addRule("--[^\\[].*$", "#57a64a", false);
-
-		// Multiline comments
-		addMultilineRule("--\\[\\[.*", ".*\\]\\]", "#87a64a", false);
 	}
 
 	void EditorHighlighter::highlightBlock(const QString& text)
