@@ -817,8 +817,10 @@ end
 				ast::Block block;
 				REQUIRE(test_phrase_parser("x = nums[1]", parser::chunkRule(), block));
 				const auto scope = analyseBlock(block, &parentScope);
-				const auto info = scope.getVariableType("x");
-				CHECK(info.type == Type::number);
+				const auto infoX = scope.getVariableType("x");
+				CHECK(infoX.type == Type::number);
+				const auto infoNums = scope.getVariableType("nums");
+				CHECK(infoNums.typeName() == "number[]");
 			}
 
 			{

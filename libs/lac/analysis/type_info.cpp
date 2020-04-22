@@ -197,7 +197,11 @@ namespace lac::an
 	std::string TypeInfo::typeName() const
 	{
 		if (!name.empty())
-			return name;
+		{
+			return type == Type::array
+					   ? name + "[]"
+					   : name;
+		}
 
 		switch (type)
 		{
