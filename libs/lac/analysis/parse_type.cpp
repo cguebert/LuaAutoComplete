@@ -351,7 +351,7 @@ namespace lac::an
 		CHECK(info.results[1].type == Type::userdata);
 		CHECK(info.results[1].name == "Player");
 
-		auto dummyFunc = [](const an::Scope& scope, const ast::Arguments& args) {
+		auto dummyFunc = [](const an::Scope& scope, const ast::Arguments& args, const an::TypeInfo&) {
 			return TypeInfo(Type::number);
 		};
 
@@ -411,7 +411,7 @@ namespace lac::an
 		CHECK(info.function.results[1].type == Type::userdata);
 		CHECK(info.function.results[1].name == "Player");
 
-		auto dummyFunc = [](const an::Scope& scope, const ast::Arguments& args) {
+		auto dummyFunc = [](const an::Scope& scope, const ast::Arguments& args, const an::TypeInfo&) {
 			return TypeInfo(Type::number);
 		};
 

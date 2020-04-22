@@ -35,16 +35,17 @@ namespace lac::an
 
 		TypeInfo operator()(const ast::FunctionCallEnd& fce) const
 		{
-			const auto parent = fce.member
-									? parentAsVariable().member(*fce.member)
-									: parentAsVariable();
+			const auto parent = parentAsVariable();
+			const auto type = fce.member
+								  ? parent.member(*fce.member)
+								  : parent;
 
-			if (parent.function.getResultTypeFunc)
-				return parent.function.getResultTypeFunc(m_scope, fce.arguments);
+			if (type.function.getResultTypeFunc)
+				return type.function.getResultTypeFunc(m_scope, fce.arguments, parent);
 
-			if (parent.function.results.empty())
+			if (type.function.results.empty())
 				return {};
-			return parent.function.results.front(); // TODO: return all results
+			return type.function.results.front(); // TODO: return all results
 		}
 
 		TypeInfo operator()(const ast::VariablePostfix& vp) const

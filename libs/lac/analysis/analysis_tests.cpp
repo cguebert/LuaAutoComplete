@@ -552,7 +552,7 @@ end
 
 		TEST_CASE("Function return type callback")
 		{
-			auto testCallback = [](const an::Scope&, const ast::Arguments& args) -> TypeInfo {
+			auto testCallback = [](const an::Scope&, const ast::Arguments& args, const an::TypeInfo&) -> TypeInfo {
 				const auto str = helper::getLiteralString(args);
 				if (!str)
 					return Type::unknown;
@@ -601,7 +601,7 @@ end
 
 		TEST_CASE("Function callback argument type")
 		{
-			auto testCallback = [](const an::Scope& scope, const ast::Arguments& args) -> TypeInfo {
+			auto testCallback = [](const an::Scope& scope, const ast::Arguments& args, const an::TypeInfo&) -> TypeInfo {
 				return helper::getType(scope, args, 0);
 			};
 
@@ -662,25 +662,9 @@ end
 
 		TEST_CASE("Function callback custom data")
 		{
-			// This creates a type containing a custom data
-			auto createToken = [](const an::Scope& scope, const ast::Arguments& args) -> TypeInfo {
-				const auto str = helper::getLiteralString(args, 0);
-				if (!str)
-					return Type::unknown;
-
-				auto info = TypeInfo::fromTypeName("Token");
-				info.custom = *str;
-				return info;
-			};
-
-			// This creates a table based on the custom data contained in the argument
-			auto createObject = [](const an::Scope& scope, const ast::Arguments& args) -> TypeInfo {
-				auto token = helper::getType(scope, args, 0);
-				if (token.name != "Token" || token.custom.type() != typeid(std::string))
-					return Type::unknown;
-
+			auto customType = [](const std::string& type) -> TypeInfo {
 				TypeInfo out = Type::table;
-				const auto type = std::any_cast<std::string>(token.custom);
+				out.name = type;
 				if (type == "cat")
 					out.members["meow"] = TypeInfo::createMethod({}, {});
 				else if (type == "dog")
@@ -688,6 +672,37 @@ end
 				else
 					return Type::unknown;
 				return out;
+			};
+
+			// This uses the parent type (for a method)
+			auto createFromParent = [&customType](const an::Scope& scope, const ast::Arguments&, const an::TypeInfo& token) -> TypeInfo {
+				if (token.name != "Token" || token.custom.type() != typeid(std::string))
+					return Type::unknown;
+
+				const auto name = std::any_cast<std::string>(token.custom);
+				return customType(name);
+			};
+
+			// This creates a type containing a custom data
+			auto createToken = [&](const an::Scope& scope, const ast::Arguments& args, const an::TypeInfo&) -> TypeInfo {
+				const auto str = helper::getLiteralString(args, 0);
+				if (!str)
+					return Type::unknown;
+
+				TypeInfo info = Type::table;
+				info.name = "Token";
+				info.custom = *str;
+				info.members["create"] = TypeInfo::createMethod({}, {}, createFromParent);
+				return info;
+			};
+
+			// This creates a table based on the custom data contained in the argument
+			auto createObject = [&customType](const an::Scope& scope, const ast::Arguments& args, const an::TypeInfo&) -> TypeInfo {
+				auto token = helper::getType(scope, args, 0);
+				if (token.name != "Token" || token.custom.type() != typeid(std::string))
+					return Type::unknown;
+
+				return customType(std::any_cast<std::string>(token.custom));
 			};
 
 			UserDefined userDefined;
@@ -702,7 +717,7 @@ end
 				REQUIRE(test_phrase_parser("local t = token('foo')", parser::chunkRule(), block));
 				const auto scope = analyseBlock(block, &parentScope);
 				const auto info = scope.getVariableType("t");
-				CHECK(info.type == Type::userdata);
+				CHECK(info.type == Type::table);
 				CHECK(info.name == "Token");
 				REQUIRE(info.custom.type() == typeid(std::string));
 				CHECK(std::any_cast<std::string>(info.custom) == "foo");
@@ -759,6 +774,18 @@ end
 				CHECK(info.member("bark").function.isMethod);
 				CHECK_FALSE(info.hasMember("meow"));
 			}
+
+			{
+				ast::Block block;
+				REQUIRE(test_phrase_parser("local t = token('cat'); local o = t:create()", parser::chunkRule(), block));
+				const auto scope = analyseBlock(block, &parentScope);
+				const auto infoT = scope.getVariableType("t");
+				CHECK(infoT.type == Type::table);
+				CHECK(infoT.name == "Token");
+				const auto infoO = scope.getVariableType("o");
+				CHECK(infoO.type == Type::table);
+				CHECK(infoO.name == "cat");
+			}
 		}
 
 		TEST_CASE("Script entry custom data")
@@ -774,7 +801,7 @@ end
 			playerInst.custom = 42;
 			user.addScriptInput("run", {{{"object", playerInst}}});
 
-			auto debugFunc = [](const an::Scope& scope, const ast::Arguments& args) {
+			auto debugFunc = [](const an::Scope& scope, const ast::Arguments& args, const an::TypeInfo&) {
 				return helper::getType(scope, args, 0);
 			};
 			user.addVariable("debug", TypeInfo::createFunction({{"obj", Type::unknown}}, {}, debugFunc));
@@ -853,7 +880,7 @@ end
 
 			user.addVariable("players", "Player[]");
 
-			auto ipairFunc = [](const an::Scope& scope, const ast::Arguments& args) {
+			auto ipairFunc = [](const an::Scope& scope, const ast::Arguments& args, const an::TypeInfo&) {
 				const auto arrayType = helper::getType(scope, args, 0);
 				TypeInfo valueType = Type::unknown;
 				if (arrayType.type == Type::array)

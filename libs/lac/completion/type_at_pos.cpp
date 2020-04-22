@@ -21,10 +21,11 @@ namespace
 		else if (vpf.get().type() == typeid(lac::ast::VariableFunctionCall))
 		{
 			const auto fc = boost::get<lac::ast::f_VariableFunctionCall>(vpf).get();
+			const auto parent = type;
 			if (fc.functionCall.member)
 				type = type.member(*fc.functionCall.member);
 			if (type.function.getResultTypeFunc)
-				return type.function.getResultTypeFunc(scope, fc.functionCall.arguments);
+				return type.function.getResultTypeFunc(scope, fc.functionCall.arguments, parent);
 			if (type.function.results.empty())
 				return lac::an::Type::unknown;
 			type = scope.resolve(type.function.results.front());
@@ -44,10 +45,11 @@ namespace
 				return lac::an::Type::unknown;
 		}
 
+		const auto parent = type;
 		if (fcp.functionCall.member)
 			type = type.member(*fcp.functionCall.member);
 		if (type.function.getResultTypeFunc)
-			return type.function.getResultTypeFunc(scope, fcp.functionCall.arguments);
+			return type.function.getResultTypeFunc(scope, fcp.functionCall.arguments, parent);
 		if (type.function.results.empty())
 			return lac::an::Type::unknown;
 		return scope.resolve(type.function.results.front());
@@ -88,13 +90,14 @@ namespace
 		else if (vpf.get().type() == typeid(lac::ast::VariableFunctionCall))
 		{
 			const auto fc = boost::get<lac::ast::f_VariableFunctionCall>(vpf).get();
+			const auto parent = type;
 			if (fc.functionCall.member)
 				type = type.member(*fc.functionCall.member);
 			if (type.function.getResultTypeFunc)
 			{
 				// Restart with the result of this call
 				hierarchy.clear();
-				const auto res = type.function.getResultTypeFunc(scope, fc.functionCall.arguments);
+				const auto res = type.function.getResultTypeFunc(scope, fc.functionCall.arguments, parent);
 				hierarchy.push_back(res.typeName());
 				type = scope.resolve(res);
 			}
@@ -140,6 +143,7 @@ namespace
 			}
 		}
 
+		const auto parent = type;
 		if (fcp.functionCall.member)
 			type = type.member(*fcp.functionCall.member);
 
@@ -147,7 +151,7 @@ namespace
 		{
 			// Restart with the result of this call
 			hierarchy.clear();
-			const auto res = type.function.getResultTypeFunc(scope, fcp.functionCall.arguments);
+			const auto res = type.function.getResultTypeFunc(scope, fcp.functionCall.arguments, parent);
 			hierarchy.push_back(res.typeName());
 			type = scope.resolve(res);
 		}
@@ -168,7 +172,7 @@ namespace
 		return type;
 	}
 
-	std::vector<std::string> getTypeHierarchy(const lac::an::Scope &localScope, const lac::ast::Variable &var)
+	std::vector<std::string> getTypeHierarchy(const lac::an::Scope& localScope, const lac::ast::Variable& var)
 	{
 		if (var.start.get().type() != typeid(std::string))
 			return {};
@@ -274,7 +278,7 @@ namespace lac::comp
 			hierarchy = getTypeHierarchy(*scope, boost::get<ast::Variable>(var->start));
 		else
 			hierarchy = getTypeHierarchy(*scope, boost::get<ast::FunctionCall>(var->start));
-	
+
 		if (var->member)
 			hierarchy.push_back(var->member->name);
 		return hierarchy;

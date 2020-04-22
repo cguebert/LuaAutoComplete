@@ -56,7 +56,7 @@ namespace lac::an
 	class CORE_API FunctionInfo
 	{
 	public:
-		using GetResultType = std::function<TypeInfo(const Scope& scope, const ast::Arguments&)>;
+		using GetResultType = std::function<TypeInfo(const Scope& scope, const ast::Arguments& args, const TypeInfo& parent)>;
 
 		FunctionInfo();
 		FunctionInfo(std::vector<VariableInfo> params, std::vector<TypeInfo> results = {});
