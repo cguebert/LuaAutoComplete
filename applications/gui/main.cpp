@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 	editor.setTabStopDistance(30);
 	editor.setUserDefined(userDefined);
 	editor.highlighter()->useLuaRules();
-	editor.setPlainText(R"~~(--Test program
+	editor.setPlainText(R"~~(--Test for program 42
 num = 42
 text = 'foo'
 longText = [[multi-line
