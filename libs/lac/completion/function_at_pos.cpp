@@ -46,9 +46,12 @@ namespace lac::comp
 			}
 		};
 
-		goToCallStart();
-		if (!ps)
-			return {};
+		if (view[ps] != '(')
+		{
+			goToCallStart();
+			if (!ps)
+				return {};
+		}
 		--ps;
 
 		ignoreWhiteSpace();
@@ -78,7 +81,13 @@ y = mult(x, 10)
 		// Analyse the program
 		auto scope = an::analyseBlock(ret.block, &parentScope);
 
-		auto data = getArgumentAtPos(scope, program, 12); // (42
+		auto data = getArgumentAtPos(scope, program, 11); // negate(
+		REQUIRE(data.has_value());
+		CHECK(data->first.type == an::Type::function);
+		CHECK(data->first.function.parameters.size() == 1);
+		CHECK(data->second == 0);
+
+		data = getArgumentAtPos(scope, program, 12); // (42
 		REQUIRE(data.has_value());
 		CHECK(data->first.type == an::Type::function);
 		CHECK(data->first.function.parameters.size() == 1);
