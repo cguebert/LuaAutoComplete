@@ -1,7 +1,7 @@
 #include <lac/analysis/type_info.h>
 #include <lac/analysis/parse_type.h>
 
-#include <algorithm>
+#include <doctest/doctest.h>
 
 namespace lac::an
 {
@@ -229,6 +229,63 @@ namespace lac::an
 		case Type::error:
 			return "error";
 		}
+	}
+
+	TEST_CASE("Text construction")
+	{
+		CHECK(TypeInfo{"number"}.type == Type::number);
+		CHECK(TypeInfo{"int"}.type == Type::number);
+		CHECK(TypeInfo{"double"}.type == Type::number);
+		CHECK(TypeInfo{"string"}.type == Type::string);
+		CHECK(TypeInfo{"boolean"}.type == Type::boolean);
+
+		TypeInfo info = "int[]";
+		CHECK(info.type == Type::array);
+		CHECK(info.name == "int");
+
+		info = "Player[]";
+		CHECK(info.type == Type::array);
+		CHECK(info.name == "Player");
+
+		info = "function()";
+		CHECK(info.type == Type::function);
+		CHECK(info.function.parameters.empty());
+		CHECK(info.function.results.empty());
+		CHECK_FALSE(info.function.isMethod);
+
+		info = "method()";
+		CHECK(info.type == Type::function);
+		CHECK(info.function.parameters.empty());
+		CHECK(info.function.results.empty());
+		CHECK(info.function.isMethod);
+
+		info = "string function()";
+		CHECK(info.type == Type::function);
+		CHECK(info.function.parameters.empty());
+		REQUIRE(info.function.results.size() == 1);
+		CHECK(info.function.results[0].type == Type::string);
+		CHECK_FALSE(info.function.isMethod);
+
+		info = "string function(number a)";
+		CHECK(info.type == Type::function);
+		REQUIRE(info.function.parameters.size() == 1);
+		CHECK(info.function.parameters[0].type().type == Type::number);
+		CHECK(info.function.parameters[0].name() == "a");
+		REQUIRE(info.function.results.size() == 1);
+		CHECK(info.function.results[0].type == Type::string);
+		CHECK_FALSE(info.function.isMethod);
+
+		info = "Player method(number a, string str)";
+		CHECK(info.type == Type::function);
+		REQUIRE(info.function.parameters.size() == 2);
+		CHECK(info.function.parameters[0].type().type == Type::number);
+		CHECK(info.function.parameters[0].name() == "a");
+		CHECK(info.function.parameters[1].type().type == Type::string);
+		CHECK(info.function.parameters[1].name() == "str");
+		REQUIRE(info.function.results.size() == 1);
+		CHECK(info.function.results[0].type == Type::userdata);
+		CHECK(info.function.results[0].name == "Player");
+		CHECK(info.function.isMethod);
 	}
 
 } // namespace lac::an
