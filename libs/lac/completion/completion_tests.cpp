@@ -460,6 +460,10 @@ len = vec:length()
 			CHECK(list.size() == 1);
 			CHECK(list.count("new"));
 
+			auto info = completion.getTypeAtPos(program, 15);
+			CHECK(info.type == Type::function);
+			CHECK(info.functionDefinition() == "Vector3 function()");
+
 			list = completion.getAutoCompletionList(program, 45); // vec:leng
 			CHECK(list.size() == 2);
 			CHECK(list.count("length"));

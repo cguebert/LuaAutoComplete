@@ -11,7 +11,21 @@ namespace
 {
 	lac::an::TypeInfo getType(const lac::an::Scope& scope, const std::string& name)
 	{
-		return scope.resolve(scope.getVariableType(name));
+		auto type = scope.getVariableType(name);
+		if (!type)
+		{
+			type = scope.getUserType(name);
+			// Only keep the static function members
+			for (auto it = type.members.cbegin(); it != type.members.cend();)
+			{
+				const auto& mbr = it->second;
+				if (mbr.type != lac::an::Type::function || mbr.function.isMethod)
+					it = type.members.erase(it);
+				else
+					++it;
+			}
+		}
+		return scope.resolve(type);
 	}
 
 	lac::an::TypeInfo processPostFix(const lac::an::Scope& scope, lac::an::TypeInfo type, const lac::ast::VariablePostfix& vpf)
@@ -330,12 +344,13 @@ namespace lac::comp
 
 	TEST_CASE("Name only")
 	{
+		CHECK(getTypeAtPos("x", 0).type == an::Type::nil);
 		CHECK(getTypeAtPos("x = 42", 0).type == an::Type::number);
 		CHECK(getTypeAtPos("x = 'test'", 0).type == an::Type::string);
 		CHECK(getTypeAtPos("x = true", 0).type == an::Type::boolean);
 		CHECK(getTypeAtPos("x = {}", 0).type == an::Type::table);
 
-		CHECK(getTypeAtPos("local x", 6).type == an::Type::unknown);
+		CHECK(getTypeAtPos("local x", 6).type == an::Type::nil);
 		CHECK(getTypeAtPos("local x = 42", 6).type == an::Type::number);
 
 		CHECK(getTypeAtPos("x = 42; function test() print(x) end", 30).type == an::Type::number);
