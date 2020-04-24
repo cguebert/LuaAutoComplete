@@ -59,7 +59,7 @@ func = function(a, b)
 end
 
 --[[ Multi-line
-	comment, 42, while, "text" ]]
+	comment, 42, while, "text" ]] x = 0
 
 myTable = {}
 myTable.num = 69

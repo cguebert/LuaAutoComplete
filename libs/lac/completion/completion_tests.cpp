@@ -134,11 +134,11 @@ local function myFunc(testValue)
 
 	x = testValue .. 'world'
 
-    t = {}
-    t.f = function (firstNum, secondNum) return firstNum + secondNum end
-    t.m = testValue
+	t = {}
+	t.f = function (firstNum, secondNum) return firstNum + secondNum end
+	t.m = testValue
 
-    y = t.f(5, t.m)
+	y = t.f(5, t.m)
 end
 )~~";
 

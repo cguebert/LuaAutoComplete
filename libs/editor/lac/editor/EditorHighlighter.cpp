@@ -51,11 +51,11 @@ namespace lac::editor
 		// Multiline strings
 		addMultilineRule("[^-]\\[\\[[^$]*", ".*\\]\\]", "#d69d85", false);
 
-		// Singleline comments
-		addRule("--[^\\[].*$", "#57a64a", false);
-
 		// Multiline comments
 		addMultilineRule("--\\[\\[.*", ".*\\]\\]", "#87a64a", false);
+
+		// Singleline comments
+		addRule("--[^\\[].*$", "#57a64a", false);
 	}
 
 	void EditorHighlighter::highlightBlock(const QString& text)
