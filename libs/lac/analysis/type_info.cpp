@@ -48,14 +48,17 @@ namespace lac::an
 	{
 	}
 
-	FunctionInfo::FunctionInfo(std::string_view text, FunctionInfo::GetResultType func)
+	FunctionInfo::FunctionInfo(std::string_view text, GetResultType getResult, GetCompletion getCompletion)
 	{
 		setFunction(*this, text);
-		getResultTypeFunc = func;
+
+		// These must be after setFunction
+		getResultTypeFunc = getResult;
+		getCompletionFunc = getCompletion;
 	}
 
-	FunctionInfo::FunctionInfo(const char* text, FunctionInfo::GetResultType func)
-		: FunctionInfo(std::string_view{text}, std::move(func))
+	FunctionInfo::FunctionInfo(const char* text, GetResultType getResult, GetCompletion getCompletion)
+		: FunctionInfo(std::string_view{text}, std::move(getResult), std::move(getCompletion))
 	{
 	}
 
@@ -79,16 +82,19 @@ namespace lac::an
 	{
 	}
 
-	TypeInfo::TypeInfo(std::string_view text, FunctionInfo::GetResultType func)
+	TypeInfo::TypeInfo(std::string_view text, FunctionInfo::GetResultType getResult, FunctionInfo::GetCompletion getCompletion)
 	{
 		if (!setType(*this, text))
 			type = Type::error;
 		else if (type == Type::function)
-			function.getResultTypeFunc = func;
+		{
+			function.getResultTypeFunc = getResult;
+			function.getCompletionFunc = getCompletion;
+		}
 	}
 
-	TypeInfo::TypeInfo(const char* text, FunctionInfo::GetResultType func)
-		: TypeInfo(std::string_view{text}, func)
+	TypeInfo::TypeInfo(const char* text, FunctionInfo::GetResultType getResult, FunctionInfo::GetCompletion getCompletion)
+		: TypeInfo(std::string_view{text}, std::move(getResult), std::move(getCompletion))
 	{
 	}
 
@@ -114,23 +120,27 @@ namespace lac::an
 		return type;
 	}
 
-	TypeInfo TypeInfo::createFunction(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results, FunctionInfo::GetResultType func)
+	TypeInfo TypeInfo::createFunction(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results,
+									  FunctionInfo::GetResultType getResult, FunctionInfo::GetCompletion getCompletion)
 	{
 		TypeInfo type{Type::function};
 		type.function.parameters = std::move(parameters);
 		type.function.results = std::move(results);
 		type.function.isMethod = false;
-		type.function.getResultTypeFunc = func;
+		type.function.getResultTypeFunc = getResult;
+		type.function.getCompletionFunc = getCompletion;
 		return type;
 	}
 
-	TypeInfo TypeInfo::createMethod(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results, FunctionInfo::GetResultType func)
+	TypeInfo TypeInfo::createMethod(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results,
+									FunctionInfo::GetResultType getResult, FunctionInfo::GetCompletion getCompletion)
 	{
 		TypeInfo type{Type::function};
 		type.function.parameters = std::move(parameters);
 		type.function.results = std::move(results);
 		type.function.isMethod = true;
-		type.function.getResultTypeFunc = func;
+		type.function.getResultTypeFunc = getResult;
+		type.function.getCompletionFunc = getCompletion;
 		return type;
 	}
 

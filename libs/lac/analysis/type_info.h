@@ -57,16 +57,22 @@ namespace lac::an
 	{
 	public:
 		using GetResultType = std::function<TypeInfo(const Scope& scope, const ast::Arguments& args, const TypeInfo& parent)>;
+		using GetCompletion = std::function<std::vector<std::string>(const TypeInfo& parent, const TypeInfo& function, size_t argIndex)>;
 
 		FunctionInfo();
 		FunctionInfo(std::vector<VariableInfo> params, std::vector<TypeInfo> results = {});
-		FunctionInfo(std::string_view text, FunctionInfo::GetResultType func = {}); // Parse the given string to build the type
-		FunctionInfo(const char* text, FunctionInfo::GetResultType func = {});
+		FunctionInfo(std::string_view text,
+					 GetResultType getResult = {},
+					 GetCompletion getCompletion = {}); // Parse the given string to build the type
+		FunctionInfo(const char* text,
+					 GetResultType getResult = {},
+					 GetCompletion getCompletion = {});
 
 		std::vector<VariableInfo> parameters;
 		std::vector<TypeInfo> results;
 		bool isMethod = false;
 		GetResultType getResultTypeFunc;
+		GetCompletion getCompletionFunc;
 	};
 
 	class CORE_API TypeInfo
@@ -77,12 +83,14 @@ namespace lac::an
 
 		TypeInfo(std::string_view text); // Parse the given string to build the type
 		TypeInfo(const char* text);
-		TypeInfo(std::string_view text, FunctionInfo::GetResultType func);
-		TypeInfo(const char* text, FunctionInfo::GetResultType func);
+		TypeInfo(std::string_view text, FunctionInfo::GetResultType getResult, FunctionInfo::GetCompletion getCompletion = {});
+		TypeInfo(const char* text, FunctionInfo::GetResultType getResult, FunctionInfo::GetCompletion getCompletion = {});
 
 		static TypeInfo fromTypeName(std::string_view name); // For used-defined types
-		static TypeInfo createFunction(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results = {}, FunctionInfo::GetResultType func = {});
-		static TypeInfo createMethod(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results = {}, FunctionInfo::GetResultType func = {});
+		static TypeInfo createFunction(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results = {}, 
+			FunctionInfo::GetResultType getResult = {}, FunctionInfo::GetCompletion getCompletion = {});
+		static TypeInfo createMethod(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results = {}, 
+			FunctionInfo::GetResultType getResult = {}, FunctionInfo::GetCompletion getCompletion = {});
 
 		// Returns destination if possible, error otherwise
 		TypeInfo convert(Type destination) const;
@@ -104,7 +112,7 @@ namespace lac::an
 		// For variable name, function name, or user-defined type
 		std::string name;
 
-		std::string typeName() const; // Return the type name, and convert basic types to string
+		std::string typeName() const;           // Return the type name, and convert basic types to string
 		std::string functionDefinition() const; // Return the text that can be used to define the function
 
 		std::any custom; // For any custom data we may need
