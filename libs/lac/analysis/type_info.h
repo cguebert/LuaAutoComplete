@@ -105,6 +105,7 @@ namespace lac::an
 		std::string name;
 
 		std::string typeName() const; // Return the type name, and convert basic types to string
+		std::string functionDefinition() const; // Return the text that can be used to define the function
 
 		std::any custom; // For any custom data we may need
 	};

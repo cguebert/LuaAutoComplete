@@ -231,6 +231,48 @@ namespace lac::an
 		}
 	}
 
+	std::string TypeInfo::functionDefinition() const
+	{
+		if (type != Type::function)
+			return "";
+
+		std::string str;
+		const auto& results = function.results;
+		if (!results.empty())
+		{
+			str += results.front().typeName();
+
+			for (size_t i = 1; i < results.size(); ++i)
+				str += ", " + results[i].typeName();
+
+			str += ' ';
+		}
+
+		str += function.isMethod
+				   ? "method("
+				   : "function(";
+
+		const auto& args = function.parameters;
+		if (!args.empty())
+		{
+			auto addArg = [&str](const VariableInfo& var) {
+				str += var.type().typeName() + ' ' + var.name();
+			};
+
+			addArg(args.front());
+
+			for (size_t i = 1; i < args.size(); ++i)
+			{
+				str += ", ";
+				addArg(args[i]);
+			}
+		}
+
+		str += ')';
+
+		return str;
+	}
+
 	TEST_CASE("Text construction")
 	{
 		CHECK(TypeInfo{"number"}.type == Type::number);
@@ -242,22 +284,30 @@ namespace lac::an
 		TypeInfo info = "int[]";
 		CHECK(info.type == Type::array);
 		CHECK(info.name == "int");
+		CHECK(info.typeName() == "int[]");
+		CHECK(info.functionDefinition() == "");
 
 		info = "Player[]";
 		CHECK(info.type == Type::array);
 		CHECK(info.name == "Player");
+		CHECK(info.typeName() == "Player[]");
+		CHECK(info.functionDefinition() == "");
 
 		info = "function()";
 		CHECK(info.type == Type::function);
 		CHECK(info.function.parameters.empty());
 		CHECK(info.function.results.empty());
 		CHECK_FALSE(info.function.isMethod);
+		CHECK(info.typeName() == "function");
+		CHECK(info.functionDefinition() == "function()");
 
 		info = "method()";
 		CHECK(info.type == Type::function);
 		CHECK(info.function.parameters.empty());
 		CHECK(info.function.results.empty());
 		CHECK(info.function.isMethod);
+		CHECK(info.typeName() == "method");
+		CHECK(info.functionDefinition() == "method()");
 
 		info = "string function()";
 		CHECK(info.type == Type::function);
@@ -265,6 +315,8 @@ namespace lac::an
 		REQUIRE(info.function.results.size() == 1);
 		CHECK(info.function.results[0].type == Type::string);
 		CHECK_FALSE(info.function.isMethod);
+		CHECK(info.typeName() == "function");
+		CHECK(info.functionDefinition() == "string function()");
 
 		info = "string function(number a)";
 		CHECK(info.type == Type::function);
@@ -274,6 +326,8 @@ namespace lac::an
 		REQUIRE(info.function.results.size() == 1);
 		CHECK(info.function.results[0].type == Type::string);
 		CHECK_FALSE(info.function.isMethod);
+		CHECK(info.typeName() == "function");
+		CHECK(info.functionDefinition() == "string function(number a)");
 
 		info = "Player method(number a, string str)";
 		CHECK(info.type == Type::function);
@@ -286,6 +340,8 @@ namespace lac::an
 		CHECK(info.function.results[0].type == Type::userdata);
 		CHECK(info.function.results[0].name == "Player");
 		CHECK(info.function.isMethod);
+		CHECK(info.typeName() == "method");
+		CHECK(info.functionDefinition() == "Player method(number a, string str)");
 	}
 
 } // namespace lac::an
