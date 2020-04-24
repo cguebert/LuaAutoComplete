@@ -1,5 +1,6 @@
 #include <lac/analysis/analyze_block.h>
 #include <lac/completion/completion.h>
+#include <lac/completion/function_at_pos.h>
 #include <lac/completion/get_block.h>
 #include <lac/completion/type_at_pos.h>
 #include <lac/completion/variable_at_pos.h>
@@ -186,7 +187,18 @@ namespace lac::comp
 
 		auto var = parseVariableAtPos(str, pos);
 		if (!var)
+		{
+			const auto argData = getArgumentAtPos(rootScope, str, pos);
+			if (argData && argData->function.function.getCompletionFunc)
+			{
+				const auto list = argData->function.function.getCompletionFunc(argData->parent, argData->function, argData->argumentIndex);
+				an::ElementsMap elts;
+				for (const auto& val : list)
+					elts[val] = {}; // TODO: can we complete the Element struct?
+				return elts;
+			}
 			return scope->getElements(false);
+		}
 
 		// Deduct the filter from the syntax used
 		filter = var->member

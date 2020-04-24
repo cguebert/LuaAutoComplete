@@ -378,7 +378,7 @@ end
 			TypeInfo playerType = Type::table;
 			playerType.name = "Player";
 			playerType.members["name"] = Type::string;
-			playerType.members["id"] =  "number method()";
+			playerType.members["id"] = "number method()";
 			playerType.members["position"] = "Vector3 method()";
 			playerType.members["setPosition"] = "method(Vector3 position)";
 			userDefined.addType(std::move(playerType));
@@ -468,6 +468,31 @@ len = vec:length()
 			CHECK(list.size() == 2);
 			CHECK(list.count("length"));
 			CHECK(list.count("mult"));
+		}
+
+		TEST_CASE("Custom completion of functions")
+		{
+			auto statusList = [](const an::TypeInfo& parent, const an::TypeInfo&, size_t) -> std::vector<std::string> {
+				return {"paused", "running", "error"};
+			};
+
+			using namespace lac::an;
+			UserDefined userDefined;
+			userDefined.addVariable("setStatus", {"function(string status)", {}, statusList});
+
+			std::string program = "setStatus()";
+
+			using StrVec = std::vector<std::string>;
+
+			Completion completion;
+			completion.setUserDefined(userDefined);
+			REQUIRE(completion.updateProgram(program));
+
+			auto list = completion.getAutoCompletionList(program, 9);
+			CHECK(list.size() == 3);
+			CHECK(list.count("paused"));
+			CHECK(list.count("running"));
+			CHECK(list.count("error"));
 		}
 
 		TEST_SUITE_END();
