@@ -104,9 +104,24 @@ namespace lac::comp
 		return ret.parsed;
 	}
 
-	an::ElementsMap Completion::getAutoCompletionList(std::string_view str, size_t pos)
+	an::ElementsMap Completion::getVariableCompletionList(std::string_view str, size_t pos)
 	{
 		return comp::getAutoCompletionList(m_rootScope, str, pos);
+	}
+
+	an::ElementsMap Completion::getArgumentCompletionList(std::string_view str, size_t pos)
+	{
+		const auto argData = getArgumentAtPos(m_rootScope, str, pos);
+		if (argData && argData->function.function.getCompletionFunc)
+		{
+			const auto list = argData->function.function.getCompletionFunc(argData->parent, argData->function, argData->argumentIndex);
+			an::ElementsMap elts;
+			for (const auto& val : list)
+				elts[val] = {}; // TODO: can we complete the Element struct?
+			return elts;
+		}
+
+		return {};
 	}
 
 	an::TypeInfo Completion::getTypeAtPos(std::string_view str, size_t pos)
@@ -192,6 +207,9 @@ namespace lac::comp
 			if (argData && argData->function.function.getCompletionFunc)
 			{
 				const auto list = argData->function.function.getCompletionFunc(argData->parent, argData->function, argData->argumentIndex);
+				if (list.empty())
+					return scope->getElements(false);
+
 				an::ElementsMap elts;
 				for (const auto& val : list)
 					elts[val] = {}; // TODO: can we complete the Element struct?

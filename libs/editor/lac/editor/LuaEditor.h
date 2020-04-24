@@ -51,8 +51,15 @@ namespace lac::editor
 
 		bool handleTabs(QKeyEvent* event);
 		void handleCompletion(QKeyEvent* event);
-		void updateProgram();
 		void completeWord(const QString& word);
+
+		enum class CompletionType
+		{
+			None,
+			Variable,
+			Argument
+		};
+		void updateProgram(CompletionType type = CompletionType::None);
 
 	private:
 		QCompleter* m_completer = nullptr;

@@ -24,7 +24,8 @@ namespace lac
 			void setUserDefined(lac::an::UserDefined userDefined);
 
 			bool updateProgram(std::string_view str, size_t currentPosition = std::string_view::npos);
-			an::ElementsMap getAutoCompletionList(std::string_view str, size_t pos = std::string_view::npos);
+			an::ElementsMap getVariableCompletionList(std::string_view str, size_t pos = std::string_view::npos);
+			an::ElementsMap getArgumentCompletionList(std::string_view str, size_t pos = std::string_view::npos);
 			an::TypeInfo getTypeAtPos(std::string_view str, size_t pos);
 			std::vector<std::string> getTypeHierarchyAtPos(std::string_view str, size_t pos);
 

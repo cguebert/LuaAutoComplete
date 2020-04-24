@@ -56,7 +56,7 @@ namespace lac::editor
 
 		// This is an ugly way to test the completion
 		auto timer = new QTimer(this);
-		connect(timer, &QTimer::timeout, this, &LuaEditor::updateProgram);
+		connect(timer, &QTimer::timeout, this, [this] { updateProgram(); });
 		timer->start(1000);
 
 		connect(this, &QPlainTextEdit::textChanged, this, [this] {
@@ -395,8 +395,13 @@ namespace lac::editor
 			return;
 		}
 
-		if (isDot(prefix))
+		if (isDot(prefix) || prefix == '(')
 			prefix = "";
+
+		if (prefix.startsWith('('))
+			prefix = prefix.mid(1);
+		if (prefix.endsWith(')'))
+			prefix.truncate(prefix.size() - 2);
 
 		// Ignore modifier key presses
 		if ((event->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier)) && event->text().isEmpty())
@@ -414,22 +419,22 @@ namespace lac::editor
 		}
 
 		bool refreshed = false;
-		auto refreshCompletion = [this, prefix, &refreshed] {
+		auto refreshVariableCompletion = [this, prefix, &refreshed] {
 			if (refreshed) // Ensure we only do it once in this function
 				return;
 
 			m_textChanged = true;
-			updateProgram();
+			updateProgram(CompletionType::Variable);
 			m_completer->setCompletionPrefix(prefix);
 			refreshed = true;
 		};
 
 		// When using Ctrl + space, try to complete the word without showing the popup
 		bool ctrlSpace = event->key() == Qt::Key_Space
-						 && event->modifiers() & Qt::ControlModifier;
+						 && event->modifiers() == Qt::ControlModifier;
 		if (ctrlSpace)
 		{
-			refreshCompletion();
+			refreshVariableCompletion();
 			if (m_completer->completionCount() == 1)
 			{
 				completeWord(m_completer->currentCompletion());
@@ -437,47 +442,80 @@ namespace lac::editor
 			}
 		}
 
-		auto askPopup = [ctrlSpace](QKeyEvent* event) {
+		auto askVariablePopup = [ctrlSpace](QKeyEvent* event) {
 			return event->key() == Qt::Key_Colon     // ':' -> member method
 				   || event->key() == Qt::Key_Period // '.' -> member variable
 				   || (ctrlSpace);                   // Ctrl + space
 		};
 
-		// Show the completion popup
-		if (!m_completer->popup()->isVisible() && askPopup(event))
-		{
-			refreshCompletion();
-
+		auto showPopup = [this, prefix] {
 			QRect rect = cursorRect();
 			rect.moveTo(rect.x() - fontMetrics().horizontalAdvance(prefix), rect.y() + 4);
 			rect.setWidth(m_completer->popup()->sizeHintForColumn(0) + m_completer->popup()->verticalScrollBar()->sizeHint().width());
 			m_completer->complete(rect);
 			m_completer->popup()->setCurrentIndex(m_completer->completionModel()->index(0, 0));
+		};
+
+		// Show the completion popup
+		if (!m_completer->popup()->isVisible() && askVariablePopup(event))
+		{
+			refreshVariableCompletion();
+			showPopup();
+		}
+
+		auto askArgumentPopup = [](QKeyEvent* event) {
+			return event->key() == Qt::Key_ParenLeft // '('
+				   || (event->key() == Qt::Key_Space
+					   && event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier)); // Ctrl + Shift + space
+		};
+
+		if (!m_completer->popup()->isVisible() && askArgumentPopup(event))
+		{
+			m_textChanged = true;
+			updateProgram(CompletionType::Argument);
+			m_completer->setCompletionPrefix(prefix);
+
+			showPopup();
 		}
 	}
 
 	void LuaEditor::completeWord(const QString& word)
 	{
 		auto cursor = textCursor();
-		cursor.movePosition(QTextCursor::Left);
+		const auto prevPos = cursor.position();
 
-		// Test if there is only a '.' or ':' character
+		// Test if there is only a '.', ':' or '(' character
+		cursor.movePosition(QTextCursor::Left);
 		cursor.select(QTextCursor::WordUnderCursor);
 		const auto selection = cursor.selectedText();
-		if (selection != "." && selection != ':')
+		if (selection != "." && selection != ':' && !selection.startsWith('('))
 		{
 			cursor.movePosition(QTextCursor::Left);
 			cursor.movePosition(QTextCursor::StartOfWord);
 			cursor.select(QTextCursor::WordUnderCursor);
 			cursor.removeSelectedText();
 		}
+		else
+			cursor.setPosition(prevPos);
+
+		auto goLeftTo = [&cursor](QChar c) {
+			const auto block = cursor.block().text();
+			auto pos = cursor.positionInBlock();
+			while (pos > 0 && block[pos - 1] != c)
+			{
+				cursor.deletePreviousChar();
+				--pos;
+			}
+		};
+		if (selection.startsWith('('))
+			goLeftTo('(');
 
 		cursor.clearSelection();
 		cursor.insertText(word);
 		setTextCursor(cursor);
 	}
 
-	void LuaEditor::updateProgram()
+	void LuaEditor::updateProgram(CompletionType type)
 	{
 		if (!m_textChanged)
 			return;
@@ -491,7 +529,12 @@ namespace lac::editor
 
 		if (!m_completer->popup()->isVisible())
 		{
-			const auto elements = m_programCompletion.getAutoCompletionList(text, pos);
+			lac::an::ElementsMap elements;
+			if (type == CompletionType::Variable)
+				elements = m_programCompletion.getVariableCompletionList(text, pos);
+			else if (type == CompletionType::Argument)
+				elements = m_programCompletion.getArgumentCompletionList(text, pos);
+
 			QStringList list;
 			for (const auto it : elements)
 				list.push_back(QString::fromStdString(it.first));

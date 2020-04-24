@@ -34,6 +34,12 @@ lac::an::UserDefined createUserDefined()
 	userDefined.addType(playerType);
 	userDefined.addScriptInput("run", "function(Player player)");
 
+	auto statusList = [](const TypeInfo&, const TypeInfo&, size_t) -> std::vector<std::string> {
+		return {"\"paused\"", "\"running\"", "\"error\""};
+	};
+
+	userDefined.addVariable("setStatus", {"function(string status)", {}, statusList});
+
 	return userDefined;
 }
 

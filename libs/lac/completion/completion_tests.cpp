@@ -328,19 +328,19 @@ myTable.m_meth2 = function(self, a) return a * 2 end
 			Completion completion;
 			REQUIRE(completion.updateProgram(program));
 
-			CHECK(completion.getAutoCompletionList("").size() == 5);
-			CHECK(completion.getAutoCompletionList("none").size() == 5);
-			CHECK(completion.getAutoCompletionList("num").size() == 5);
+			CHECK(completion.getVariableCompletionList("").size() == 5);
+			CHECK(completion.getVariableCompletionList("none").size() == 5);
+			CHECK(completion.getVariableCompletionList("num").size() == 5);
 
 			// Return all variables
-			CHECK(completion.getAutoCompletionList("myTable.").size() == 5);
-			CHECK(completion.getAutoCompletionList("myTable.memberNum").size() == 5);
-			CHECK(completion.getAutoCompletionList("myTable.dummy").size() == 5);
+			CHECK(completion.getVariableCompletionList("myTable.").size() == 5);
+			CHECK(completion.getVariableCompletionList("myTable.memberNum").size() == 5);
+			CHECK(completion.getVariableCompletionList("myTable.dummy").size() == 5);
 
 			// Return only methods
-			CHECK(completion.getAutoCompletionList("myTable:").size() == 2);
-			CHECK(completion.getAutoCompletionList("myTable:method1").size() == 2);
-			CHECK(completion.getAutoCompletionList("myTable:dummy").size() == 2);
+			CHECK(completion.getVariableCompletionList("myTable:").size() == 2);
+			CHECK(completion.getVariableCompletionList("myTable:method1").size() == 2);
+			CHECK(completion.getVariableCompletionList("myTable:dummy").size() == 2);
 		}
 
 		TEST_CASE("Completion with errors")
@@ -358,7 +358,7 @@ end
 			REQUIRE_FALSE(completion.updateProgram(program));
 			REQUIRE(completion.updateProgram(program, 32));
 
-			auto list = completion.getAutoCompletionList(program, 32);
+			auto list = completion.getVariableCompletionList(program, 32);
 			CHECK(list.count("first") == 1);
 		}
 
@@ -401,7 +401,7 @@ end
 			completion.setUserDefined(userDefined);
 			REQUIRE(completion.updateProgram(program));
 
-			auto list = completion.getAutoCompletionList(program, 41); // player:
+			auto list = completion.getVariableCompletionList(program, 41); // player:
 			CHECK(list.size() == 3);
 			CHECK(list.count("id"));
 			CHECK(list.count("position"));
@@ -409,7 +409,7 @@ end
 			CHECK(completion.getTypeAtPos(program, 40) == playerType);
 			CHECK(completion.getTypeHierarchyAtPos(program, 40) == StrVec{"Player"});
 
-			list = completion.getAutoCompletionList(program, 44); // player:pos
+			list = completion.getVariableCompletionList(program, 44); // player:pos
 			CHECK(list.size() == 3);
 			CHECK(list.count("id"));
 			CHECK(list.count("position"));
@@ -417,12 +417,12 @@ end
 			CHECK(completion.getTypeAtPos(program, 44).type == Type::function);
 			CHECK(completion.getTypeHierarchyAtPos(program, 44) == StrVec{"Player", "position"});
 
-			list = completion.getAutoCompletionList(program, 52); // player:position():
+			list = completion.getVariableCompletionList(program, 52); // player:position():
 			CHECK(list.size() == 2);
 			CHECK(list.count("length"));
 			CHECK(list.count("mult"));
 
-			list = completion.getAutoCompletionList(program, 55); // player:position():len
+			list = completion.getVariableCompletionList(program, 55); // player:position():len
 			CHECK(list.size() == 2);
 			CHECK(list.count("length"));
 			CHECK(list.count("mult"));
@@ -456,7 +456,7 @@ len = vec:length()
 			completion.setUserDefined(userDefined);
 			REQUIRE(completion.updateProgram(program));
 
-			auto list = completion.getAutoCompletionList(program, 15); // Vector3.n
+			auto list = completion.getVariableCompletionList(program, 15); // Vector3.n
 			CHECK(list.size() == 1);
 			CHECK(list.count("new"));
 
@@ -464,7 +464,7 @@ len = vec:length()
 			CHECK(info.type == Type::function);
 			CHECK(info.functionDefinition() == "Vector3 function()");
 
-			list = completion.getAutoCompletionList(program, 45); // vec:leng
+			list = completion.getVariableCompletionList(program, 45); // vec:leng
 			CHECK(list.size() == 2);
 			CHECK(list.count("length"));
 			CHECK(list.count("mult"));
@@ -488,7 +488,7 @@ len = vec:length()
 			completion.setUserDefined(userDefined);
 			REQUIRE(completion.updateProgram(program));
 
-			auto list = completion.getAutoCompletionList(program, 9);
+			auto list = completion.getArgumentCompletionList(program, 9);
 			CHECK(list.size() == 3);
 			CHECK(list.count("paused"));
 			CHECK(list.count("running"));
