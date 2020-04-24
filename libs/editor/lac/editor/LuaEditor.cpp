@@ -372,6 +372,7 @@ namespace lac::editor
 	{
 		// Current text under the cursor
 		auto cursor = textCursor();
+		cursor.movePosition(QTextCursor::Left);
 		cursor.select(QTextCursor::WordUnderCursor);
 		auto prefix = cursor.selectedText().trimmed();
 
@@ -465,6 +466,7 @@ namespace lac::editor
 		const auto selection = cursor.selectedText();
 		if (selection != "." && selection != ':')
 		{
+			cursor.movePosition(QTextCursor::Left);
 			cursor.movePosition(QTextCursor::StartOfWord);
 			cursor.select(QTextCursor::WordUnderCursor);
 			cursor.removeSelectedText();
