@@ -40,19 +40,22 @@ namespace lac::editor
 				"#569cd6");
 
 		// Strings using simple quote
-		addRule(R"~~(\'[^\']*\')~~", "#d69d85");
+		addRule(R"~~(\'[^\']*?\')~~", "#d69d85");
 
 		// Strings using double quotes
-		addRule(R"~~(\"[^\"]*\")~~", "#d69d85");
+		addRule(R"~~(\"[^\"]*?\")~~", "#d69d85");
 
 		// Strings using brackets
-		addRule("[^-]\\[\\[.*\\]\\]", "#d69d85");
+		addRule("[^-]\\[\\[.*?\\]\\]", "#d69d85");
 
 		// Multiline strings
-		addMultilineRule("[^-]\\[\\[[^$]*", ".*\\]\\]", "#d69d85", false);
+		addMultilineRule("[^-]\\[\\[", "\\]\\]", "#d69d85", false);
+
+		// Singleline comments using multiline format
+		addRule("--\\[\\[.*?\\]\\]", "#87a64a");
 
 		// Multiline comments
-		addMultilineRule("--\\[\\[.*", ".*\\]\\]", "#87a64a", false);
+		addMultilineRule("--\\[\\[", "\\]\\]", "#87a64a", false);
 
 		// Singleline comments
 		addRule("--[^\\[].*$", "#57a64a", false);
@@ -94,18 +97,25 @@ namespace lac::editor
 				// Searches for only one match
 				match = rule.regex.match(text);
 
-				if (match.hasMatch())
-				{
-					setFormat(match.capturedStart(), match.capturedLength(), getFormat(rule));
+				if (!match.hasMatch())
+					continue;
 
-					if (hasEndRegex && currentBlockState() == -1)
+				bool ended = false;
+				if (hasEndRegex && currentBlockState() == -1)
+				{
+					// Test if the rule ends on this line
+					auto matchEnd = rule.end_regex.match(text);
+					if (matchEnd.hasMatch())
 					{
-						// Test if the rule end on this line
-						QRegularExpression mulEnd{rule.end_regex};
-						if (!mulEnd.match(text).hasMatch())
-							setCurrentBlockState(index); // It continues
+						setFormat(match.capturedStart(), matchEnd.capturedEnd() - match.capturedStart(), getFormat(rule));
+						ended = true;
 					}
+					else
+						setCurrentBlockState(index); // It continues
 				}
+
+				if (!ended)
+					setFormat(match.capturedStart(), text.size() - match.capturedStart(), getFormat(rule)); // Until the end of the line
 			}
 		}
 
@@ -118,7 +128,7 @@ namespace lac::editor
 			if (match.hasMatch())
 			{
 				// End the rule
-				setFormat(match.capturedStart(), match.capturedLength(), getFormat(rule));
+				setFormat(0, match.capturedEnd(), getFormat(rule)); // From the start of the line to the end of the match
 				setCurrentBlockState(-1);
 			}
 			else
