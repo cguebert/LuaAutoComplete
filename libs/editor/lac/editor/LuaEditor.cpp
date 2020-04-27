@@ -44,6 +44,7 @@ namespace lac::editor
 		m_completer->setCompletionMode(QCompleter::PopupCompletion);
 		m_completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
 		m_completer->setFilterMode(Qt::MatchFlag::MatchContains);
+		m_completer->setCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 		m_completer->setModel(m_completionModel);
 
 		auto popup = m_completer->popup();
