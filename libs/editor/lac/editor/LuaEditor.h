@@ -47,6 +47,9 @@ namespace lac::editor
 
 		void setTooltipFunc(TooltipFunc func);
 
+		an::TypeInfo getTypeAtPos(size_t pos);
+		std::vector<std::string> getTypeHierarchyAtPos(size_t pos);
+
 	protected:
 		bool event(QEvent* evt) override;
 		void keyPressEvent(QKeyEvent* event) override;

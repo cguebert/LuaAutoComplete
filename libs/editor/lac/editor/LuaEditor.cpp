@@ -147,6 +147,36 @@ namespace lac::editor
 		m_tooltipFunc = func;
 	}
 
+	an::TypeInfo LuaEditor::getTypeAtPos(size_t pos)
+	{
+		auto text = document()->toPlainText().toStdString();
+		removeNonASCII(text);
+
+		if (m_textChanged)
+		{
+			const auto editPos = textCursor().position() - 1;
+			m_programCompletion.updateProgram(text, editPos);
+			m_textChanged = false;
+		}
+
+		return m_programCompletion.getTypeAtPos(text, pos);
+	}
+
+	std::vector<std::string> LuaEditor::getTypeHierarchyAtPos(size_t pos)
+	{
+		auto text = document()->toPlainText().toStdString();
+		removeNonASCII(text);
+
+		if (m_textChanged)
+		{
+			const auto editPos = textCursor().position() - 1;
+			m_programCompletion.updateProgram(text, editPos);
+			m_textChanged = false;
+		}
+
+		return m_programCompletion.getTypeHierarchyAtPos(text, pos);
+	}
+
 	bool LuaEditor::event(QEvent* evt)
 	{
 		if (evt->type() == QEvent::ToolTip)
