@@ -54,6 +54,13 @@ namespace lac::comp
 		m_userDefined = std::move(userDefined);
 	}
 
+	lac::an::UserDefined Completion::userDefined() const
+	{
+		return m_userDefined
+				   ? *m_userDefined
+				   : lac::an::UserDefined{};
+	}
+
 	bool Completion::updateProgram(std::string_view view, size_t currentPosition)
 	{
 		if (view.empty())

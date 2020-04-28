@@ -127,6 +127,11 @@ namespace lac::editor
 								 .arg(design.completion_selection_text_color.name()));
 	}
 
+	lac::an::UserDefined LuaEditor::userDefined() const
+	{
+		return m_programCompletion.userDefined();
+	}
+
 	void LuaEditor::setUserDefined(lac::an::UserDefined userDefined)
 	{
 		m_programCompletion.setUserDefined(std::move(userDefined));

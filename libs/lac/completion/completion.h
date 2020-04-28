@@ -22,6 +22,7 @@ namespace lac
 		{
 		public:
 			void setUserDefined(lac::an::UserDefined userDefined);
+			lac::an::UserDefined userDefined() const;
 
 			bool updateProgram(std::string_view str, size_t currentPosition = std::string_view::npos);
 			an::ElementsMap getVariableCompletionList(std::string_view str, size_t pos = std::string_view::npos);
