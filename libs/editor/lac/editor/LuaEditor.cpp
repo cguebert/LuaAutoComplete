@@ -147,34 +147,34 @@ namespace lac::editor
 		m_tooltipFunc = func;
 	}
 
-	an::TypeInfo LuaEditor::getTypeAtPos(size_t pos)
+	an::TypeInfo LuaEditor::getTypeAtCursor()
 	{
 		auto text = document()->toPlainText().toStdString();
+		const auto editPos = std::max(0, textCursor().position() - 1);
 		removeNonASCII(text);
 
 		if (m_textChanged)
 		{
-			const auto editPos = textCursor().position() - 1;
 			m_programCompletion.updateProgram(text, editPos);
 			m_textChanged = false;
 		}
 
-		return m_programCompletion.getTypeAtPos(text, pos);
+		return m_programCompletion.getTypeAtPos(text, editPos);
 	}
 
-	std::vector<std::string> LuaEditor::getTypeHierarchyAtPos(size_t pos)
+	std::vector<std::string> LuaEditor::getTypeHierarchyAtCursor()
 	{
 		auto text = document()->toPlainText().toStdString();
+		const auto editPos = std::max(0, textCursor().position() - 1);
 		removeNonASCII(text);
 
 		if (m_textChanged)
 		{
-			const auto editPos = textCursor().position() - 1;
 			m_programCompletion.updateProgram(text, editPos);
 			m_textChanged = false;
 		}
 
-		return m_programCompletion.getTypeHierarchyAtPos(text, pos);
+		return m_programCompletion.getTypeHierarchyAtPos(text, editPos);
 	}
 
 	bool LuaEditor::event(QEvent* evt)
