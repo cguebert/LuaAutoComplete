@@ -152,7 +152,7 @@ namespace lac::an
 
 			if (scope.m_userDefined)
 			{
-				for (const auto& it : scope.m_userDefined->variables())
+				for (const auto& it : scope.m_userDefined->variables)
 					addVariable(it.first, it.second, false);
 			}
 		};

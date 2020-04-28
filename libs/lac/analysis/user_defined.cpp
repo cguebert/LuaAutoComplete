@@ -4,57 +4,43 @@ namespace lac::an
 {
 	void UserDefined::addVariable(std::string_view name, TypeInfo type)
 	{
-		m_variables[std::string{name}] = type;
+		variables[std::string{name}] = type;
 	}
 
 	const TypeInfo* UserDefined::getVariable(std::string_view name) const
 	{
-		const auto it = m_variables.find(std::string{name});
-		if (it != m_variables.end())
+		const auto it = variables.find(std::string{name});
+		if (it != variables.end())
 			return &it->second;
 		return nullptr;
-	}
-
-	const UserDefined::TypeMap& UserDefined::variables() const
-	{
-		return m_variables;
 	}
 
 	void UserDefined::addScriptInput(std::string_view name, FunctionInfo func)
 	{
 		TypeInfo info = Type::function;
 		info.function = std::move(func);
-		m_scriptEntries[std::string{name}] = std::move(info);
+		scriptEntries[std::string{name}] = std::move(info);
 	}
-	
+
 	const TypeInfo* UserDefined::getScriptInput(std::string_view name) const
 	{
-		const auto it = m_scriptEntries.find(std::string{name});
-		if (it != m_scriptEntries.end())
+		const auto it = scriptEntries.find(std::string{name});
+		if (it != scriptEntries.end())
 			return &it->second;
 		return nullptr;
-	}
-	
-	const UserDefined::TypeMap& UserDefined::scriptInputs() const
-	{
-		return m_scriptEntries;
 	}
 
 	void UserDefined::addType(TypeInfo type)
 	{
-		m_types[type.name] = std::move(type);
+		types[type.name] = std::move(type);
 	}
 
 	const TypeInfo* UserDefined::getType(std::string_view name) const
 	{
-		const auto it = m_types.find(std::string{name});
-		if (it != m_types.end())
+		const auto it = types.find(std::string{name});
+		if (it != types.end())
 			return &it->second;
 		return nullptr;
 	}
 
-	const UserDefined::TypeMap& UserDefined::types() const
-	{
-		return m_types;
-	}
 } // namespace lac::an
