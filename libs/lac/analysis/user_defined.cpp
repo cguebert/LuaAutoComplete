@@ -1,5 +1,7 @@
 #include <lac/analysis/user_defined.h>
 
+#include <nlohmann/json.hpp>
+
 namespace lac::an
 {
 	void UserDefined::addVariable(std::string_view name, TypeInfo type)
@@ -15,11 +17,10 @@ namespace lac::an
 		return nullptr;
 	}
 
-	void UserDefined::addScriptInput(std::string_view name, FunctionInfo func)
+	void UserDefined::addScriptInput(std::string_view name, TypeInfo info)
 	{
-		TypeInfo info = Type::function;
-		info.function = std::move(func);
-		scriptEntries[std::string{name}] = std::move(info);
+		if(info.type == Type::function)
+			scriptEntries[std::string{name}] = std::move(info);
 	}
 
 	const TypeInfo* UserDefined::getScriptInput(std::string_view name) const
@@ -32,6 +33,9 @@ namespace lac::an
 
 	void UserDefined::addType(TypeInfo type)
 	{
+		auto name = type.name;
+		if (name.empty())
+			name = "no_name#" + std::to_string(types.size());
 		types[type.name] = std::move(type);
 	}
 
@@ -41,6 +45,29 @@ namespace lac::an
 		if (it != types.end())
 			return &it->second;
 		return nullptr;
+	}
+
+	void UserDefined::addFromJson(const std::string& str)
+	{
+		const auto json = nlohmann::json::parse(str);
+
+		if (json.contains("types"))
+		{
+			for (const auto& type : json["types"])
+				addType(TypeInfo::fromJson(type));
+		}
+
+		if (json.contains("variables"))
+		{
+			for (const auto& it : json["variables"].items())
+				addVariable(it.key(), TypeInfo::fromJson(it.value()));
+		}
+
+		if (json.contains("script_inputs"))
+		{
+			for (const auto& it : json["script_inputs"].items())
+				addScriptInput(it.key(), TypeInfo::fromJson(it.value()));
+		}
 	}
 
 } // namespace lac::an

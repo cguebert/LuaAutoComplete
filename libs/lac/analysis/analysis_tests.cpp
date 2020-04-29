@@ -799,7 +799,7 @@ end
 
 			auto playerInst = TypeInfo::fromTypeName("Player");
 			playerInst.custom = 42;
-			user.addScriptInput("run", {{{"object", playerInst}}});
+			user.addScriptInput("run", TypeInfo::createFunction({{"object", playerInst}}));
 
 			auto debugFunc = [](const an::Scope& scope, const ast::Arguments& args, const an::TypeInfo&) {
 				return helper::getType(scope, args, 0);
