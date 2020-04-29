@@ -23,6 +23,7 @@ namespace lac::an
 
 #ifdef WITH_NLOHMANN_JSON
 		void addFromJson(const std::string& json);
+		std::string toJson() const;
 #endif
 
 		TypeMap variables, scriptEntries, types;
