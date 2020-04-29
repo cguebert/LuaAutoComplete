@@ -49,8 +49,8 @@ target_include_directories(${target}
 target_link_libraries(${target} 
 	PUBLIC
 	Boost::boost
-	nlohmann_json
 	PRIVATE
+	nlohmann_json
 	doctest::doctest)
 
 	# Compile definitions

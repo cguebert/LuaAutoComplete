@@ -68,7 +68,7 @@ namespace
 
 		const auto ret = lac::parser::parseBlock(data, false);
 		if (ret.parsed)
-			std::cout << lac::toJson(ret.block).dump(2, ' ');
+			std::cout << lac::toJson(ret.block);
 	}
 } // namespace
 

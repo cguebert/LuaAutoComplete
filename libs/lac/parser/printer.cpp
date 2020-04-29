@@ -509,13 +509,13 @@ namespace lac
 		}
 	};
 
-	nlohmann::json toJson(const ast::Expression& ex)
+	std::string toJson(const ast::Expression& ex)
 	{
-		return Printer{}(ex);
+		return Printer{}(ex).dump(2, ' '); // Only use 2 spaces for indentation, as there can be many levels
 	}
 
-	nlohmann::json toJson(const ast::Block& block)
+	std::string toJson(const ast::Block& block)
 	{
-		return Printer{}(block);
+		return Printer{}(block).dump(2, ' ');
 	}
 } // namespace lac

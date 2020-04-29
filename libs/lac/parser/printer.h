@@ -7,6 +7,6 @@
 
 namespace lac
 {
-	CORE_API nlohmann::json toJson(const ast::Expression& ex);
-	CORE_API nlohmann::json toJson(const ast::Block& block);
+	CORE_API std::string toJson(const ast::Expression& ex);
+	CORE_API std::string toJson(const ast::Block& block);
 }
