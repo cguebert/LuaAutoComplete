@@ -3,7 +3,10 @@ cmake_minimum_required(VERSION 3.5)
 # External dependencies
 find_package(Boost)
 find_package(doctest CONFIG REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
+
+if(WITH_NLOHMANN_JSON)
+	find_package(nlohmann_json CONFIG REQUIRED)
+endif()
 
 # Target name
 set(target "core")
@@ -16,6 +19,12 @@ set(export_macro "${target_upper}_API")
 # Sources
 file(GLOB_RECURSE Header_Files "*.h")
 file(GLOB_RECURSE Source_Files "*.cpp")
+
+if(NOT WITH_NLOHMANN_JSON)
+	set(pattern "${CMAKE_CURRENT_SOURCE_DIR}/parser/printer(.h|.cpp)")
+	string(REGEX REPLACE ${pattern} "" Header_Files "${Header_Files}")
+	string(REGEX REPLACE ${pattern} "" Source_Files "${Source_Files}")
+endif()
 
 # Group source files
 GroupFiles(Header_Files)
@@ -50,7 +59,6 @@ target_link_libraries(${target}
 	PUBLIC
 	Boost::boost
 	PRIVATE
-	nlohmann_json
 	doctest::doctest)
 
 	# Compile definitions
@@ -59,6 +67,11 @@ target_compile_definitions(${target}
 	$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:${target_upper}_STATIC_DEFINE>
 	${DEFAULT_COMPILE_DEFINITIONS}
 )
+
+if(WITH_NLOHMANN_JSON)
+	target_compile_definitions(${target} PUBLIC WITH_NLOHMANN_JSON)
+	target_link_libraries(${target} PRIVATE nlohmann_json)
+endif()
 
 # Default properties
 set_target_properties(${target} PROPERTIES ${DEFAULT_PROJECT_OPTIONS})

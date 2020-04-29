@@ -68,7 +68,11 @@ namespace
 
 		const auto ret = lac::parser::parseBlock(data, false);
 		if (ret.parsed)
+#ifdef WITH_NLOHMANN_JSON
 			std::cout << lac::toJson(ret.block);
+#else
+			std::cout << "json library not available\n";
+#endif
 	}
 } // namespace
 

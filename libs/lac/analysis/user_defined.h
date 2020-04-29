@@ -21,7 +21,9 @@ namespace lac::an
 		void addType(TypeInfo type);
 		const TypeInfo* getType(std::string_view name) const;
 
+#ifdef WITH_NLOHMANN_JSON
 		void addFromJson(const std::string& json);
+#endif
 
 		TypeMap variables, scriptEntries, types;
 	};

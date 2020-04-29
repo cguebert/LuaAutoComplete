@@ -1,5 +1,6 @@
 #include <lac/analysis/user_defined.h>
 
+#include <doctest/doctest.h>
 #include <nlohmann/json.hpp>
 
 namespace lac::an
@@ -19,7 +20,7 @@ namespace lac::an
 
 	void UserDefined::addScriptInput(std::string_view name, TypeInfo info)
 	{
-		if(info.type == Type::function)
+		if (info.type == Type::function)
 			scriptEntries[std::string{name}] = std::move(info);
 	}
 
@@ -47,6 +48,25 @@ namespace lac::an
 		return nullptr;
 	}
 
+#ifdef WITH_NLOHMANN_JSON
+	TypeInfo typeFromJson(const nlohmann::json& json)
+	{
+		if (json.is_string())
+			return TypeInfo{json.get<std::string>()};
+
+		auto info = TypeInfo::fromTypeName(json["type"]);
+		info.name = json.value("name", "");
+		info.description = json.value("description", "");
+
+		if (json.contains("members"))
+		{
+			for (const auto& it : json["members"].items())
+				info.members[it.key()] = typeFromJson(it.value());
+		}
+
+		return info;
+	}
+
 	void UserDefined::addFromJson(const std::string& str)
 	{
 		const auto json = nlohmann::json::parse(str);
@@ -54,20 +74,52 @@ namespace lac::an
 		if (json.contains("types"))
 		{
 			for (const auto& type : json["types"])
-				addType(TypeInfo::fromJson(type));
+				addType(typeFromJson(type));
 		}
 
 		if (json.contains("variables"))
 		{
 			for (const auto& it : json["variables"].items())
-				addVariable(it.key(), TypeInfo::fromJson(it.value()));
+				addVariable(it.key(), typeFromJson(it.value()));
 		}
 
 		if (json.contains("script_inputs"))
 		{
 			for (const auto& it : json["script_inputs"].items())
-				addScriptInput(it.key(), TypeInfo::fromJson(it.value()));
+				addScriptInput(it.key(), typeFromJson(it.value()));
 		}
 	}
+
+	TEST_CASE("From json")
+	{
+		auto toJson = [](const std::string& str) {
+			return nlohmann::json::parse(str);
+		};
+
+		auto info = typeFromJson(toJson(R"~~( { "type": "number" } )~~"));
+		CHECK(info.type == Type::number);
+
+		info = typeFromJson(toJson(R"~~(
+{
+	"type": "table",
+	"name": "Player",
+	"description": "Each player in the game",
+	"members": {
+		"id": "number",
+		"position": "Pos method()"
+	}
+}
+)~~"));
+		CHECK(info.type == Type::table);
+		CHECK(info.name == "Player");
+		CHECK(info.description == "Each player in the game");
+		REQUIRE(info.members.size() == 2);
+		REQUIRE(info.members.count("id"));
+		REQUIRE(info.members["id"].type == Type::number);
+		REQUIRE(info.members.count("position"));
+		REQUIRE(info.members["position"].type == Type::function);
+		REQUIRE(info.members["position"].functionDefinition() == "Pos method()");
+	}
+#endif
 
 } // namespace lac::an

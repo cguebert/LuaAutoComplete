@@ -23,6 +23,7 @@ option(BUILD_SHARED_LIBS "Build shared libraries." ON)
 option(BUILD_UNIT_TESTS "Build the unit tests." OFF)
 option(BUILD_EDITOR "Build the editor library." ON)
 option(BUILD_EXAMPLE "Build the editor example." OFF)
+option(WITH_NLOHMANN_JSON "Export the json functions." ON)
 
 # Generate folders for IDE targets (e.g., VisualStudio solutions)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

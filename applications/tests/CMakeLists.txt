@@ -22,6 +22,10 @@ target_include_directories(${target}
 	PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR})
 
+if(WITH_NLOHMANN_JSON)
+	target_compile_definitions(${target} PUBLIC WITH_NLOHMANN_JSON)
+endif()
+
 # Default properties
 set_target_properties(${target} PROPERTIES ${DEFAULT_PROJECT_OPTIONS})
 

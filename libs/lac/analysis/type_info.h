@@ -10,8 +10,6 @@
 #include <string_view>
 #include <vector>
 
-#include <nlohmann/json.hpp>
-
 namespace lac::ast
 {
 	struct Arguments;
@@ -93,7 +91,6 @@ namespace lac::an
 			FunctionInfo::GetResultType getResult = {}, FunctionInfo::GetCompletion getCompletion = {});
 		static TypeInfo createMethod(std::vector<VariableInfo> parameters, std::vector<TypeInfo> results = {}, 
 			FunctionInfo::GetResultType getResult = {}, FunctionInfo::GetCompletion getCompletion = {});
-		static TypeInfo fromJson(const nlohmann::json& json);
 
 		// Returns destination if possible, error otherwise
 		TypeInfo convert(Type destination) const;

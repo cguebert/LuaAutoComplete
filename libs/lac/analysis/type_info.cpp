@@ -2,7 +2,6 @@
 #include <lac/analysis/parse_type.h>
 
 #include <doctest/doctest.h>
-#include <nlohmann/json.hpp>
 
 namespace lac::an
 {
@@ -284,25 +283,6 @@ namespace lac::an
 		return str;
 	}
 
-
-	TypeInfo TypeInfo::fromJson(const nlohmann::json& json)
-	{
-		if (json.is_string())
-			return TypeInfo{ json.get<std::string>() };
-
-		auto info = TypeInfo::fromTypeName(json["type"]);
-		info.name = json.value("name", "");
-		info.description = json.value("description", "");
-
-		if (json.contains("members"))
-		{
-			for (const auto& it : json["members"].items())
-				info.members[it.key()] = TypeInfo::fromJson(it.value());
-		}
-
-		return info;
-	}
-
 	TEST_CASE("Text construction")
 	{
 		CHECK(TypeInfo{"number"}.type == Type::number);
@@ -373,36 +353,4 @@ namespace lac::an
 		CHECK(info.typeName() == "method");
 		CHECK(info.functionDefinition() == "Player method(number a, string str)");
 	}
-
-	TEST_CASE("From json")
-	{
-		auto toJson = [](const std::string& str) {
-			return nlohmann::json::parse(str);
-		};
-
-		auto info = TypeInfo::fromJson(toJson(R"~~( { "type": "number" } )~~"));
-		CHECK(info.type == Type::number);
-
-		info = TypeInfo::fromJson(toJson(R"~~(
-{
-	"type": "table",
-	"name": "Player",
-	"description": "Each player in the game",
-	"members": {
-		"id": "number",
-		"position": "Pos method()"
-	}
-}
-)~~"));
-		CHECK(info.type == Type::table);
-		CHECK(info.name == "Player");
-		CHECK(info.description == "Each player in the game");
-		REQUIRE(info.members.size() == 2);
-		REQUIRE(info.members.count("id"));
-		REQUIRE(info.members["id"].type == Type::number);
-		REQUIRE(info.members.count("position"));
-		REQUIRE(info.members["position"].type == Type::function);
-		REQUIRE(info.members["position"].functionDefinition() == "Pos method()");
-	}
-
 } // namespace lac::an
