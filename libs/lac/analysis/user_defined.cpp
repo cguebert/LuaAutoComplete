@@ -54,7 +54,7 @@ namespace lac::an
 		if (json.is_string())
 			return TypeInfo{json.get<std::string>()};
 
-		auto info = TypeInfo::fromTypeName(json["type"]);
+		auto info = TypeInfo{json["type"].get<std::string>()};
 		info.name = json.value("name", "");
 		info.description = json.value("description", "");
 
@@ -172,10 +172,12 @@ namespace lac::an
 		CHECK(info.description == "Each player in the game");
 		REQUIRE(info.members.size() == 2);
 		REQUIRE(info.members.count("id"));
-		REQUIRE(info.members["id"].type == Type::number);
+		CHECK(info.members["id"].type == Type::number);
 		REQUIRE(info.members.count("position"));
-		REQUIRE(info.members["position"].type == Type::function);
-		REQUIRE(info.members["position"].functionDefinition() == "Pos method()");
+		CHECK(info.members["position"].type == Type::function);
+		CHECK(info.members["position"].functionDefinition() == "Pos method()");
+		REQUIRE(info.members["position"].function.results.size() == 1);
+		CHECK(info.members["position"].function.results.front().name == "Pos");
 	}
 #endif
 
