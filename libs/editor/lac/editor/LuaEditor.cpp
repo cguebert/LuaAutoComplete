@@ -177,6 +177,21 @@ namespace lac::editor
 		return m_programCompletion.getTypeHierarchyAtPos(text, editPos);
 	}
 
+	std::string LuaEditor::getVariableNameAtCursor()
+	{
+		auto text = document()->toPlainText().toStdString();
+		const auto editPos = std::max(0, textCursor().position() - 1);
+		removeNonASCII(text);
+
+		if (m_textChanged)
+		{
+			m_programCompletion.updateProgram(text, editPos);
+			m_textChanged = false;
+		}
+
+		return m_programCompletion.getVariableNameAtPos(text, editPos);
+	}
+
 	bool LuaEditor::event(QEvent* evt)
 	{
 		if (evt->type() == QEvent::ToolTip)

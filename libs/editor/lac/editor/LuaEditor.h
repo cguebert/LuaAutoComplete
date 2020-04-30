@@ -49,6 +49,7 @@ namespace lac::editor
 
 		an::TypeInfo getTypeAtCursor();
 		std::vector<std::string> getTypeHierarchyAtCursor();
+		std::string getVariableNameAtCursor();
 
 	protected:
 		bool event(QEvent* evt) override;
