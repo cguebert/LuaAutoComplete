@@ -371,6 +371,7 @@ end
 			vec3Type.members["x"] = Type::number;
 			vec3Type.members["y"] = Type::number;
 			vec3Type.members["z"] = Type::number;
+			vec3Type.members["new"] = "Vector new(number x, number y, number z)";
 			vec3Type.members["length"] = "number method()";
 			vec3Type.members["mult"] = "Vector3 method(number v)";
 			userDefined.addType(std::move(vec3Type));
@@ -391,6 +392,10 @@ function run(player)
 	if len > 500 then
 		local newPos = player:position():mult(500 / len)
 		player:setPosition(newPos)
+	end
+
+	if player:position().z > 1000 then
+		player:setPosition(Vector3.new(0, 0, 0))
 	end
 end
 )~~";
@@ -431,6 +436,9 @@ end
 			CHECK(list.count("mult"));
 			CHECK(completion.getTypeAtPos(program, 55).type == Type::function);
 			CHECK(completion.getTypeHierarchyAtPos(program, 55) == StrVec{"Vector3", "length"});
+
+			CHECK(completion.getTypeHierarchyAtPos(program, 233) == StrVec{ "Vector3", "new" });
+
 		}
 
 		TEST_CASE("Completion of constructors")

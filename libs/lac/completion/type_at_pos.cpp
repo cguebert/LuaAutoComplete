@@ -194,6 +194,8 @@ namespace
 		const auto& name = boost::get<std::string>(var.start);
 
 		auto type = localScope.getVariableType(name);
+		if (!type)
+			type = localScope.getUserType(name);
 
 		std::vector<std::string> hierarchy;
 		hierarchy.push_back(type.typeName()); // We want the type name before resolving userdata into table
