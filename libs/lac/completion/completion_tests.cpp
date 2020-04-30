@@ -401,6 +401,9 @@ end
 			completion.setUserDefined(userDefined);
 			REQUIRE(completion.updateProgram(program));
 
+			CHECK(completion.getVariableNameAtPos(program, 11) == "run");
+			CHECK(completion.getVariableNameAtPos(program, 38) == "player");
+
 			auto list = completion.getVariableCompletionList(program, 41); // player:
 			CHECK(list.size() == 3);
 			CHECK(list.count("id"));

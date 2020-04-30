@@ -28,6 +28,7 @@ namespace lac
 			an::ElementsMap getVariableCompletionList(std::string_view str, size_t pos = std::string_view::npos);
 			an::ElementsMap getArgumentCompletionList(std::string_view str, size_t pos = std::string_view::npos);
 			an::TypeInfo getTypeAtPos(std::string_view str, size_t pos);
+			std::string getVariableNameAtPos(std::string_view str, size_t pos); // Returns empty string if it is not a name at this position
 			std::vector<std::string> getTypeHierarchyAtPos(std::string_view str, size_t pos);
 
 		private:

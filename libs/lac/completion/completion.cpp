@@ -136,6 +136,40 @@ namespace lac::comp
 		return comp::getTypeAtPos(m_rootScope, str, pos);
 	}
 
+	std::string Completion::getVariableNameAtPos(std::string_view str, size_t pos)
+	{
+		if (pos == std::string_view::npos)
+			pos = str.size() - 1;
+
+		// Parse what is under the cursor
+		const auto var = parseVariableAtPos(str, pos);
+		if (!var)
+			return {};
+
+		// Get the scope under the cursor
+		auto scope = pos::getScopeAtPos(m_rootScope, pos);
+		if (!scope)
+			return {};
+
+		std::vector<std::string> hierarchy;
+		if (var->start.get().type() == typeid(ast::Variable))
+		{
+			const auto& variable = boost::get<ast::Variable>(var->start);
+			if (variable.start.get().type() == typeid(std::string))
+				return boost::get<std::string>(variable.start);
+			return {};
+		}
+		else
+		{
+			const auto& call = boost::get<ast::FunctionCall>(var->start);
+			if (call.start.get().type() == typeid(std::string))
+				return boost::get<std::string>(call.start);
+			return {};
+		}
+
+		return {};
+	}
+
 	std::vector<std::string> Completion::getTypeHierarchyAtPos(std::string_view str, size_t pos)
 	{
 		return comp::getTypeHierarchyAtPos(m_rootScope, str, pos);
