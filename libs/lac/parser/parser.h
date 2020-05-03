@@ -13,6 +13,7 @@ namespace lac::parser
 		bool parsed = false;
 		ast::Block block;
 		pos::Positions<std::string_view::const_iterator> positions;
+		size_t lastParsedPosition = 0;
 	};
 
 	// These skip comments and spaces

@@ -591,4 +591,11 @@ namespace lac::editor
 		}
 	}
 
+	parser::ParseBlockResults LuaEditor::compileProgram()
+	{
+		auto text = document()->toPlainText().toStdString();
+		removeNonASCII(text);
+		return lac::parser::parseBlock(text);
+	}
+
 } // namespace lac::editor

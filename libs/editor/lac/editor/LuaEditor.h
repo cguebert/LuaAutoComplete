@@ -2,6 +2,7 @@
 
 #include <lac/editor_api.h>
 #include <lac/completion/completion.h>
+#include <lac/parser/parser.h>
 
 #include <QPlainTextEdit>
 
@@ -50,6 +51,8 @@ namespace lac::editor
 		an::TypeInfo getTypeAtCursor();
 		std::vector<std::string> getTypeHierarchyAtCursor();
 		std::string getVariableNameAtCursor();
+
+		parser::ParseBlockResults compileProgram();
 
 	protected:
 		bool event(QEvent* evt) override;

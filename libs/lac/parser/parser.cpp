@@ -32,6 +32,7 @@ namespace lac::parser
 			res.parsed = boost::spirit::x3::phrase_parse(f, l, chunkRule(), skipperRule(), res.block) && f == l;
 		}
 
+		res.lastParsedPosition = f - view.begin();
 		return res;
 	}
 
