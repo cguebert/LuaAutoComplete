@@ -423,7 +423,6 @@ namespace lac::editor
 	{
 		// Current text under the cursor
 		auto cursor = textCursor();
-		cursor.movePosition(QTextCursor::Left);
 		cursor.select(QTextCursor::WordUnderCursor);
 		auto prefix = cursor.selectedText().trimmed();
 
@@ -536,10 +535,9 @@ namespace lac::editor
 		const auto prevPos = cursor.position();
 
 		// Test if there is only a '.', ':' or '(' character
-		cursor.movePosition(QTextCursor::Left);
 		cursor.select(QTextCursor::WordUnderCursor);
 		const auto selection = cursor.selectedText();
-		if (selection != "." && selection != ':' && !selection.startsWith('('))
+		if (!selection.isEmpty() && selection != "." && selection != ':' && !selection.startsWith('('))
 		{
 			cursor.movePosition(QTextCursor::Left);
 			cursor.movePosition(QTextCursor::StartOfWord);

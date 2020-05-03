@@ -85,6 +85,11 @@ end
 
 -- Testing user defined types
 x = math.abs(-3.14)
+
+-- Script entry (we told the editor that it is called by the application)
+function run(player)
+end
+
 )~~");
 	editor.show();
 
