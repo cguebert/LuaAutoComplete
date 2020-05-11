@@ -270,9 +270,10 @@ namespace lac::parser
 	const auto elementEnd_def = x3::eps[endElement];
 
 	// Names
-	const auto name_def = lexeme[((alpha | char_('_'))
-								  >> *(alnum | char_('_')))
-								 - keyword];
+	const auto nameFirstLetter = alpha | char_('_');
+	const auto nameLetter = alnum | char_('_');
+	const auto name_def = lexeme[(nameFirstLetter >> *nameLetter)
+								 - (keyword >> !nameLetter)];
 
 	const auto namesList_def = name % ',';
 
@@ -331,7 +332,7 @@ namespace lac::parser
 	const x3::rule<struct skipper> skipper = "skipper";
 	const auto skipper_def = ascii::space
 							 | with<element_tag>(pos::Element{ast::ElementType::comment})
-								 [x3::no_skip[omit[elementStart >> comment >> elementEnd]]];
+								   [x3::no_skip[omit[elementStart >> comment >> elementEnd]]];
 
 	//*** Complete syntax of Lua ***
 	// Table and fields

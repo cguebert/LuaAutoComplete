@@ -95,9 +95,6 @@ namespace lac::helper
 		CHECK(test_parser(input, p, v));
 		CHECK(v == std::string(value));
 	}
-
-#define TEST_VALUE(a, b, c) \
-	SUBCASE(a) { test_value(a, b, c); }
 } // namespace lac::helper
 
 std::ostream& operator<<(std::ostream& os, const std::type_info& value);

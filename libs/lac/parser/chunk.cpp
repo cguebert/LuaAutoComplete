@@ -32,18 +32,22 @@ namespace lac::parser
 	TEST_CASE("keyword")
 	{
 		std::string v;
-		TEST_VALUE("and", keyword, "and");
-		TEST_VALUE("nil", keyword, "nil");
+		test_value("and", keyword, "and");
+		test_value("nil", keyword, "nil");
 
 		CHECK_FALSE(test_parser_simple("test", keyword));
+		CHECK_FALSE(test_parser_simple("origin", keyword));
 	}
 
 	TEST_CASE("name")
 	{
-		TEST_VALUE("test", name, "test");
-		TEST_VALUE("_test", name, "_test");
-		TEST_VALUE("_123", name, "_123");
-		TEST_VALUE("_a1b2c3d4", name, "_a1b2c3d4");
+		test_value("test", name, "test");
+		test_value("_test", name, "_test");
+		test_value("_123", name, "_123");
+		test_value("_a1b2c3d4", name, "_a1b2c3d4");
+		test_value("origin", name, "origin");
+		test_value("ending", name, "ending");
+		test_value("redo", name, "redo");
 
 		CHECK_FALSE(test_parser("123test", name));
 		CHECK_FALSE(test_parser("test 123", name));
@@ -79,14 +83,14 @@ namespace lac::parser
 	{
 		CHECK(test_parser("''", literalString));
 
-		TEST_VALUE("''", literalString, ""_lit);
-		TEST_VALUE("'test'", literalString, "test"_lit);
-		TEST_VALUE("\"test\"", literalString, "test"_lit);
-		TEST_VALUE("'test\" 123'", literalString, "test\" 123"_lit);
-		TEST_VALUE("\"test' 123\"", literalString, "test' 123"_lit);
-		TEST_VALUE("'test\\' 123'", literalString, "test' 123"_lit);
-		TEST_VALUE("\"test\\\" 123\"", literalString, "test\" 123"_lit);
-		TEST_VALUE("'line 1\r line 2'", literalString, "line 1\r line 2"_lit);
+		test_value("''", literalString, ""_lit);
+		test_value("'test'", literalString, "test"_lit);
+		test_value("\"test\"", literalString, "test"_lit);
+		test_value("'test\" 123'", literalString, "test\" 123"_lit);
+		test_value("\"test' 123\"", literalString, "test' 123"_lit);
+		test_value("'test\\' 123'", literalString, "test' 123"_lit);
+		test_value("\"test\\\" 123\"", literalString, "test\" 123"_lit);
+		test_value("'line 1\r line 2'", literalString, "line 1\r line 2"_lit);
 
 		CHECK_FALSE(test_parser("no quotes here", literalString));
 		CHECK_FALSE(test_parser("'test", literalString));
@@ -102,11 +106,11 @@ namespace lac::parser
 
 	TEST_CASE("long literal string")
 	{
-		TEST_VALUE("[[]]", literalString, ""_lit);
-		TEST_VALUE("[[test]]", literalString, "test"_lit);
-		TEST_VALUE("[[test] 123]]", literalString, "test] 123"_lit);
-		TEST_VALUE("[=[test]] 123]=]", literalString, "test]] 123"_lit);
-		TEST_VALUE("[==[test]=] 123]==]", literalString, "test]=] 123"_lit);
+		test_value("[[]]", literalString, ""_lit);
+		test_value("[[test]]", literalString, "test"_lit);
+		test_value("[[test] 123]]", literalString, "test] 123"_lit);
+		test_value("[=[test]] 123]=]", literalString, "test]] 123"_lit);
+		test_value("[==[test]=] 123]==]", literalString, "test]=] 123"_lit);
 
 		CHECK_FALSE(test_parser("test", literalString));
 		CHECK_FALSE(test_parser("[[test]", literalString));
@@ -115,30 +119,30 @@ namespace lac::parser
 
 	TEST_CASE("literal string")
 	{
-		TEST_VALUE("'test'", literalString, "test"_lit);
-		TEST_VALUE("[[test]]", literalString, "test"_lit);
+		test_value("'test'", literalString, "test"_lit);
+		test_value("[[test]]", literalString, "test"_lit);
 	}
 
 	TEST_CASE("numeral int")
 	{
-		TEST_VALUE("0", numeralInt, 0);
-		TEST_VALUE("42", numeralInt, 42);
-		TEST_VALUE("-1", numeralInt, -1);
-		TEST_VALUE("0xa0", numeralInt, int(0xa0));
-		TEST_VALUE("0Xa0", numeralInt, int(0xa0));
+		test_value("0", numeralInt, 0);
+		test_value("42", numeralInt, 42);
+		test_value("-1", numeralInt, -1);
+		test_value("0xa0", numeralInt, int(0xa0));
+		test_value("0Xa0", numeralInt, int(0xa0));
 
 		CHECK_FALSE(test_parser("0.0", numeralInt));
 	}
 
 	TEST_CASE("numeral float")
 	{
-		TEST_VALUE("0", numeralFloat, 0.0);
-		TEST_VALUE("0.1", numeralFloat, 0.1);
-		TEST_VALUE("3.14", numeralFloat, 3.14);
-		TEST_VALUE("-3.14", numeralFloat, -3.14);
-		TEST_VALUE("1e2", numeralFloat, 1e2);
-		TEST_VALUE("1.2e3", numeralFloat, 1.2e3);
-		TEST_VALUE("1.2e-3", numeralFloat, 1.2e-3);
+		test_value("0", numeralFloat, 0.0);
+		test_value("0.1", numeralFloat, 0.1);
+		test_value("3.14", numeralFloat, 3.14);
+		test_value("-3.14", numeralFloat, -3.14);
+		test_value("1e2", numeralFloat, 1e2);
+		test_value("1.2e3", numeralFloat, 1.2e3);
+		test_value("1.2e-3", numeralFloat, 1.2e-3);
 
 		CHECK(test_phrase_parser("3.14", numeralFloat));
 		CHECK(test_phrase_parser("42.3", numeralFloat));
@@ -148,12 +152,12 @@ namespace lac::parser
 
 	TEST_CASE("comment")
 	{
-		TEST_VALUE("--test", comment, "test");
-		TEST_VALUE("--test\n", comment, "test");
-		TEST_VALUE("--[test", comment, "[test");
-		TEST_VALUE("-- [[test]]", comment, " [[test]]");
-		TEST_VALUE("--[[test\n123]]", comment, "test\n123");
-		TEST_VALUE("--[=[test]]\n123]=]", comment, "test]]\n123");
+		test_value("--test", comment, "test");
+		test_value("--test\n", comment, "test");
+		test_value("--[test", comment, "[test");
+		test_value("-- [[test]]", comment, " [[test]]");
+		test_value("--[[test\n123]]", comment, "test\n123");
+		test_value("--[=[test]]\n123]=]", comment, "test]]\n123");
 
 		// short comment value
 		{
