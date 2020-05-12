@@ -15,7 +15,7 @@ namespace lac::an
 		{
 		}
 
-		void operator()(ast::ExpressionConstant ec) const
+		void operator()(const ast::ExpressionConstant&) const
 		{
 			// Nothing to do here
 		}
@@ -25,12 +25,12 @@ namespace lac::an
 			// Nothing to do here
 		}
 
-		void operator()(const ast::LiteralString& str) const
+		void operator()(const ast::LiteralString&) const
 		{
 			// Nothing to do here
 		}
 
-		void operator()(const std::string& str) const
+		void operator()(const std::string&) const
 		{
 			// Nothing to do here
 		}
@@ -146,12 +146,12 @@ namespace lac::an
 			(*this)(tie.expression);
 		}
 
-		void operator()(const ast::TableIndexName& tin) const
+		void operator()(const ast::TableIndexName&) const
 		{
 			// Nothing to do here
 		}
 
-		void operator()(const ast::EmptyArguments& arg) const
+		void operator()(const ast::EmptyArguments&) const
 		{
 			// Nothing to do here
 		}
@@ -208,8 +208,6 @@ namespace lac::an
 
 		void operator()(const ast::AssignmentStatement& as) const
 		{
-			auto& global = m_scope.getGlobalScope();
-
 			size_t nbV = as.variables.size(), nbE = as.expressions.size();
 			auto varIt = as.variables.begin();
 			for (size_t i = 0; i < nbV; ++i)
@@ -267,7 +265,7 @@ namespace lac::an
 			m_scope.addLabel(ls.name);
 		}
 
-		void operator()(const ast::GotoStatement& gs) const
+		void operator()(const ast::GotoStatement&) const
 		{
 		}
 

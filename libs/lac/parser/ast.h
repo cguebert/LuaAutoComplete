@@ -95,6 +95,10 @@ namespace lac::ast
 
 	struct Numeral : boost::spirit::x3::variant<int, double>, ElementAnnotated<ElementType::numeral>
 	{
+		Numeral() = default;
+		Numeral(const Numeral& other) = default;
+		Numeral& operator=(const Numeral&) = default;
+
 		using base_type::base_type;
 		using base_type::operator=;
 
@@ -129,6 +133,10 @@ namespace lac::ast
 			  f_FunctionBody>,
 		  PositionAnnotated
 	{
+		Operand() = default;
+		Operand(const Operand& other) = default;
+		Operand& operator=(const Operand&) = default;
+
 		using base_type::base_type;
 		using base_type::operator=;
 
@@ -160,6 +168,10 @@ namespace lac::ast
 
 	struct BinaryOperation
 	{
+		BinaryOperation() = default;
+		BinaryOperation(const BinaryOperation&) = default;
+		BinaryOperation& operator=(const BinaryOperation&) = default;
+
 		Operation operation;
 		Expression expression;
 	};
@@ -181,6 +193,10 @@ namespace lac::ast
 			  FieldByAssignment,
 			  Expression>
 	{
+		Field() = default;
+		Field(const Field& other) = default;
+		Field& operator=(const Field&) = default;
+
 		using base_type::base_type;
 		using base_type::operator=;
 	};
@@ -217,6 +233,10 @@ namespace lac::ast
 			  TableConstructor,
 			  LiteralString>
 	{
+		Arguments() = default;
+		Arguments(const Arguments&) = default;
+		Arguments& operator=(const Arguments&) = default;
+
 		using base_type::base_type;
 		using base_type::operator=;
 	};
@@ -232,6 +252,10 @@ namespace lac::ast
 							TableIndexName,
 							FunctionCallEnd>
 	{
+		PostPrefix() = default;
+		PostPrefix(const PostPrefix&) = default;
+		PostPrefix& operator=(const PostPrefix&) = default;
+
 		using base_type::base_type;
 		using base_type::operator=;
 	};
@@ -250,6 +274,10 @@ namespace lac::ast
 								 TableIndexName,
 								 f_VariableFunctionCall>
 	{
+		VariablePostfix() = default;
+		VariablePostfix(const VariablePostfix&) = default;
+		VariablePostfix& operator=(const VariablePostfix&) = default;
+
 		using base_type::base_type;
 		using base_type::operator=;
 	};
@@ -423,6 +451,10 @@ namespace lac::ast
 						   LocalFunctionDeclarationStatement,
 						   LocalAssignmentStatement>
 	{
+		Statement() = default;
+		Statement(const Statement&) = default;
+		Statement& operator=(const Statement&) = default;
+
 		using base_type::base_type;
 		using base_type::operator=;
 	};

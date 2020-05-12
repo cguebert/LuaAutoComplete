@@ -91,7 +91,7 @@ namespace lac
 			}
 
 			template <class AST>
-			std::enable_if_t<!is_position_annotated<AST>> annotate(AST& ast, Iterator begin, Iterator end)
+			std::enable_if_t<!is_position_annotated<AST>> annotate(AST& /*ast*/, Iterator /*begin*/, Iterator /*end*/)
 			{
 				// Do nothing here
 			}

@@ -182,9 +182,10 @@ namespace lac::an
 		case Type::unknown:
 		case Type::error:
 			return false;
-		}
 
-		return true;
+		default:
+			return true;
+		}
 	}
 
 	bool TypeInfo::hasMember(const std::string& name) const

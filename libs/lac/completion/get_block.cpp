@@ -15,7 +15,7 @@ namespace lac::pos
 		{
 		}
 
-		void operator()(ast::ExpressionConstant ec) const
+		void operator()(ast::ExpressionConstant) const
 		{
 			// Nothing to do here
 		}
@@ -25,12 +25,12 @@ namespace lac::pos
 			// Nothing to do here
 		}
 
-		void operator()(const ast::LiteralString& str) const
+		void operator()(const ast::LiteralString&) const
 		{
 			// Nothing to do here
 		}
 
-		void operator()(const std::string& str) const
+		void operator()(const std::string&) const
 		{
 			// Nothing to do here
 		}
@@ -85,12 +85,12 @@ namespace lac::pos
 			(*this)(tie.expression);
 		}
 
-		void operator()(const ast::TableIndexName& tin) const
+		void operator()(const ast::TableIndexName&) const
 		{
 			// Nothing to do here
 		}
 
-		void operator()(const ast::EmptyArguments& arg) const
+		void operator()(const ast::EmptyArguments&) const
 		{
 			// Nothing to do here
 		}

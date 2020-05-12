@@ -167,78 +167,78 @@ namespace lac::parser
 	};                                   \
 	const x3::rule<struct name, type> name = #name;
 
-	RULE(name, std::string);
-	RULE(namesList, std::vector<std::string>);
+	RULE(name, std::string)
+	RULE(namesList, std::vector<std::string>)
 
 	const x3::rule<class openLongBracket> openLongBracket = "openLongBracket";
 	const x3::rule<class closeLongBacket> closeLongBacket = "closeLongBacket";
-	RULE(longLiteralString, std::string);
-	RULE(literalStringValue, std::string);
-	RULE(literalString, ast::LiteralString);
+	RULE(longLiteralString, std::string)
+	RULE(literalStringValue, std::string)
+	RULE(literalString, ast::LiteralString)
 
-	RULE(numeralInt, int);
-	RULE(numeralFloat, double);
-	RULE(numeral, ast::Numeral);
+	RULE(numeralInt, int)
+	RULE(numeralFloat, double)
+	RULE(numeral, ast::Numeral)
 
-	RULE(shortComment, std::string);
-	RULE(longComment, std::string);
-	RULE(comment, std::string);
+	RULE(shortComment, std::string)
+	RULE(longComment, std::string)
+	RULE(comment, std::string)
 
-	RULE(fieldByExpression, ast::FieldByExpression);
-	RULE(fieldByAssignment, ast::FieldByAssignment);
-	RULE(field, ast::Field);
-	RULE(fieldsList, ast::FieldsList);
-	RULE(tableConstructor, ast::TableConstructor);
+	RULE(fieldByExpression, ast::FieldByExpression)
+	RULE(fieldByAssignment, ast::FieldByAssignment)
+	RULE(field, ast::Field)
+	RULE(fieldsList, ast::FieldsList)
+	RULE(tableConstructor, ast::TableConstructor)
 
-	RULE(parametersList, ast::ParametersList);
-	RULE(arguments, ast::Arguments);
-	RULE(functionBody, ast::FunctionBody);
-	RULE(functionCallPostfix, ast::FunctionCallPostfix);
-	RULE(functionCall, ast::FunctionCall);
-	RULE(functionCallEnd, ast::FunctionCallEnd);
-	RULE(functionDefinition, ast::FunctionBody);
-	RULE(functionNameMember, ast::FunctionNameMember);
-	RULE(functionName, ast::FunctionName);
+	RULE(parametersList, ast::ParametersList)
+	RULE(arguments, ast::Arguments)
+	RULE(functionBody, ast::FunctionBody)
+	RULE(functionCallPostfix, ast::FunctionCallPostfix)
+	RULE(functionCall, ast::FunctionCall)
+	RULE(functionCallEnd, ast::FunctionCallEnd)
+	RULE(functionDefinition, ast::FunctionBody)
+	RULE(functionNameMember, ast::FunctionNameMember)
+	RULE(functionName, ast::FunctionName)
 
-	RULE(bracketedExpression, ast::BracketedExpression);
-	RULE(tableIndexExpression, ast::TableIndexExpression);
-	RULE(tableIndexName, ast::TableIndexName);
-	RULE(prefixExpression, ast::PrefixExpression);
-	RULE(postPrefix, ast::PostPrefix);
-	RULE(variable, ast::Variable);
-	RULE(variableFunctionCall, ast::VariableFunctionCall);
-	RULE(variablePostfix, ast::VariablePostfix);
-	RULE(variablesList, ast::VariablesList);
+	RULE(bracketedExpression, ast::BracketedExpression)
+	RULE(tableIndexExpression, ast::TableIndexExpression)
+	RULE(tableIndexName, ast::TableIndexName)
+	RULE(prefixExpression, ast::PrefixExpression)
+	RULE(postPrefix, ast::PostPrefix)
+	RULE(variable, ast::Variable)
+	RULE(variableFunctionCall, ast::VariableFunctionCall)
+	RULE(variablePostfix, ast::VariablePostfix)
+	RULE(variablesList, ast::VariablesList)
 
-	RULE(variableOrFunction, ast::VariableOrFunction);
+	RULE(variableOrFunction, ast::VariableOrFunction)
 
-	RULE(unaryOperation, ast::UnaryOperation);
-	RULE(binaryOperation, ast::BinaryOperation);
-	RULE(simpleExpression, ast::Operand);
-	RULE(expression, ast::Expression);
-	RULE(expressionsList, ast::ExpressionsList);
+	RULE(unaryOperation, ast::UnaryOperation)
+	RULE(binaryOperation, ast::BinaryOperation)
+	RULE(simpleExpression, ast::Operand)
+	RULE(expression, ast::Expression)
+	RULE(expressionsList, ast::ExpressionsList)
 
-	RULE(assignmentStatement, ast::AssignmentStatement);
-	RULE(labelStatement, ast::LabelStatement);
-	RULE(gotoStatement, ast::GotoStatement);
-	RULE(breakStatement, ast::BreakStatement);
-	RULE(doStatement, ast::DoStatement);
-	RULE(whileStatement, ast::WhileStatement);
-	RULE(repeatStatement, ast::RepeatStatement);
-	RULE(ifStatement, ast::IfStatement);
-	RULE(elseIfStatement, ast::IfStatement);
-	RULE(ifThenElseStatement, ast::IfThenElseStatement);
-	RULE(numericalForStatement, ast::NumericalForStatement);
-	RULE(genericForStatement, ast::GenericForStatement);
-	RULE(functionDeclarationStatement, ast::FunctionDeclarationStatement);
-	RULE(localFunctionDeclarationStatement, ast::LocalFunctionDeclarationStatement);
-	RULE(localAssignmentStatement, ast::LocalAssignmentStatement);
+	RULE(assignmentStatement, ast::AssignmentStatement)
+	RULE(labelStatement, ast::LabelStatement)
+	RULE(gotoStatement, ast::GotoStatement)
+	RULE(breakStatement, ast::BreakStatement)
+	RULE(doStatement, ast::DoStatement)
+	RULE(whileStatement, ast::WhileStatement)
+	RULE(repeatStatement, ast::RepeatStatement)
+	RULE(ifStatement, ast::IfStatement)
+	RULE(elseIfStatement, ast::IfStatement)
+	RULE(ifThenElseStatement, ast::IfThenElseStatement)
+	RULE(numericalForStatement, ast::NumericalForStatement)
+	RULE(genericForStatement, ast::GenericForStatement)
+	RULE(functionDeclarationStatement, ast::FunctionDeclarationStatement)
+	RULE(localFunctionDeclarationStatement, ast::LocalFunctionDeclarationStatement)
+	RULE(localAssignmentStatement, ast::LocalAssignmentStatement)
 
-	RULE(returnStatement, ast::ReturnStatement);
-	RULE(statement, ast::Statement);
+	RULE(returnStatement, ast::ReturnStatement)
+	RULE(statement, ast::Statement)
 
-	RULE(block, ast::Block);
-	RULE(chunk, ast::Block);
+	RULE(block, ast::Block)
+	RULE(chunk, ast::Block)
 
 #undef RULE
 
@@ -489,7 +489,7 @@ namespace lac::parser
 						numericalForStatement, genericForStatement,
 						functionDeclarationStatement, localFunctionDeclarationStatement,
 						returnStatement, statement,
-						block, chunk);
+						block, chunk)
 
 	skipper_type skipperRule()
 	{

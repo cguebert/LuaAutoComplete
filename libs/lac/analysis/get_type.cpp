@@ -38,7 +38,7 @@ namespace lac::an
 			return Type::number;
 		}
 
-		TypeInfo operator()(const ast::LiteralString& str) const
+		TypeInfo operator()(const ast::LiteralString&) const
 		{
 			return Type::string;
 		}

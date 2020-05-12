@@ -304,7 +304,7 @@ namespace lac::comp
 		if (!var)
 			return {};
 		return removeLastPart(*var);
-	};
+	}
 
 	void extendBlock(const an::Scope& scope, const pos::Elements& elements)
 	{

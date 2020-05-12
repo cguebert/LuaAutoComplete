@@ -135,7 +135,7 @@ namespace lac
 			return j;
 		}
 
-		nlohmann::json operator()(const EmptyArguments& ar) const
+		nlohmann::json operator()(const EmptyArguments&) const
 		{
 			nlohmann::json j;
 			j["type"] = "EmptyArguments";
@@ -283,7 +283,7 @@ namespace lac
 			return j;
 		}
 
-		nlohmann::json operator()(const EmptyStatement& s) const
+		nlohmann::json operator()(const EmptyStatement&) const
 		{
 			nlohmann::json j;
 			j["type"] = "EmptyStatement";
@@ -343,7 +343,7 @@ namespace lac
 			return j;
 		}
 
-		nlohmann::json operator()(const BreakStatement& s) const
+		nlohmann::json operator()(const BreakStatement&) const
 		{
 			nlohmann::json j;
 			j["type"] = "BreakStatement";

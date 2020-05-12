@@ -500,7 +500,12 @@ namespace lac::editor
 
 		auto showPopup = [this, prefix] {
 			QRect rect = cursorRect();
-			rect.moveTo(rect.x() - fontMetrics().horizontalAdvance(prefix), rect.y() + 4);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+			const auto prefixWidth = fontMetrics().horizontalAdvance(prefix);
+#else
+			const auto prefixWidth = fontMetrics().width(prefix);
+#endif
+			rect.moveTo(rect.x() - prefixWidth, rect.y() + 4);
 			rect.setWidth(m_completer->popup()->sizeHintForColumn(0) + m_completer->popup()->verticalScrollBar()->sizeHint().width());
 			m_completer->complete(rect);
 			m_completer->popup()->setCurrentIndex(m_completer->completionModel()->index(0, 0));

@@ -30,7 +30,7 @@ namespace lac::helper
 		pos::Positions positions{f, l};
 		const auto parser = boost::spirit::x3::with<pos::position_tag>(std::ref(positions))[p];
 
-		P::attribute_type val;
+		typename P::attribute_type val;
 		return boost::spirit::x3::parse(f, l, parser, val) && f == l;
 	}
 
@@ -65,7 +65,7 @@ namespace lac::helper
 		pos::Positions positions{f, l};
 		const auto parser = boost::spirit::x3::with<pos::position_tag>(std::ref(positions))[p];
 
-		P::attribute_type val;
+		typename P::attribute_type val;
 		return boost::spirit::x3::phrase_parse(f, l, parser, boost::spirit::x3::ascii::space, val) && f == l;
 	}
 

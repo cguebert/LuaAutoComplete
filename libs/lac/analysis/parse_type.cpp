@@ -38,9 +38,9 @@ namespace lac::type::ast
 	};
 } // namespace lac::type::ast
 
-BOOST_FUSION_ADAPT_STRUCT(lac::type::ast::NamedType, typeName, isArray);
-BOOST_FUSION_ADAPT_STRUCT(lac::type::ast::Argument, type, name);
-BOOST_FUSION_ADAPT_STRUCT(lac::type::ast::FunctionType, results, isMethod, arguments);
+BOOST_FUSION_ADAPT_STRUCT(lac::type::ast::NamedType, typeName, isArray)
+BOOST_FUSION_ADAPT_STRUCT(lac::type::ast::Argument, type, name)
+BOOST_FUSION_ADAPT_STRUCT(lac::type::ast::FunctionType, results, isMethod, arguments)
 
 namespace lac::type::parser
 {
@@ -59,12 +59,12 @@ namespace lac::type::parser
 	};                   \
 	const x3::rule<struct name, type> name = #name;
 
-	RULE(name, std::string);
-	RULE(namedType, ast::NamedType);
-	RULE(namedTypes, std::vector<ast::NamedType>);
-	RULE(argument, ast::Argument);
-	RULE(function, ast::FunctionType);
-	RULE(parsedType, ast::ParsedType);
+	RULE(name, std::string)
+	RULE(namedType, ast::NamedType)
+	RULE(namedTypes, std::vector<ast::NamedType>)
+	RULE(argument, ast::Argument)
+	RULE(function, ast::FunctionType)
+	RULE(parsedType, ast::ParsedType)
 
 	const auto name_def = lexeme[((alpha | char_('_'))
 								  >> *(alnum | char_('_')))
@@ -84,7 +84,7 @@ namespace lac::type::parser
 
 	const auto parsedType_def = function | namedType;
 
-	BOOST_SPIRIT_DEFINE(name, namedType, namedTypes, argument, function, parsedType);
+	BOOST_SPIRIT_DEFINE(name, namedType, namedTypes, argument, function, parsedType)
 
 	// Attributes are given by the caller
 	template <class P, class... Args>
@@ -101,7 +101,7 @@ namespace lac::type::parser
 	{
 		auto f = input.begin();
 		const auto l = input.end();
-		P::attribute_type val;
+		typename P::attribute_type val;
 		return boost::spirit::x3::phrase_parse(f, l, parser, boost::spirit::x3::ascii::space, val) && f == l;
 	}
 
