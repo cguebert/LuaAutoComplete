@@ -1,6 +1,7 @@
 #include <lac/analysis/analyze_block.h>
 #include <lac/completion/completion.h>
 #include <lac/completion/get_block.h>
+#include <lac/completion/type_at_pos.h>
 #include <lac/completion/variable_at_pos.h>
 #include <lac/helper/test_utils.h>
 #include <lac/parser/chunk.h>
@@ -514,6 +515,7 @@ len = vec:length()
 			userDefined.addType(std::move(vec3Type));
 
 			userDefined.addVariable("positions", "Vector3[]");
+			userDefined.addVariable("getPos", "Vector3[] function()");
 
 			ast::Block block;
 			block.begin = 0;
@@ -521,8 +523,33 @@ len = vec:length()
 			an::Scope scope{block};
 			scope.setUserDefined(&userDefined);
 
-			CHECK(getAutoCompletionList(scope, "positions[1].x").size() == 3);
-			CHECK(getAutoCompletionList(scope, "positions[1]:len").size() == 2);
+			auto list = getAutoCompletionList(scope, "positions[1].x");
+			CHECK(list.size() == 3);
+			CHECK(list.count("x"));
+			CHECK(list.count("y"));
+			CHECK(list.count("z"));
+
+			list = getAutoCompletionList(scope, "getPos()[1].x");
+			CHECK(list.size() == 3);
+			CHECK(list.count("x"));
+			CHECK(list.count("y"));
+			CHECK(list.count("z"));
+
+			list = getAutoCompletionList(scope, "positions[1]:len");
+			CHECK(list.size() == 2);
+			CHECK(list.count("length"));
+			CHECK(list.count("mult"));
+
+			list = getAutoCompletionList(scope, "getPos()[1]:len");
+			CHECK(list.size() == 2);
+			CHECK(list.count("length"));
+			CHECK(list.count("mult"));
+
+			using StrVec = std::vector<std::string>;
+			CHECK(getTypeHierarchyAtPos(scope, "positions[1].x") == StrVec{"Vector3", "x"});
+			CHECK(getTypeHierarchyAtPos(scope, "positions[1]:length") == StrVec{"Vector3", "length"});
+			CHECK(getTypeHierarchyAtPos(scope, "getPos()[1].x") == StrVec{ "Vector3", "x" });
+			CHECK(getTypeHierarchyAtPos(scope, "getPos()[1]:length") == StrVec{ "Vector3", "length" });
 		}
 
 		TEST_SUITE_END();

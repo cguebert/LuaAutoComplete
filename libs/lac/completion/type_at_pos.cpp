@@ -65,7 +65,7 @@ namespace
 				type = scope.resolve(type.member(boost::get<lac::ast::TableIndexName>(*fcp.tableIndex).name));
 			else
 			{
-				const auto tie = boost::get<lac::ast::TableIndexExpression>(fcp.tableIndex->get());
+				const auto tie = boost::get<lac::ast::TableIndexExpression>(*fcp.tableIndex);
 				if (type.type == lac::an::Type::array && lac::an::getType(scope, tie.expression).type == lac::an::Type::number)
 					return scope.resolve(lac::an::TypeInfo::fromTypeName(type.name));
 				else
@@ -109,13 +109,26 @@ namespace
 
 	lac::an::TypeInfo processPostFix(std::vector<std::string>& hierarchy, const lac::an::Scope& scope, lac::an::TypeInfo type, const lac::ast::VariablePostfix& vpf)
 	{
-		if (vpf.get().type() == typeid(lac::ast::TableIndexName))
+		const auto& vpfType = vpf.get().type();
+		if (vpfType == typeid(lac::ast::TableIndexName))
 		{
 			const auto name = boost::get<lac::ast::TableIndexName>(vpf).name;
 			hierarchy.push_back(name);
 			return scope.resolve(type.member(name));
 		}
-		else if (vpf.get().type() == typeid(lac::ast::VariableFunctionCall))
+		else if (vpfType == typeid(lac::ast::TableIndexExpression))
+		{
+			hierarchy.clear();
+			const auto expression = boost::get<lac::ast::TableIndexExpression>(vpf).expression;
+			if (type.type == lac::an::Type::array && lac::an::getType(scope, expression).type == lac::an::Type::number)
+			{
+				hierarchy.push_back(type.name);
+				return scope.resolve(lac::an::TypeInfo::fromTypeName(type.name));
+			}
+			else
+				return lac::an::Type::unknown;
+		}
+		else if (vpfType == typeid(lac::ast::VariableFunctionCall))
 		{
 			const auto fc = boost::get<lac::ast::f_VariableFunctionCall>(vpf).get();
 			const auto parent = type;
@@ -167,7 +180,14 @@ namespace
 			else
 			{
 				hierarchy.clear();
-				return lac::an::Type::unknown;
+				const auto expression = boost::get<lac::ast::TableIndexExpression>(*fcp.tableIndex).expression;
+				if (type.type == lac::an::Type::array && lac::an::getType(scope, expression).type == lac::an::Type::number)
+				{
+					hierarchy.push_back(type.name);
+					return scope.resolve(lac::an::TypeInfo::fromTypeName(type.name));
+				}
+				else
+					return lac::an::Type::unknown;
 			}
 		}
 
