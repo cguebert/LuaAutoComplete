@@ -21,7 +21,8 @@ namespace lac::comp
 
 		if (pos >= view.size()
 			|| !(isName(view[pos])
-				 || view[pos] == ')'))
+				 || view[pos] == ')'
+				 || view[pos] == ']'))
 			return {};
 
 		auto pe = pos, ps = pos;
@@ -57,6 +58,25 @@ namespace lac::comp
 			}
 		};
 
+		// Go left until we encounter the opening bracket
+		auto ignoreBrackets = [&ps, &view] {
+			int nbBrackets = 0;
+			while (ps != 0)
+			{
+				--ps;
+
+				// TODO: test if the bracket is inside a litteral string
+				if (view[ps] == ']')
+					++nbBrackets;
+				else if (view[ps] == '[')
+				{
+					--nbBrackets;
+					if (!nbBrackets)
+						break;
+				}
+			}
+		};
+
 		if (isName(view[pos]))
 		{
 			// Go to the end of the name
@@ -78,6 +98,14 @@ namespace lac::comp
 			goToNameStart();
 			pos = ps;
 		}
+		else if (view[pos] == ']')
+		{
+			ps = pe = pos + 1;
+			ignoreBrackets();
+			ignoreWhiteSpace();
+			goToNameStart();
+			pos = ps;
+		}
 
 		// Test the next character to the left and see if we must continue
 		while (pos > 1)
@@ -93,6 +121,8 @@ namespace lac::comp
 
 				if (view[ps - 1] == ')')
 					ignoreFunctionCall();
+				else if (view[ps - 1] == ']')
+					ignoreBrackets();
 
 				ignoreWhiteSpace();
 				goToNameStart();
@@ -102,7 +132,7 @@ namespace lac::comp
 				break;
 		}
 
-		// TODO: support brackets, table indexes, expressions
+		// TODO: support bracketed expressions
 
 		return view.substr(pos, pe - pos);
 	}
@@ -218,6 +248,22 @@ namespace lac::comp
 		CHECK(extractVariableAtPos("first():second():third():fourth", 12) == "first():second");
 		CHECK(extractVariableAtPos("first():second():third():fourth", 20) == "first():second():third");
 		CHECK(extractVariableAtPos("first():second():third():fourth", 30) == "first():second():third():fourth");
+	}
+
+	TEST_CASE("With array index")
+	{
+		CHECK(extractVariableAtPos("foo[x]", 5) == "foo[x]");
+		CHECK(extractVariableAtPos("test foo[x]", 10) == "foo[x]");
+		CHECK(extractVariableAtPos("foo[x].bar", 9) == "foo[x].bar");
+		CHECK(extractVariableAtPos("test foo[x].bar", 13) == "foo[x].bar");
+		CHECK(extractVariableAtPos("foo [ x ] . bar", 13) == "foo [ x ] . bar");
+		CHECK(extractVariableAtPos("foo['anything here'].bar", 23) == "foo['anything here'].bar");
+		CHECK(extractVariableAtPos("foo[x].bar.test", 9) == "foo[x].bar");
+		CHECK(extractVariableAtPos("foo[x]:bar.test", 9) == "foo[x]:bar");
+		CHECK(extractVariableAtPos("foo[x].bar.test", 13) == "foo[x].bar.test");
+		CHECK(extractVariableAtPos("foo[x]:bar.test", 13) == "foo[x]:bar.test");
+		CHECK(extractVariableAtPos("foo.bar[x].test", 13) == "foo.bar[x].test");
+		CHECK(extractVariableAtPos("foo[x]:bar[42].test", 16) == "foo[x]:bar[42].test");
 	}
 
 	TEST_SUITE_END();
