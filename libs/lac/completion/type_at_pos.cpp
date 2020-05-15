@@ -1,4 +1,5 @@
 #include <lac/analysis/analyze_block.h>
+#include <lac/analysis/get_type.h>
 #include <lac/analysis/user_defined.h>
 #include <lac/completion/type_at_pos.h>
 #include <lac/completion/variable_at_pos.h>
@@ -30,9 +31,16 @@ namespace
 
 	lac::an::TypeInfo processPostFix(const lac::an::Scope& scope, lac::an::TypeInfo type, const lac::ast::VariablePostfix& vpf)
 	{
-		if (vpf.get().type() == typeid(lac::ast::TableIndexName))
+		const auto& vpfType = vpf.get().type();
+		if (vpfType == typeid(lac::ast::TableIndexName))
 			return scope.resolve(type.member(boost::get<lac::ast::TableIndexName>(vpf).name));
-		else if (vpf.get().type() == typeid(lac::ast::VariableFunctionCall))
+		if (vpfType == typeid(lac::ast::TableIndexExpression))
+		{
+			const auto tie = boost::get<lac::ast::TableIndexExpression>(vpf);
+			if (type.type == lac::an::Type::array && lac::an::getType(scope, tie.expression).type == lac::an::Type::number)
+				return scope.resolve(lac::an::TypeInfo::fromTypeName(type.name));
+		}
+		else if (vpfType == typeid(lac::ast::VariableFunctionCall))
 		{
 			const auto fc = boost::get<lac::ast::f_VariableFunctionCall>(vpf).get();
 			const auto parent = type;
@@ -45,8 +53,8 @@ namespace
 			type = scope.resolve(type.function.results.front());
 			return processPostFix(scope, type, fc.postVariable);
 		}
-		else
-			return lac::an::Type::unknown;
+
+		return lac::an::Type::unknown;
 	}
 
 	lac::an::TypeInfo processPostFix(const lac::an::Scope& scope, lac::an::TypeInfo type, const lac::ast::FunctionCallPostfix& fcp)
@@ -56,7 +64,13 @@ namespace
 			if (fcp.tableIndex->get().type() == typeid(lac::ast::TableIndexName))
 				type = scope.resolve(type.member(boost::get<lac::ast::TableIndexName>(*fcp.tableIndex).name));
 			else
-				return lac::an::Type::unknown;
+			{
+				const auto tie = boost::get<lac::ast::TableIndexExpression>(fcp.tableIndex->get());
+				if (type.type == lac::an::Type::array && lac::an::getType(scope, tie.expression).type == lac::an::Type::number)
+					return scope.resolve(lac::an::TypeInfo::fromTypeName(type.name));
+				else
+					return lac::an::Type::unknown;
+			}
 		}
 
 		const auto parent = type;

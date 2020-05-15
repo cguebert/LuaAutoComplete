@@ -437,8 +437,7 @@ end
 			CHECK(completion.getTypeAtPos(program, 55).type == Type::function);
 			CHECK(completion.getTypeHierarchyAtPos(program, 55) == StrVec{"Vector3", "length"});
 
-			CHECK(completion.getTypeHierarchyAtPos(program, 233) == StrVec{ "Vector3", "new" });
-
+			CHECK(completion.getTypeHierarchyAtPos(program, 233) == StrVec{"Vector3", "new"});
 		}
 
 		TEST_CASE("Completion of constructors")
@@ -460,9 +459,6 @@ vec = Vector3.new()
 vec.x = 42
 len = vec:length()
 )~~";
-
-			using StrVec = std::vector<std::string>;
-
 			Completion completion;
 			completion.setUserDefined(userDefined);
 			REQUIRE(completion.updateProgram(program));
@@ -493,8 +489,6 @@ len = vec:length()
 
 			std::string program = "setStatus()";
 
-			using StrVec = std::vector<std::string>;
-
 			Completion completion;
 			completion.setUserDefined(userDefined);
 			REQUIRE(completion.updateProgram(program));
@@ -504,6 +498,31 @@ len = vec:length()
 			CHECK(list.count("paused"));
 			CHECK(list.count("running"));
 			CHECK(list.count("error"));
+		}
+
+		TEST_CASE("Completion of array elements")
+		{
+			using namespace lac::an;
+			UserDefined userDefined;
+			TypeInfo vec3Type = Type::table;
+			vec3Type.name = "Vector3";
+			vec3Type.members["x"] = Type::number;
+			vec3Type.members["y"] = Type::number;
+			vec3Type.members["z"] = Type::number;
+			vec3Type.members["length"] = "number method()";
+			vec3Type.members["mult"] = "Vector3 method(number v)";
+			userDefined.addType(std::move(vec3Type));
+
+			userDefined.addVariable("positions", "Vector3[]");
+
+			ast::Block block;
+			block.begin = 0;
+			block.end = 42;
+			an::Scope scope{block};
+			scope.setUserDefined(&userDefined);
+
+			CHECK(getAutoCompletionList(scope, "positions[1].x").size() == 3);
+			CHECK(getAutoCompletionList(scope, "positions[1]:len").size() == 2);
 		}
 
 		TEST_SUITE_END();
