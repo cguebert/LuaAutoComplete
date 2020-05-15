@@ -38,7 +38,10 @@ set_target_properties(${target} PROPERTIES FOLDER "Applications")
 install(TARGETS ${target} RUNTIME DESTINATION release CONFIGURATIONS Release)
 install(TARGETS ${target} RUNTIME DESTINATION debug CONFIGURATIONS Debug)
 
-if(WIN32)
+if(WIN32 AND BUILD_SHARED_LIBS)
+	install(TARGETS core editor RUNTIME DESTINATION debug CONFIGURATIONS Debug)
+	install(TARGETS core editor RUNTIME DESTINATION release CONFIGURATIONS Release)
+
 	# Copy the dependencies dlls
 	foreach(export_lib Qt5::Widgets Qt5::Core Qt5::Gui)
 		InstallDependency(${export_lib})

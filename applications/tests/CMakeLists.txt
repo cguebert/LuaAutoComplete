@@ -44,3 +44,9 @@ set_target_properties(${target} PROPERTIES FOLDER "Applications")
 
 install(TARGETS ${target} RUNTIME DESTINATION release CONFIGURATIONS Release)
 install(TARGETS ${target} RUNTIME DESTINATION debug CONFIGURATIONS Debug)
+
+if(WIN32 AND BUILD_SHARED_LIBS)
+	install(TARGETS core RUNTIME DESTINATION debug CONFIGURATIONS Debug)
+	install(TARGETS core RUNTIME DESTINATION release CONFIGURATIONS Release)
+endif()
+

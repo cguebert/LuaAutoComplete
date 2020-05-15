@@ -125,8 +125,3 @@ install(EXPORT ${target}-export
 	DESTINATION ${INSTALL_CMAKE}/${target}
 	COMPONENT   dev
 )
-
-if(WIN32 AND BUILD_SHARED_LIBS)
-	install(TARGETS ${target} RUNTIME DESTINATION release CONFIGURATIONS Release)
-	install(TARGETS ${target} RUNTIME DESTINATION debug CONFIGURATIONS Debug)
-endif()
