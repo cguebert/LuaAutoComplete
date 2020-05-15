@@ -128,6 +128,20 @@ namespace lac::comp
 				goToNameStart();
 				pos = ps;
 			}
+			else if (c == ')')
+			{
+				ignoreFunctionCall();
+				ignoreWhiteSpace();
+				goToNameStart();
+				pos = ps;
+			}
+			else if (c == ']')
+			{
+				ignoreBrackets();
+				ignoreWhiteSpace();
+				goToNameStart();
+				pos = ps;
+			}
 			else
 				break;
 		}
@@ -264,6 +278,15 @@ namespace lac::comp
 		CHECK(extractVariableAtPos("foo[x]:bar.test", 13) == "foo[x]:bar.test");
 		CHECK(extractVariableAtPos("foo.bar[x].test", 13) == "foo.bar[x].test");
 		CHECK(extractVariableAtPos("foo[x]:bar[42].test", 16) == "foo[x]:bar[42].test");
+	}
+
+	TEST_CASE("Function calls and array index")
+	{
+		CHECK(extractVariableAtPos("foo()[x]", 7) == "foo()[x]");
+		CHECK(extractVariableAtPos("test foo()[x]", 12) == "foo()[x]");
+		CHECK(extractVariableAtPos("foo(a,b)[x]", 10) == "foo(a,b)[x]");
+		CHECK(extractVariableAtPos("test foo(a,b)[x]", 15) == "foo(a,b)[x]");
+		CHECK(extractVariableAtPos("test foo(a).m[x]", 15) == "foo(a).m[x]");
 	}
 
 	TEST_SUITE_END();

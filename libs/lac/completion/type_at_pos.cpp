@@ -34,13 +34,13 @@ namespace
 		const auto& vpfType = vpf.get().type();
 		if (vpfType == typeid(lac::ast::TableIndexName))
 			return scope.resolve(type.member(boost::get<lac::ast::TableIndexName>(vpf).name));
-		if (vpfType == typeid(lac::ast::TableIndexExpression))
+		else if (vpfType == typeid(lac::ast::TableIndexExpression))
 		{
 			const auto tie = boost::get<lac::ast::TableIndexExpression>(vpf);
 			if (type.type == lac::an::Type::array && lac::an::getType(scope, tie.expression).type == lac::an::Type::number)
 				return scope.resolve(lac::an::TypeInfo::fromTypeName(type.name));
 		}
-		else if (vpfType == typeid(lac::ast::VariableFunctionCall))
+		else if (vpfType == typeid(lac::ast::f_VariableFunctionCall))
 		{
 			const auto fc = boost::get<lac::ast::f_VariableFunctionCall>(vpf).get();
 			const auto parent = type;
@@ -128,7 +128,7 @@ namespace
 			else
 				return lac::an::Type::unknown;
 		}
-		else if (vpfType == typeid(lac::ast::VariableFunctionCall))
+		else if (vpfType == typeid(lac::ast::f_VariableFunctionCall))
 		{
 			const auto fc = boost::get<lac::ast::f_VariableFunctionCall>(vpf).get();
 			const auto parent = type;
