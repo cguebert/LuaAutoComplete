@@ -421,8 +421,15 @@ namespace lac::editor
 
 	void LuaEditor::handleCompletion(QKeyEvent* event)
 	{
-		// Current text under the cursor
+		// The character under the cursor
 		auto cursor = textCursor();
+		const auto block = cursor.block().text();
+		auto pos = cursor.positionInBlock();
+		QChar beforeCursor = ' ';
+		if (pos > 0)
+			beforeCursor = block[pos - 1];
+
+		// Current text under the cursor
 		cursor.select(QTextCursor::WordUnderCursor);
 		auto prefix = cursor.selectedText().trimmed();
 
@@ -445,19 +452,19 @@ namespace lac::editor
 			return;
 		}
 
-		if (!prefix.isEmpty())
+		if (beforeCursor == '.' || beforeCursor == ':')
 		{
-			if (prefix.endsWith(')') || prefix == ',')
+			prefix = "";
+		}
+		else if (!prefix.isEmpty())
+		{
+			if (prefix.endsWith(')') || prefix.endsWith(']') || prefix == ',')
 				prefix = leftText;
 
-			const auto first = prefix[0];
-			if (first == '.' || first == ':')
-				prefix = "";
-
-			if (prefix.startsWith('('))
+			/*	if (prefix.startsWith('(') || prefix.startsWith('['))
 				prefix = prefix.mid(1);
-			if (prefix.endsWith(')'))
-				prefix.truncate(prefix.size() - 2);
+			if (prefix.endsWith(')') || prefix.endsWith(']'))
+				prefix.truncate(prefix.size() - 2);*/
 		}
 
 		// Ignore modifier key presses
@@ -543,48 +550,57 @@ namespace lac::editor
 
 	void LuaEditor::completeWord(const QString& word)
 	{
+		// The character under the cursor
 		auto cursor = textCursor();
 		const auto prevPos = cursor.position();
+		const auto block = cursor.block().text();
+		auto pos = cursor.positionInBlock();
+		QChar beforeCursor = ' ';
+		if (pos > 0)
+			beforeCursor = block[pos - 1];
 
 		// Test if there is only a '.', ':' or '(' character
-		cursor.select(QTextCursor::WordUnderCursor);
-		const auto selection = cursor.selectedText();
-		if (!selection.isEmpty())
+		if (beforeCursor != '.' && beforeCursor != ':')
 		{
-			if (selection.startsWith('.') || selection.startsWith(':') || selection.startsWith('('))
+			cursor.select(QTextCursor::WordUnderCursor);
+			const auto selection = cursor.selectedText();
+			if (!selection.isEmpty())
 			{
-				cursor.setPosition(prevPos);
-			}
-			else if (selection.endsWith(')') || selection == ',')
-			{
-				cursor.setPosition(prevPos);
-				cursor.movePosition(QTextCursor::Left);
-				cursor.movePosition(QTextCursor::StartOfWord);
-				cursor.select(QTextCursor::WordUnderCursor);
-				cursor.removeSelectedText();
+				if (selection.startsWith('.') || selection.startsWith(':') || selection.startsWith('(') || selection.startsWith('['))
+				{
+					cursor.setPosition(prevPos);
+				}
+				else if (selection.endsWith(')') || selection.endsWith(']') || selection == ',')
+				{
+					cursor.setPosition(prevPos);
+					cursor.movePosition(QTextCursor::Left);
+					cursor.movePosition(QTextCursor::StartOfWord);
+					cursor.select(QTextCursor::WordUnderCursor);
+					cursor.removeSelectedText();
+				}
+				else
+				{
+					cursor.movePosition(QTextCursor::Left);
+					cursor.movePosition(QTextCursor::StartOfWord);
+					cursor.select(QTextCursor::WordUnderCursor);
+					cursor.removeSelectedText();
+				}
 			}
 			else
-			{
-				cursor.movePosition(QTextCursor::Left);
-				cursor.movePosition(QTextCursor::StartOfWord);
-				cursor.select(QTextCursor::WordUnderCursor);
-				cursor.removeSelectedText();
-			}
-		}
-		else
-			cursor.setPosition(prevPos);
+				cursor.setPosition(prevPos);
 
-		auto goLeftTo = [&cursor](QChar c) {
-			const auto block = cursor.block().text();
-			auto pos = cursor.positionInBlock();
-			while (pos > 0 && block[pos - 1] != c)
-			{
-				cursor.deletePreviousChar();
-				--pos;
-			}
-		};
-		if (selection.startsWith('('))
-			goLeftTo('(');
+			auto goLeftTo = [&cursor](QChar c) {
+				const auto block = cursor.block().text();
+				auto pos = cursor.positionInBlock();
+				while (pos > 0 && block[pos - 1] != c)
+				{
+					cursor.deletePreviousChar();
+					--pos;
+				}
+			};
+			if (selection.startsWith('('))
+				goLeftTo('(');
+		}
 
 		cursor.clearSelection();
 		cursor.insertText(word);
