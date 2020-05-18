@@ -445,13 +445,20 @@ namespace lac::editor
 			return;
 		}
 
-		if (isDot(prefix) || prefix == '(')
-			prefix = "";
+		if (!prefix.isEmpty())
+		{
+			if (prefix.endsWith(')') || prefix == ',')
+				prefix = leftText;
 
-		if (prefix.startsWith('('))
-			prefix = prefix.mid(1);
-		if (prefix.endsWith(')'))
-			prefix.truncate(prefix.size() - 2);
+			const auto first = prefix[0];
+			if (first == '.' || first == ':')
+				prefix = "";
+
+			if (prefix.startsWith('('))
+				prefix = prefix.mid(1);
+			if (prefix.endsWith(')'))
+				prefix.truncate(prefix.size() - 2);
+		}
 
 		// Ignore modifier key presses
 		if ((event->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier)) && event->text().isEmpty())
@@ -542,12 +549,27 @@ namespace lac::editor
 		// Test if there is only a '.', ':' or '(' character
 		cursor.select(QTextCursor::WordUnderCursor);
 		const auto selection = cursor.selectedText();
-		if (!selection.isEmpty() && selection != "." && selection != ':' && !selection.startsWith('('))
+		if (!selection.isEmpty())
 		{
-			cursor.movePosition(QTextCursor::Left);
-			cursor.movePosition(QTextCursor::StartOfWord);
-			cursor.select(QTextCursor::WordUnderCursor);
-			cursor.removeSelectedText();
+			if (selection.startsWith('.') || selection.startsWith(':') || selection.startsWith('('))
+			{
+				cursor.setPosition(prevPos);
+			}
+			else if (selection.endsWith(')') || selection == ',')
+			{
+				cursor.setPosition(prevPos);
+				cursor.movePosition(QTextCursor::Left);
+				cursor.movePosition(QTextCursor::StartOfWord);
+				cursor.select(QTextCursor::WordUnderCursor);
+				cursor.removeSelectedText();
+			}
+			else
+			{
+				cursor.movePosition(QTextCursor::Left);
+				cursor.movePosition(QTextCursor::StartOfWord);
+				cursor.select(QTextCursor::WordUnderCursor);
+				cursor.removeSelectedText();
+			}
 		}
 		else
 			cursor.setPosition(prevPos);

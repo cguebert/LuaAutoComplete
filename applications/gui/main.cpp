@@ -74,20 +74,17 @@ myTable.bool = false
 myTable.neg = function(a) return -a end
 myTable.mult = function(a) return a * 2 end
 
-function run (player)
+-- Testing user defined types
+x = math.abs(-3.14)
+
+-- Script entry (we told the editor that it is called by the application)
+function run(player)
 	local pos = player:position()
 	local len = pos:length()
 	if len > 500 then
 		pos = pos:mult(500 / len)
 		player:setPosition(pos)
 	end
-end
-
--- Testing user defined types
-x = math.abs(-3.14)
-
--- Script entry (we told the editor that it is called by the application)
-function run(player)
 end
 
 )~~");
