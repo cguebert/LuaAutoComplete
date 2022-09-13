@@ -6,6 +6,8 @@
 #include <lac/helper/arguments.h>
 #include <lac/helper/test_utils.h>
 
+#include <doctest/doctest.h>
+
 namespace lac
 {
 	using helper::test_phrase_parser;

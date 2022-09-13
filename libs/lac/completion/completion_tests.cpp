@@ -8,6 +8,10 @@
 
 #include <cctype>
 
+#define DOCTEST_CONFIG_IMPLEMENTATION_IN_DLL
+#define DOCTEST_CONFIG_IMPLEMENT
+#include <doctest/doctest.h>
+
 namespace lac::ast
 {
 	// The next functions are incomplete and must only be used for the tests in this file
