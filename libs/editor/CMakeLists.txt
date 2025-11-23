@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 4.0)
 
 # External dependencies
-find_package(Qt5Widgets)
+find_package(Qt6Widgets)
 find_package(Boost)
 find_package(nlohmann_json CONFIG REQUIRED)
 
@@ -52,7 +52,7 @@ target_include_directories(${target}
 target_link_libraries(${target} 
 	PUBLIC
 	LuaAutoComplete::core
-	Qt5::Widgets)
+	Qt6::Widgets)
 
 	# Compile definitions
 target_compile_definitions(${target} 
